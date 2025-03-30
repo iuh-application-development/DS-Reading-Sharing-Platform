@@ -8,8 +8,17 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 import os
 from app.utils.pexels import get_random_avatar
+from firebase_admin import credentials, firestore, auth
+import firebase_admin
+from flask import jsonify
+
 
 bp = Blueprint('auth', __name__)
+
+# Tao firebase-admin app
+cred = credentials.Certificate("C:/Users/ngodi/OneDrive/Documents/GitHub/DS-Reading-Sharing-Platform/firebase-auth.json")
+firebase_admin.initialize_app(cred)
+firebase_db  = firestore.client()
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -177,3 +186,47 @@ def select_suggestion():
     if suggestion:
         return redirect(url_for('auth.search_posts', query=suggestion))
     return redirect(url_for('auth.search_posts'))
+
+@bp.route('/auth', methods=['POST'])
+def authorize():
+    token = request.headers.get('Authorization')
+    if not token or not token.startswith('Bearer '):
+        return jsonify({'message': 'Unauthorized'}), 401
+
+    try:
+        # Xác minh token
+        token = token[7:]
+        decoded_token = auth.verify_id_token(token, check_revoked=True, clock_skew_seconds=60)
+        email = decoded_token.get("email")
+
+        data = request.get_json()
+        full_name = data.get('full_name')
+        phone = data.get('phone')
+        # photo = data.get('photo') 
+
+        user = User.query.filter_by(email=email).first()
+
+        if not user:
+            user = User(
+                username=email,
+                email=email,
+                password_hash=generate_password_hash(""),  # hoặc None nếu cho phép
+                full_name=full_name,
+                phone=phone,
+                date_of_birth=None,  
+                gender=None,
+                bio=None,
+                created_at=datetime.utcnow()
+            )
+            db.session.add(user)
+
+        user.last_login = datetime.utcnow()
+
+        login_user(user, remember=True)
+        db.session.commit()
+
+        return jsonify({'status': 'success'})
+
+    except Exception as e:
+        print("Lỗi xác thực:", e)
+        return jsonify({'message': str(e)}), 401 
