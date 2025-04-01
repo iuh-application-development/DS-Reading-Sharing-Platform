@@ -51,7 +51,17 @@ def login():
             flash('Tên đăng nhập/email hoặc mật khẩu không đúng.', 'error')
     
     return render_template('auth/login.html')
-
+@bp.route('/reset-password', methods=['POST','GET'])
+def reset_password():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.index'))
+    if request.method == 'POST':
+        email = request.form.get('email')
+        print(email)
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            flash('Email không tồn tại','warning')
+    return render_template('auth/reset_password.html')
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
