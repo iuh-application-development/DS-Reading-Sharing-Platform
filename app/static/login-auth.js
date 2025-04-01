@@ -21,6 +21,10 @@ async function authWithGoogle(){
         }
         const user = result.user;
         const email = user.email;
+        console.log("User:", user);
+        // console.log("ID Token:", idToken);
+
+        // console.log("Email từ Google Sign-In:", email);
         if (!email) {
             throw new Error("Không có email từ Google Sign-In.");
         }

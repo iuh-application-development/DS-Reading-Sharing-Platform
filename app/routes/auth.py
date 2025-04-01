@@ -17,6 +17,7 @@ bp = Blueprint('auth', __name__)
 
 # Tao firebase-admin app
 cred = credentials.Certificate("C:/Users/ngodi/OneDrive/Documents/GitHub/DS-Reading-Sharing-Platform/firebase-auth.json")
+print(cred)
 firebase_admin.initialize_app(cred)
 firebase_db  = firestore.client()
 
@@ -197,28 +198,35 @@ def authorize():
         # Xác minh token
         token = token[7:]
         decoded_token = auth.verify_id_token(token, check_revoked=True, clock_skew_seconds=60)
-        email = decoded_token.get("email")
+        
+        # print("Decoded token:", decoded_token)
+        # print(f"Headers: {request.headers}")
+        # print(f"Payload: {request.get_json()}")
 
         data = request.get_json()
+        email = data.get("email")
         full_name = data.get('full_name')
         phone = data.get('phone')
+
         # photo = data.get('photo') 
 
         user = User.query.filter_by(email=email).first()
 
         if not user:
             user = User(
-                username=email,
-                email=email,
-                password_hash=generate_password_hash(""),  # hoặc None nếu cho phép
-                full_name=full_name,
-                phone=phone,
-                date_of_birth=None,  
-                gender=None,
-                bio=None,
-                created_at=datetime.utcnow()
-            )
+                    username=email,
+                    email=email,
+                    password_hash=generate_password_hash(""),
+                    full_name=full_name,
+                    phone=phone,
+                    date_of_birth=None,
+                    gender=None,
+                    bio=None,
+                    avatar_url=User.generate_random_avatar(),  
+                    created_at=datetime.utcnow()
+                )
             db.session.add(user)
+            db.session.commit()
 
         user.last_login = datetime.utcnow()
 
