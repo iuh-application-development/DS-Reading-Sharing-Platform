@@ -16,8 +16,9 @@
                 <!-- Header -->
                 <div class="flex items-start justify-between">
                     <div class="flex items-center">
-                        <img src="{{ post.author.avatar_url }}" alt="{{ post.author.username }}"
-                            class="h-12 w-12 rounded-full object-cover ring-2 ring-orange-100">
+                        <img src="{{ url_for('static', filename=post.author.get_avatar_path()) if post.author.avatar_filename else post.author.avatar_url }}"
+                            alt="{{ post.author.username }}"
+                            class="h-10 w-10 rounded-full object-cover">
                         <div class="ml-4">
                             <h2 class="text-xl font-bold">
                                 <span class="flex items-center">

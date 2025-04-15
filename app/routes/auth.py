@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.models.user import User
@@ -10,6 +10,11 @@ import os
 from app.utils.pexels import get_random_avatar
 
 bp = Blueprint('auth', __name__)
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -110,23 +115,64 @@ def logout():
 @login_required
 def profile():
     if request.method == 'POST':
-        # Cập nhật thông tin profile
-        current_user.full_name = request.form.get('full_name')
-        current_user.bio = request.form.get('bio')
-        current_user.phone = request.form.get('phone')
-        
-        # Xử lý ngày sinh
-        date_of_birth = request.form.get('date_of_birth')
-        if date_of_birth:
-            current_user.date_of_birth = datetime.strptime(date_of_birth, '%Y-%m-%d')
-        
-        current_user.gender = request.form.get('gender')
-
         try:
+            # Cập nhật thông tin profile
+            current_user.full_name = request.form.get('full_name')
+            current_user.bio = request.form.get('bio')
+            current_user.phone = request.form.get('phone')
+            
+            # Xử lý ngày sinh
+            date_of_birth = request.form.get('date_of_birth')
+            if date_of_birth:
+                current_user.date_of_birth = datetime.strptime(date_of_birth, '%Y-%m-%d')
+            
+            current_user.gender = request.form.get('gender')
+
+            # Xử lý upload avatar nếu có
+            if 'avatar' in request.files:
+                file = request.files['avatar']
+                if file and file.filename != '' and allowed_file(file.filename):
+                    # Tạo tên file an toàn
+                    filename = secure_filename(file.filename)
+                    # Thêm timestamp vào tên file để tránh trùng lặp
+                    filename = f"{current_user.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
+                    
+                    # Lưu file
+                    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'avatars')
+                    os.makedirs(upload_folder, exist_ok=True)
+                    file_path = os.path.join(upload_folder, filename)
+                    file.save(file_path)
+                    
+                    # Xóa avatar cũ nếu có
+                    if current_user.avatar_filename:
+                        old_file_path = os.path.join(upload_folder, current_user.avatar_filename)
+                        if os.path.exists(old_file_path):
+                            os.remove(old_file_path)
+                    
+                    # Cập nhật thông tin avatar trong database
+                    current_user.avatar_filename = filename
+                    current_user.avatar_url = None
+
             db.session.commit()
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({
+                    'success': True,
+                    'message': 'Cập nhật thông tin thành công!',
+                    'avatar_url': url_for('static', filename=current_user.get_avatar_path()) if current_user.avatar_filename else current_user.avatar_url
+                })
+            
             flash('Cập nhật thông tin thành công!', 'success')
+            return redirect(url_for('auth.profile'))
+            
         except Exception as e:
             db.session.rollback()
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({
+                    'success': False,
+                    'error': 'Có lỗi xảy ra khi cập nhật thông tin.'
+                }), 400
+                
             flash('Có lỗi xảy ra khi cập nhật thông tin.', 'error')
             
     return render_template('auth/profile.html')
@@ -177,3 +223,55 @@ def select_suggestion():
     if suggestion:
         return redirect(url_for('auth.search_posts', query=suggestion))
     return redirect(url_for('auth.search_posts'))
+
+@bp.route('/upload-avatar', methods=['POST'])
+@login_required
+def upload_avatar():
+    if 'avatar' not in request.files:
+        flash('Không có file được chọn.', 'error')
+        return redirect(url_for('auth.profile'))
+        
+    file = request.files['avatar']
+    if file.filename == '':
+        flash('Không có file được chọn.', 'error')
+        return redirect(url_for('auth.profile'))
+        
+    if file and allowed_file(file.filename):
+        try:
+            # Tạo tên file an toàn
+            filename = secure_filename(file.filename)
+            # Thêm timestamp vào tên file để tránh trùng lặp
+            filename = f"{current_user.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
+            
+            # Lưu file
+            upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'avatars')
+            os.makedirs(upload_folder, exist_ok=True)
+            file_path = os.path.join(upload_folder, filename)
+            
+            print(f"Saving file to: {file_path}")  # Debug log
+            file.save(file_path)
+            print(f"File saved successfully")  # Debug log
+            
+            # Xóa avatar cũ nếu có
+            if current_user.avatar_filename:
+                old_file_path = os.path.join(upload_folder, current_user.avatar_filename)
+                if os.path.exists(old_file_path):
+                    os.remove(old_file_path)
+                    print(f"Old avatar removed: {old_file_path}")  # Debug log
+            
+            # Cập nhật thông tin avatar trong database
+            current_user.avatar_filename = filename
+            current_user.avatar_url = None  # Reset avatar_url khi có avatar_filename
+            
+            db.session.commit()
+            print(f"Database updated with new avatar: {filename}")  # Debug log
+            
+            flash('Cập nhật ảnh đại diện thành công!', 'success')
+        except Exception as e:
+            print(f"Error uploading avatar: {str(e)}")  # Debug log
+            db.session.rollback()
+            flash('Có lỗi xảy ra khi cập nhật avatar.', 'error')
+    else:
+        flash('File không hợp lệ. Chỉ chấp nhận file ảnh (PNG, JPG, JPEG, GIF).', 'error')
+        
+    return redirect(url_for('auth.profile'))

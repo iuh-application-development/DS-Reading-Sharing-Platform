@@ -2,6 +2,7 @@ from app import db, login_manager
 from flask_login import UserMixin
 from datetime import datetime
 import random
+import os
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -14,6 +15,7 @@ class User(UserMixin, db.Model):
     # Thông tin cá nhân
     full_name = db.Column(db.String(100))
     avatar_url = db.Column(db.String(200))
+    avatar_filename = db.Column(db.String(200))
     bio = db.Column(db.Text)
     phone = db.Column(db.String(15))
     date_of_birth = db.Column(db.Date)
@@ -67,3 +69,9 @@ class User(UserMixin, db.Model):
             user_id=self.id,
             post_id=post_id
         ).first() is not None 
+
+    def get_avatar_path(self):
+        """Lấy đường dẫn đầy đủ của avatar"""
+        if self.avatar_filename:
+            return f'uploads/avatars/{self.avatar_filename}'
+        return self.avatar_url 
