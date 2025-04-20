@@ -214,20 +214,25 @@
         <!-- Main Content -->
         <div id="main-content" class="flex-1 p-8 bg-gray-50">
             <!-- Thanh tìm kiếm ở trên cùng -->
+            {% if current_user.is_authenticated %}
             <div class="mb-6">
-                <form action="{{ url_for('auth.search_posts') }}" method="GET" class="flex items-center max-w-lg mx-auto relative">
+                <form action="{{ url_for('auth.search_posts') }}" method="GET"
+                    class="flex items-center max-w-lg mx-auto relative">
                     <div class="relative w-full">
-                        <input type="text" name="query" id="search-input" class="w-full p-3 pl-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Tìm kiếm bài đăng..." autocomplete="off">
+                        <input type="text" name="query" id="search-input"
+                            class="w-full p-3 pl-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="Tìm kiếm bài đăng..." autocomplete="off">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3">
                             <i class="fas fa-search text-gray-400"></i>
                         </div>
                     </div>
-                    <button type="submit" class="ml-2 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200">
+                    <button type="submit"
+                        class="ml-2 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200">
                         Tìm
                     </button>
                 </form>
             </div>
-
+            {% endif %}
             <div class="max-w-7xl mx-auto">
                 {% block content %}{% endblock %}
             </div>

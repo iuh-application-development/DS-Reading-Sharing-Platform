@@ -2,7 +2,9 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.models.user import User
+from app.models.like import Like
 from app.models.post import Post
+
 from app import db
 from datetime import datetime
 from werkzeug.utils import secure_filename
@@ -166,14 +168,17 @@ def search_posts():
             Post.title.ilike(f'%{query}%'),
             Post.status == 'approved'
         ).order_by(Post.title).limit(5).all()  # Giới hạn 5 gợi ý
-
+    likes = Like.query.filter_by(user_id=current_user.id).all()
+    total_likes_query = db.session.query(Like.post_id, db.func.count(Like.post_id).label('like_count'))\
+        .group_by(Like.post_id).all()
+    total_likes_dict = {post_id: like_count for post_id, like_count in total_likes_query}
     # Nếu không có query, trả về trang tìm kiếm
-    return render_template('auth/search.html', query=query, posts=posts, suggestions=suggestions)
+    return render_template('auth/search.html', query=query, posts=posts, suggestions=suggestions, likes = total_likes_dict)
 
 @bp.route('/search/suggestion', methods=['POST'])
 def select_suggestion():
     """Xử lý khi người dùng chọn một gợi ý"""
-    suggestion = request.form.get('suggestion', '').strip()
-    if suggestion:
-        return redirect(url_for('auth.search_posts', query=suggestion))
+    # suggestion = request.form.get('suggestion', '').strip()
+    # if suggestion:
+    #     return redirect(url_for('auth.search_posts', query=suggestion))
     return redirect(url_for('auth.search_posts'))
