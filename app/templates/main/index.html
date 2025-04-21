@@ -54,10 +54,10 @@
                     <div class="flex space-x-2">
                         {% if current_user.is_authenticated %}
                         <button onclick="toggleSavePost({{ post.id }}, this)"
-                            class="text-gray-400 hover:text-orange-500 transition-colors save-button"
+                            class="text-gray-400 hover:text-orange-500 transition-colors save-button p-2 rounded-full hover:bg-orange-50"
                             data-post-id="{{ post.id }}">
                             <i
-                                class="{% if post.id in current_user.saved_posts|map(attribute='post_id') %}fas{% else %}far{% endif %} fa-bookmark"></i>
+                                class="{% if post.id in current_user.saved_posts|map(attribute='post_id') %}fas{% else %}far{% endif %} fa-bookmark text-xl"></i>
                         </button>
                         {% endif %}
                     </div>
@@ -177,24 +177,53 @@
                     if (data.status === 'saved') {
                         icon.classList.remove('far');
                         icon.classList.add('fas');
-                        icon.classList.add('text-orange-500');
                         button.classList.add('text-orange-500');
                         button.classList.remove('text-gray-400');
                     } else {
                         icon.classList.remove('fas');
                         icon.classList.add('far');
-                        icon.classList.remove('text-orange-500');
                         button.classList.remove('text-orange-500');
                         button.classList.add('text-gray-400');
                     }
 
                     // Show notification
-                    showMessage(data.message, 'success');+                                                      
+                    showMessage(data.message, 'success');
                 }
             })
             .catch(error => {
                 showMessage('Đã xảy ra lỗi khi lưu bài viết', 'error');
             });
+    }
+
+    function showMessage(message, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 flex items-center ${type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+            }`;
+
+        messageDiv.innerHTML = `
+        <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-2"></i>
+        ${message}
+    `;
+
+        // Add animation classes
+        messageDiv.style.transition = 'all 0.3s ease';
+        messageDiv.style.transform = 'translateY(-1rem)';
+        messageDiv.style.opacity = '0';
+
+        document.body.appendChild(messageDiv);
+
+        // Trigger animation
+        setTimeout(() => {
+            messageDiv.style.transform = 'translateY(0)';
+            messageDiv.style.opacity = '1';
+        }, 10);
+
+        // Remove after delay
+        setTimeout(() => {
+            messageDiv.style.transform = 'translateY(-1rem)';
+            messageDiv.style.opacity = '0';
+            setTimeout(() => messageDiv.remove(), 300);
+        }, 3000);
     }
 
     function toggle_like(postId, button) {

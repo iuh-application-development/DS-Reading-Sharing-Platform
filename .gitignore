@@ -12,7 +12,7 @@ instance/*
 !instance/.gitkeep
 
 # Environment variables
-.env
+# .env
 
 # IDE
 .vscode/
