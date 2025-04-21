@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from config import Config
 import os
+from sqlalchemy import inspect  # Import inspect từ sqlalchemy
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -39,14 +40,16 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
 
-    # Tạo database và admin initial
+    # Chỉ tạo database và admin nếu cần
     with app.app_context():
-        db.drop_all()  # Xóa database cũ
-        db.create_all()  # Tạo database mới với schema mới
-        
-        # Tạo admin initial
-        from app.utils.admin import create_initial_admin
-        create_initial_admin()
-        print("Database initialized with initial admin")
+        # Kiểm tra xem bảng đã tồn tại chưa
+        inspector = inspect(db.engine)  # Sử dụng inspect từ sqlalchemy
+        if not inspector.has_table('user'):  # Kiểm tra bảng 'user'
+            db.create_all()  # Tạo database nếu chưa tồn tại
+            from app.utils.admin import create_initial_admin
+            create_initial_admin()
+            print("Database initialized with initial admin")
+        else:
+            print("Database already exists, skipping initialization")
 
-    return app 
+    return app

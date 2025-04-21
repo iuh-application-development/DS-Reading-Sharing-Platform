@@ -9,6 +9,7 @@ class Post(db.Model):
     content = db.Column(db.Text, nullable=False)
     source_link = db.Column(db.String(500))
     source_content = db.Column(db.Text)
+    visibility = db.Column(db.Integer, default=0) #Định__mmber # 0: Công khai, 1: Hạn chế 
     
     # Metadata
     status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
@@ -21,6 +22,8 @@ class Post(db.Model):
     # Relationships
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     author = db.relationship('User', backref=db.backref('posts', lazy=True))
+    likes = db.relationship('Like', backref='post', lazy='dynamic')
+
     
     def __repr__(self):
         return f'<Post {self.title}>'

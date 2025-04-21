@@ -38,10 +38,16 @@
                                 </a>
                             </h2>
                             <div class="flex items-center mt-2 text-sm text-gray-500">
-                                <span class="flex items-center">
-                                    <i class="far fa-clock mr-1"></i>
-                                    {{ post.created_at.strftime('%d/%m/%Y %H:%M') }}
-                                </span>
+                                <!-- Author info -->
+                                <div class="flex items-center">
+                                    <img src="{{ url_for('static', filename=post.author.get_avatar_path()) if post.author.avatar_filename else post.author.avatar_url }}"
+                                         alt="{{ post.author.username }}"
+                                         class="h-10 w-10 rounded-full object-cover ring-2 ring-orange-100">
+                                    <div class="ml-3">
+                                        <h3 class="font-semibold">{{ post.author.full_name or post.author.username }}</h3>
+                                        <p class="text-sm text-gray-500">{{ post.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+                                    </div>
+                                </div>
                                 <span class="mx-2">•</span>
                                 <span class="px-2 py-1 rounded-full text-xs font-medium
                                     {% if post.status == 'approved' %}bg-green-100 text-green-800
