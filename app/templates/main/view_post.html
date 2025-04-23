@@ -20,14 +20,16 @@
                     </div>
                     <div class="flex items-center flex-wrap gap-4 text-gray-600">
                         <div class="flex items-center">
-                            <img src="{{ post.author.avatar_url }}" alt="{{ post.author.username }}"
-                                class="h-10 w-10 rounded-full object-cover ring-2 ring-orange-100">
-                            <span class="ml-2 font-medium">{{ post.author.full_name }}</span>
+                            <img src="{{ url_for('static', filename=post.author.get_avatar_path()) if post.author.avatar_filename else post.author.avatar_url }}"
+                                alt="{{ post.author.username }}"
+                                class="h-12 w-12 rounded-full object-cover ring-2 ring-orange-100">
+                            <div class="ml-4">
+                                <h2 class="text-lg font-semibold">{{ post.author.full_name or post.author.username }}</h2>
+                                <p class="text-sm text-gray-500">
+                                    {{ post.created_at.strftime('%d/%m/%Y %H:%M') }}
+                                </p>
+                            </div>
                         </div>
-                        <span class="flex items-center">
-                            <i class="far fa-clock mr-1"></i>
-                            {{ post.created_at.strftime('%d/%m/%Y %H:%M') }}
-                        </span>
                         {% if post.updated_at and post.updated_at != post.created_at %}
                         <span class="flex items-center text-sm text-gray-500">
                             <i class="fas fa-edit mr-1"></i>
@@ -97,7 +99,8 @@
                 {% endif %}
                 <form method="POST" action="{{ url_for('main.add_comment', post_id=post.id) }}"
                     class="flex items-center mt-8">
-                    <img src="{{ current_user.avatar_url }}" alt="{{ post.author.username }}"
+                    <img src="{{ url_for('static', filename=current_user.get_avatar_path()) if current_user.avatar_filename else current_user.avatar_url }}"
+                        alt="{{ current_user.username }}"
                         class="h-10 w-10 rounded-full object-cover ring-2 ring-orange-100 mr-4">
                     <div class="flex items-center w-full">
                         <input type="text" name="comment"
@@ -112,17 +115,18 @@
                 <div class="mt-8">
                     <h2 class="font-bold">{{comments | length}} Bình luận</h2>
                     {% for comment in comments %}
-                    <div class="flex mt-5 items-start">
-                        <img src="{{ comment.user.avatar_url }}" alt="Ảnh đại diện của {{ comment.user.username }}"
-                             class="h-10 w-10 rounded-full object-cover ring-2 ring-orange-100 mr-4 flex-shrink-0">
+                    <div class="flex space-x-4 mb-4">
+                        <img src="{{ url_for('static', filename=comment.user.get_avatar_path()) if comment.user.avatar_filename else comment.user.avatar_url }}"
+                            alt="{{ comment.user.username }}"
+                            class="h-10 w-10 rounded-full object-cover">
                         <div class="flex-1">
-                            <div class="flex items-center gap-2">
-                                <h3 class="font-bold">{{ comment.user.full_name }}</h3>
-                                <span class="text-[12px] text-gray-400">
-                                    {{ comment.created_at.strftime('%d/%m/%Y') }}
-                                </span>
+                            <div class="bg-gray-100 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h3 class="font-semibold">{{ comment.user.full_name or comment.user.username }}</h3>
+                                    <span class="text-sm text-gray-500">{{ comment.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                                </div>
+                                <p>{{ comment.content }}</p>
                             </div>
-                            <p class="text-gray-600 mt-2 break-words text-left">{{ comment.content }}</p>
                         </div>
                     </div>
                     {% endfor %}

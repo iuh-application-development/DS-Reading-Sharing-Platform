@@ -2,6 +2,7 @@ from app import db
 from flask_login import UserMixin
 from datetime import datetime
 import random
+import os
 import hashlib
 
 class User(UserMixin, db.Model):
@@ -15,6 +16,7 @@ class User(UserMixin, db.Model):
     # Thông tin cá nhân
     full_name = db.Column(db.String(100))
     avatar_url = db.Column(db.String(200))
+    avatar_filename = db.Column(db.String(200))
     bio = db.Column(db.Text)
     phone = db.Column(db.String(15))
     date_of_birth = db.Column(db.Date)
@@ -43,6 +45,16 @@ class User(UserMixin, db.Model):
         return hashlib.md5(seed.encode()).hexdigest()
 
     def has_saved_post(self, post_id):
+        return SavedPost.query.filter_by(
+            user_id=self.id,
+            post_id=post_id
+        ).first() is not None 
+
+    def get_avatar_path(self):
+        """Lấy đường dẫn đầy đủ của avatar"""
+        if self.avatar_filename:
+            return f'uploads/avatars/{self.avatar_filename}'
+        return self.avatar_url 
         from app.models.saved_post import SavedPost  # import tại đây để tránh circular import
         return SavedPost.query.filter_by(user_id=self.id, post_id=post_id).first() is not None
 

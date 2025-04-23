@@ -14,27 +14,12 @@
                     <!-- Header -->
                     <div class="flex items-start justify-between">
                         <div class="flex items-center">
-                            <img src="{{ saved.post.author.avatar_url }}" 
-                                 alt="{{ saved.post.author.username }}" 
-                                 class="h-12 w-12 rounded-full object-cover ring-2 ring-orange-100">
-                            <div class="ml-4">
-                                <h2 class="text-xl font-bold">
-                                    <a href="{{ url_for('main.view_post', post_id=saved.post.id) }}"
-                                       class="text-gray-900 hover:text-orange-500 transition-colors">
-                                        {{ saved.post.title }}
-                                    </a>
-                                </h2>
-                                <div class="flex items-center mt-1 text-sm text-gray-500">
-                                    <span class="flex items-center">
-                                        <i class="fas fa-user-edit mr-1"></i>
-                                        {{ saved.post.author.username }}
-                                    </span>
-                                    <span class="mx-2">•</span>
-                                    <span class="flex items-center">
-                                        <i class="far fa-clock mr-1"></i>
-                                        Đã lưu: {{ saved.saved_at.strftime('%d/%m/%Y %H:%M') }}
-                                    </span>
-                                </div>
+                            <img src="{{ url_for('static', filename=saved.post.author.get_avatar_path()) if saved.post.author.avatar_filename else saved.post.author.avatar_url }}"
+                                 alt="{{ saved.post.author.username }}"
+                                 class="h-10 w-10 rounded-full object-cover ring-2 ring-orange-100">
+                            <div class="ml-3">
+                                <h3 class="font-semibold">{{ saved.post.author.full_name or saved.post.author.username }}</h3>
+                                <p class="text-sm text-gray-500">{{ saved.post.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
                             </div>
                         </div>
                         
