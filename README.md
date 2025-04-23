@@ -183,3 +183,104 @@ ds-reading-platform/<br>
 │   └── test_posts.py<br>
 │<br>
 └── venv/            # Môi trường ảo Python (sẽ được tạo sau)
+
+## **8. Hướng dẫn cài đặt và sử dụng**
+
+### **8.1. Yêu cầu hệ thống**
+* Docker Desktop
+* Git
+* pgAdmin (tùy chọn - để quản lý database)
+
+### **8.2. Các bước cài đặt**
+
+1️⃣ **Clone repository**
+```bash
+git clone https://github.com/iuh-application-development/DS-Reading-Sharing-Platform.git
+cd DS-Reading-Sharing-Platform
+```
+
+<!-- 2️⃣ **Tạo file .env**
+```bash
+cp .env.example .env
+``` -->
+tôi đã cấu hình không loại bỏ .env nên không cần làm bước này
+
+3️⃣ **Khởi động ứng dụng với Docker**
+```bash
+docker-compose up --build
+```
+
+4️⃣ **Truy cập ứng dụng**
+* Web: http://localhost:5001
+* Tài khoản admin mặc định:
+  * Username: admin
+  * Password: admin123
+
+### **8.3. Kết nối với pgAdmin**
+
+1️⃣ **Mở pgAdmin**
+
+2️⃣ **Tạo server mới**
+* Click chuột phải vào Servers → Register → Server
+* Trong tab General:
+  * Name: DS Reading Platform (hoặc tên tùy chọn)
+
+* Trong tab Connection:
+  * Host name/address: localhost
+  * Port: 5433
+  * Maintenance database: ds_reading_db
+  * Username: postgres
+  * Password: wsunicorn
+
+### **8.4. Cấu trúc Docker**
+
+Ứng dụng sử dụng 2 container:
+* **Web container**: Chạy Flask application
+* **Database container**: Chạy PostgreSQL
+
+Data được lưu trong Docker volumes:
+* **postgres_data**: Lưu trữ database
+* **uploads_data**: Lưu trữ files upload
+
+### **8.5. Các lệnh Docker hữu ích**
+
+```bash
+# Khởi động ứng dụng
+docker-compose up
+
+# Chạy ứng dụng ở chế độ nền
+docker-compose up -d
+
+# Dừng ứng dụng
+docker-compose down
+
+# Xem logs
+docker-compose logs
+
+# Xem logs của service cụ thể
+docker-compose logs web
+docker-compose logs db
+
+# Restart service
+docker-compose restart web
+
+# Xóa volumes (cẩn thận, sẽ mất data)
+docker-compose down -v
+```
+
+### **8.6. Lưu ý quan trọng**
+
+1️⃣ **Bảo mật**
+* Thay đổi mật khẩu admin mặc định sau khi cài đặt
+* Không chia sẻ file .env
+* Đặt mật khẩu mạnh cho database trong môi trường production
+
+2️⃣ **Backup**
+* Database được lưu trong Docker volume
+* Nên backup định kỳ trong môi trường production
+* Có thể export/import data thông qua pgAdmin
+
+3️⃣ **Troubleshooting**
+* Nếu gặp lỗi port conflict, kiểm tra và đổi port trong docker-compose.yml
+* Nếu không kết nối được database, kiểm tra thông tin trong .env
+* Xem logs để debug khi có lỗi xảy ra
