@@ -24,4 +24,4 @@ instance/*
 *.sqlite3 
 
 # Firebase credentials giu lai file firebase-auth
-firebase-auth.json
+.firebase-auth.json
