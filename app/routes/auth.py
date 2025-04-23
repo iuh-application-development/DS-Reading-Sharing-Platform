@@ -18,7 +18,7 @@ from flask import jsonify
 bp = Blueprint('auth', __name__)
 
 # Tao firebase-admin app
-cred = credentials.Certificate("C:/Users/ngodi/OneDrive/Documents/GitHub/DS-Reading-Sharing-Platform/firebase-auth.json")
+cred = credentials.Certificate("firebase-auth.json")
 print(cred)
 firebase_admin.initialize_app(cred)
 firebase_db  = firestore.client()
