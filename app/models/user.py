@@ -48,10 +48,5 @@ class User(UserMixin, db.Model):
 
     @staticmethod
     def generate_random_avatar():
-        avatars = [
-            "https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/male/45.png",
-            "https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/female/45.png",
-            "https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/male/85.png",
-            "https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/female/85.png",
-        ]
-        return random.choice(avatars)
+       
+        return 'https://avatar.iran.liara.run/public'
