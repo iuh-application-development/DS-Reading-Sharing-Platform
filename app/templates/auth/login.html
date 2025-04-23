@@ -3,50 +3,77 @@
 {% block content %}
 <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8">
     <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Đăng nhập</h2>
-    
+
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="mb-4 p-4 rounded {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div
+        class="mb-4 p-4 rounded {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
     {% endwith %}
-    
+
     <form method="POST" action="{{ url_for('auth.login') }}" class="space-y-6">
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2" for="login_id">
                 Tên đăng nhập hoặc Email
             </label>
-            <input class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-                   id="login_id" name="login_id" type="text" required>
+            <input
+                class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                id="login_id" name="login_id" type="text" required>
         </div>
-        
+
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2" for="password">
                 Mật khẩu
             </label>
-            <input class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-                   id="password" name="password" type="password" required>
+            <input
+                class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                id="password" name="password" type="password" required>
         </div>
-        
-        <div class="flex items-center">
-            <input type="checkbox" name="remember" 
-                   class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-            <span class="ml-2 text-sm text-gray-600">Ghi nhớ đăng nhập</span>
-        </div>
-        
-        <div class="flex items-center justify-between pt-4">
-            <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200"
-                    type="submit">
+
+
+        <div class="flex pt-4">
+            <button
+                class=" flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200"
+                type="submit">
                 Đăng nhập
             </button>
-            <a href="{{ url_for('auth.register') }}" 
+
+
+        </div>
+        <div class="flex justify-between  select-none">
+            <a href="{{url_for('auth.register')}}" class="dark:md:hover:text-blue-500 cursor-pointer">
+                Tạo tài khoảng</a>
+            <a href="{{url_for('auth.reset_password')}}" class="ark:md:hover:text-blue-500 cursor-pointer">
+                Quên mật khẩu</a>
+        </div>
+
+
+    </form>
+    <!-- phuong thuc khac  -->
+    <div class="flex items-center gap-4 pt-3 select-none">
+        <hr class="flex-grow border-t border-gray-300" />
+        <span class="text-gray-500 text-sm">Or</span>
+        <hr class="flex-grow border-t border-gray-300" />
+    </div>
+    <!-- --- phuong thuc khac  -->
+    <div class="flex pt-2 ">
+        <button
+            class=" flex-1 border-2 border-solid hover:bg-gray-200  text-black font-semibold py-2 px-6 rounded-lg transition-colors duration-200"
+            type="submit" id="google_login">
+            <i class="fa-brands fa-google fa-lg me-2"></i>Đăng nhập với Google
+        </button>
+
+
+    </div>
+    <!-- <a href="{{ url_for('auth.register') }}" 
                class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
                 Đăng ký tài khoản
-            </a>
-        </div>
-    </form>
+            </a> -->
+
 </div>
-{% endblock %} 
+<script src="{{ url_for('static', filename='login-auth.js') }}" type="module"> </script>
+{% endblock %}

@@ -1,7 +1,8 @@
-from app import db, login_manager
+from app import db
 from flask_login import UserMixin
 from datetime import datetime
 import random
+import hashlib
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -10,7 +11,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
-    
+
     # Thông tin cá nhân
     full_name = db.Column(db.String(100))
     avatar_url = db.Column(db.String(200))
@@ -27,24 +28,6 @@ class User(UserMixin, db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     last_login = db.Column(db.DateTime)
 
-    def __init__(self, **kwargs):
-        super(User, self).__init__(**kwargs)
-        # Tự động gán avatar khi tạo user mới
-        if not self.avatar_url:
-            self.avatar_url = self.generate_avatar_url()
-
-    def generate_avatar_url(self):
-        """Tạo URL avatar ngẫu nhiên"""
-        # Danh sách các avatar mẫu
-        avatar_templates = [
-            "https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/male/45.png",
-            "https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/female/45.png",
-            "https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/male/85.png",
-            "https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/female/85.png",
-            # Thêm nhiều avatar mẫu khác nếu muốn
-        ]
-        return random.choice(avatar_templates)
-
     def is_admin(self):
         return self.role == 'admin'
 
@@ -53,17 +36,17 @@ class User(UserMixin, db.Model):
 
     @property
     def account_status(self):
-        if not self.is_active:
-            return 'banned'
-        return 'active'
+        return 'banned' if not self.is_active else 'active'
 
     def generate_avatar_seed(self):
-        """Tạo seed cho avatar dựa trên username và role"""
         seed = f"{self.username}_{self.role}_{self.id}"
         return hashlib.md5(seed.encode()).hexdigest()
 
     def has_saved_post(self, post_id):
-        return SavedPost.query.filter_by(
-            user_id=self.id,
-            post_id=post_id
-        ).first() is not None 
+        from app.models.saved_post import SavedPost  # import tại đây để tránh circular import
+        return SavedPost.query.filter_by(user_id=self.id, post_id=post_id).first() is not None
+
+    @staticmethod
+    def generate_random_avatar():
+       
+        return 'https://avatar.iran.liara.run/public'
