@@ -49,7 +49,7 @@ def create_app():
         if not inspector.has_table('user'):
             db.create_all()
             from app.utils.admin import create_initial_admin
-            create_initial_admin()
+            # create_initial_admin()
             print("Database initialized with initial admin")
         else:
             print("Database already exists, skipping initialization")
