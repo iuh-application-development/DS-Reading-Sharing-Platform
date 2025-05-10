@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify, session
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.models.user import User
@@ -28,105 +28,207 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# @bp.route('/login', methods=['GET', 'POST'])
+# def login():
+#     if current_user.is_authenticated:
+#         return redirect(url_for('main.index'))
+        
+#     if request.method == 'POST':
+#         login_id = request.form.get('login_id')  # Có thể là username hoặc email
+#         password = request.form.get('password')
+#         remember = request.form.get('remember', False)
+        
+#         # Tìm user theo username hoặc email
+#         user = User.query.filter(
+#             (User.username == login_id) | (User.email == login_id)
+#         ).first()
+        
+#         if user and check_password_hash(user.password_hash, password):
+#             if not user.is_active:
+#                 flash('Tài khoản của bạn đã bị vô hiệu hóa.', 'error')
+#                 return redirect(url_for('auth.login'))
+                
+#             login_user(user, remember=remember)
+#             user.last_login = datetime.utcnow()
+#             db.session.commit()
+            
+#             next_page = request.args.get('next')
+#             return redirect(next_page or url_for('main.index'))
+#         else:
+#             flash('Tên đăng nhập/email hoặc mật khẩu không đúng.', 'error')
+    
+#     return render_template('auth/login.html')
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
-        
-    if request.method == 'POST':
-        login_id = request.form.get('login_id')  # Có thể là username hoặc email
-        password = request.form.get('password')
-        remember = request.form.get('remember', False)
-        
-        # Tìm user theo username hoặc email
-        user = User.query.filter(
-            (User.username == login_id) | (User.email == login_id)
-        ).first()
-        
-        if user and check_password_hash(user.password_hash, password):
-            if not user.is_active:
-                flash('Tài khoản của bạn đã bị vô hiệu hóa.', 'error')
-                return redirect(url_for('auth.login'))
-                
-            login_user(user, remember=remember)
-            user.last_login = datetime.utcnow()
-            db.session.commit()
-            
-            next_page = request.args.get('next')
-            return redirect(next_page or url_for('main.index'))
-        else:
-            flash('Tên đăng nhập/email hoặc mật khẩu không đúng.', 'error')
-    
     return render_template('auth/login.html')
-@bp.route('/reset-password', methods=['POST','GET'])
-def reset_password():
-    if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
-    if request.method == 'POST':
-        email = request.form.get('email')
-        print(email)
-        user = User.query.filter_by(email=email).first()
-        if not user:
-            flash('Email không tồn tại','warning')
-    return render_template('auth/reset_password.html')
+
+# @bp.route('/register', methods=['GET', 'POST'])
+# def register():
+#     if current_user.is_authenticated:
+#         return redirect(url_for('main.index'))
+        
+#     if request.method == 'POST':
+#         username = request.form.get('username')
+#         email = request.form.get('email')
+#         password = request.form.get('password')
+#         confirm_password = request.form.get('confirm_password')
+#         full_name = request.form.get('full_name')
+#         phone = request.form.get('phone')
+#         date_of_birth = request.form.get('date_of_birth')
+#         gender = request.form.get('gender')
+#         bio = request.form.get('bio')
+        
+#         # Kiểm tra mật khẩu xác nhận
+#         if password != confirm_password:
+#             flash('Mật khẩu xác nhận không khớp.', 'error')
+#             return redirect(url_for('auth.register'))
+            
+#         # Kiểm tra username đã tồn tại
+#         if User.query.filter_by(username=username).first():
+#             flash('Tên đăng nhập đã được sử dụng.', 'error')
+#             return redirect(url_for('auth.register'))
+            
+#         # Kiểm tra email đã tồn tại
+#         if User.query.filter_by(email=email).first():
+#             flash('Email đã được sử dụng.', 'error')
+#             return redirect(url_for('auth.register'))
+        
+#         # Tạo user mới
+#         new_user = User(
+#             username=username,
+#             email=email,
+#             password_hash=generate_password_hash(password),
+#             full_name=full_name,
+#             phone=phone,
+#             date_of_birth=datetime.strptime(date_of_birth, '%Y-%m-%d').date() if date_of_birth else None,
+#             gender=gender,
+#             bio=bio
+#         )
+        
+#         # Lấy avatar ngẫu nhiên khi tạo user
+#         new_user.random_avatar_url = get_random_avatar()
+#         new_user.avatar_updated_at = datetime.utcnow()
+        
+#         try:
+#             db.session.add(new_user)
+#             db.session.commit()
+#             flash('Đăng ký thành công! Vui lòng đăng nhập.', 'success')
+#             return redirect(url_for('auth.login'))
+#         except Exception as e:
+#             db.session.rollback()
+#             flash('Có lỗi xảy ra. Vui lòng thử lại.', 'error')
+            
+#     return render_template('auth/register.html')
+
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
-    if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
-        
-    if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-        full_name = request.form.get('full_name')
-        phone = request.form.get('phone')
-        date_of_birth = request.form.get('date_of_birth')
-        gender = request.form.get('gender')
-        bio = request.form.get('bio')
-        
-        # Kiểm tra mật khẩu xác nhận
-        if password != confirm_password:
-            flash('Mật khẩu xác nhận không khớp.', 'error')
-            return redirect(url_for('auth.register'))
-            
-        # Kiểm tra username đã tồn tại
-        if User.query.filter_by(username=username).first():
-            flash('Tên đăng nhập đã được sử dụng.', 'error')
-            return redirect(url_for('auth.register'))
-            
-        # Kiểm tra email đã tồn tại
-        if User.query.filter_by(email=email).first():
-            flash('Email đã được sử dụng.', 'error')
-            return redirect(url_for('auth.register'))
-        
-        # Tạo user mới
-        new_user = User(
-            username=username,
-            email=email,
-            password_hash=generate_password_hash(password),
-            full_name=full_name,
-            phone=phone,
-            date_of_birth=datetime.strptime(date_of_birth, '%Y-%m-%d').date() if date_of_birth else None,
-            gender=gender,
-            bio=bio
-        )
-        
-        # Lấy avatar ngẫu nhiên khi tạo user
-        new_user.random_avatar_url = get_random_avatar()
-        new_user.avatar_updated_at = datetime.utcnow()
-        
-        try:
-            db.session.add(new_user)
-            db.session.commit()
-            flash('Đăng ký thành công! Vui lòng đăng nhập.', 'success')
-            return redirect(url_for('auth.login'))
-        except Exception as e:
-            db.session.rollback()
-            flash('Có lỗi xảy ra. Vui lòng thử lại.', 'error')
-            
+    
     return render_template('auth/register.html')
+@bp.route('/firebase-login', methods=['POST'])
+def firebase_login():
+    if not request.is_json:
+        flash('Request phải là JSON.', 'error')
+        return jsonify({'redirect': url_for('auth.login')}), 400
 
+    data = request.get_json(silent=True) or {}
+    status = data.get('status')
+    message = data.get('message', '')
+    auth_header = request.headers.get('Authorization', '')
+
+    if status == 'success' and auth_header.startswith('Bearer '):
+        id_token = auth_header.split(' ', 1)[1]
+        try:
+            decoded = auth.verify_id_token(id_token)
+            firebase_uid = decoded['uid']
+            email = decoded.get('email')
+
+            # Tìm user dựa trên firebase_uid (không tạo mới)
+            user = User.query.filter_by(firebase_uid=firebase_uid).first()
+            if user:
+                login_user(user)
+                flash('Đăng nhập thành công! 🚀', 'success')
+                return jsonify({'redirect': url_for('main.index')}), 200
+            else:
+                flash('Tài khoản chưa được đăng ký trên hệ thống.', 'error')
+                return jsonify({'redirect': url_for('auth.register')}), 401
+
+        except auth.InvalidIdTokenError:
+            current_app.logger.warning('Firebase: Invalid ID token')
+            flash('Token không hợp lệ.', 'error')
+        except auth.ExpiredIdTokenError:
+            current_app.logger.warning('Firebase: Expired ID token')
+            flash('Phiên đã hết hạn, vui lòng đăng nhập lại.', 'error')
+        except Exception as e:
+            current_app.logger.exception(f'Firebase verify error: {e}')
+            flash('Xác thực Firebase thất bại.', 'error')
+
+    else:
+        flash(message or 'Thông tin đăng nhập không chính xác.', 'error')
+
+    return jsonify({'redirect': url_for('auth.login')}), 401
+
+
+
+
+
+@bp.route('/firebase-register', methods=['POST'])
+def firebase_register_status():
+    data = request.get_json(silent=True) or {}
+    status = data.get('status')
+    message = data.get('message')
+    first_name = data.get('first_name')
+    last_name = data.get('last_name')
+
+
+    if status == 'success':
+        id_token = data.get('idToken')
+        if not id_token:
+            flash('Thiếu idToken để lưu thông tin.', 'error')
+            return jsonify({'redirect': url_for('auth.register')}), 400
+
+        try:
+            decoded = auth.verify_id_token(id_token)
+            uid = decoded['uid']
+            email = decoded.get('email')
+
+            # Check nếu user chưa tồn tại
+            existing_user = User.query.filter_by(firebase_uid=uid).first()
+            if not existing_user:
+                new_user = User(
+                    firebase_uid=uid,
+                    email=email,
+                    username=email.split('@')[0],
+                    full_name=f"{last_name} {first_name}"
+                )
+                db.session.add(new_user)
+                db.session.commit()
+            else:
+                flash('Tài khoản đã tồn tại.', 'info')
+
+
+            return jsonify({'redirect': url_for('auth.login')}), 200
+
+        except Exception as e:
+            current_app.logger.exception(f'Firebase verify error: {e}')
+            flash('Xác thực Firebase thất bại.', 'error')
+            return jsonify({'redirect': url_for('auth.register')}), 401
+
+    else:
+        flash(message or 'Đăng ký thất bại.', 'error')
+        return jsonify({'redirect': url_for('auth.register')}), 400
+    
+@bp.route('/forgotPassword',methods = ['GET', 'POST'])
+def forgotPassword():
+    if request.method == 'POST':
+        data = request.get_json(silent=True) or {}
+        status = data.get('status')
+        
+        if status == 'success':
+            flash('Kiểm tra địa chỉ email của bạn','success')
+        else:
+            flash(data.get('message'),'error')
+            return jsonify({'redirect': url_for('auth.forgotPassword')})
+    return render_template('auth/forgotPassword.html')
 @bp.route('/logout')
 @login_required
 def logout():
