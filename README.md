@@ -211,7 +211,7 @@ docker-compose up --build
 ```
 
 4️⃣ **Truy cập ứng dụng**
-* Web: http://localhost:5000
+* Web: http://localhost:5001
 * Tài khoản admin mặc định:
   * Username: admin
   * Password: admin123

@@ -10,8 +10,18 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 import os
 from app.utils.pexels import get_random_avatar
+from firebase_admin import credentials, firestore, auth
+import firebase_admin
+from flask import jsonify
+
 
 bp = Blueprint('auth', __name__)
+
+# Tao firebase-admin app
+cred = credentials.Certificate("firebase-auth.json")
+print(cred)
+firebase_admin.initialize_app(cred)
+firebase_db  = firestore.client()
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -48,7 +58,17 @@ def login():
             flash('Tên đăng nhập/email hoặc mật khẩu không đúng.', 'error')
     
     return render_template('auth/login.html')
-
+@bp.route('/reset-password', methods=['POST','GET'])
+def reset_password():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.index'))
+    if request.method == 'POST':
+        email = request.form.get('email')
+        print(email)
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            flash('Email không tồn tại','warning')
+    return render_template('auth/reset_password.html')
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
@@ -229,6 +249,57 @@ def select_suggestion():
     if suggestion:
         return redirect(url_for('auth.search_posts', query=suggestion))
     return redirect(url_for('auth.search_posts'))
+
+@bp.route('/auth', methods=['POST'])
+def authorize():
+    token = request.headers.get('Authorization')
+    if not token or not token.startswith('Bearer '):
+        return jsonify({'message': 'Unauthorized'}), 401
+
+    try:
+        # Xác minh token
+        token = token[7:]
+        decoded_token = auth.verify_id_token(token, check_revoked=True, clock_skew_seconds=60)
+        
+        # print("Decoded token:", decoded_token)
+        # print(f"Headers: {request.headers}")
+        # print(f"Payload: {request.get_json()}")
+
+        data = request.get_json()
+        email = data.get("email")
+        full_name = data.get('full_name')
+        phone = data.get('phone')
+
+        # photo = data.get('photo') 
+
+        user = User.query.filter_by(email=email).first()
+
+        if not user:
+            user = User(
+                    username=email,
+                    email=email,
+                    password_hash=generate_password_hash(""),
+                    full_name=full_name,
+                    phone=phone,
+                    date_of_birth=None,
+                    gender=None,
+                    bio=None,
+                    avatar_url=User.generate_random_avatar(),  
+                    created_at=datetime.utcnow()
+                )
+            db.session.add(user)
+            db.session.commit()
+
+        user.last_login = datetime.utcnow()
+
+        login_user(user, remember=True)
+        db.session.commit()
+
+        return jsonify({'status': 'success'})
+
+    except Exception as e:
+        print("Lỗi xác thực:", e)
+        return jsonify({'message': str(e)}), 401 
 
 @bp.route('/upload-avatar', methods=['POST'])
 @login_required
