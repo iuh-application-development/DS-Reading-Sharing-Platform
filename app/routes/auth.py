@@ -235,71 +235,18 @@ def logout():
     logout_user()
     return redirect(url_for('main.index'))
 
-@bp.route('/profile', methods=['GET', 'POST'])
-@login_required
-def profile():
-    if request.method == 'POST':
-        try:
-            # Cập nhật thông tin profile
-            current_user.full_name = request.form.get('full_name')
-            current_user.bio = request.form.get('bio')
-            current_user.phone = request.form.get('phone')
-            
-            # Xử lý ngày sinh
-            date_of_birth = request.form.get('date_of_birth')
-            if date_of_birth:
-                current_user.date_of_birth = datetime.strptime(date_of_birth, '%Y-%m-%d')
-            
-            current_user.gender = request.form.get('gender')
-
-            # Xử lý upload avatar nếu có
-            if 'avatar' in request.files:
-                file = request.files['avatar']
-                if file and file.filename != '' and allowed_file(file.filename):
-                    # Tạo tên file an toàn
-                    filename = secure_filename(file.filename)
-                    # Thêm timestamp vào tên file để tránh trùng lặp
-                    filename = f"{current_user.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
-                    
-                    # Lưu file
-                    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'avatars')
-                    os.makedirs(upload_folder, exist_ok=True)
-                    file_path = os.path.join(upload_folder, filename)
-                    file.save(file_path)
-                    
-                    # Xóa avatar cũ nếu có
-                    if current_user.avatar_filename:
-                        old_file_path = os.path.join(upload_folder, current_user.avatar_filename)
-                        if os.path.exists(old_file_path):
-                            os.remove(old_file_path)
-                    
-                    # Cập nhật thông tin avatar trong database
-                    current_user.avatar_filename = filename
-                    current_user.avatar_url = None
-
-            db.session.commit()
-            
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({
-                    'success': True,
-                    'message': 'Cập nhật thông tin thành công!',
-                    'avatar_url': url_for('static', filename=current_user.get_avatar_path()) if current_user.avatar_filename else current_user.avatar_url
-                })
-            
-            flash('Cập nhật thông tin thành công!', 'success')
-            return redirect(url_for('auth.profile'))
-            
-        except Exception as e:
-            db.session.rollback()
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({
-                    'success': False,
-                    'error': 'Có lỗi xảy ra khi cập nhật thông tin.'
-                }), 400
-                
-            flash('Có lỗi xảy ra khi cập nhật thông tin.', 'error')
-            
-    return render_template('auth/profile.html')
+@bp.route('/profile/<username>')
+def profile(username):
+    """Xem profile của người dùng"""
+    user = User.query.filter_by(username=username).first_or_404()
+    page = request.args.get('page', 1, type=int)
+    
+    # Lấy danh sách bài viết của người dùng
+    posts = Post.query.filter_by(user_id=user.id)\
+        .order_by(Post.created_at.desc())\
+        .paginate(page=page, per_page=10, error_out=False)
+    
+    return render_template('auth/user_profile.html', user=user, posts=posts)
 
 @bp.route('/refresh-avatar', methods=['POST'])
 @login_required
@@ -454,4 +401,58 @@ def upload_avatar():
         flash('File không hợp lệ. Chỉ chấp nhận file ảnh (PNG, JPG, JPEG, GIF).', 'error')
         
     return redirect(url_for('auth.profile'))
+
+@bp.route('/edit_profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    if request.method == 'POST':
+        current_user.full_name = request.form.get('full_name')
+        current_user.phone = request.form.get('phone')
+        current_user.date_of_birth = datetime.strptime(request.form.get('date_of_birth'), '%Y-%m-%d') if request.form.get('date_of_birth') else None
+        current_user.gender = request.form.get('gender')
+        current_user.bio = request.form.get('bio')
+        
+        # Xử lý avatar
+        if 'avatar' in request.files:
+            file = request.files['avatar']
+            if file and file.filename:
+                try:
+                    # Tạo tên file an toàn
+                    filename = secure_filename(file.filename)
+                    # Thêm timestamp vào tên file để tránh trùng lặp
+                    filename = f"{current_user.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
+                    
+                    # Lưu file
+                    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'avatars')
+                    os.makedirs(upload_folder, exist_ok=True)
+                    file_path = os.path.join(upload_folder, filename)
+                    
+                    # Xóa avatar cũ nếu có
+                    if current_user.avatar_filename:
+                        old_file_path = os.path.join(upload_folder, current_user.avatar_filename)
+                        if os.path.exists(old_file_path):
+                            os.remove(old_file_path)
+                    
+                    # Lưu avatar mới
+                    file.save(file_path)
+                    
+                    # Cập nhật thông tin avatar trong database
+                    current_user.avatar_filename = filename
+                    current_user.avatar_url = None  # Reset avatar_url khi có avatar_filename
+                    
+                except Exception as e:
+                    print(f"Error uploading avatar: {str(e)}")
+                    flash('Có lỗi xảy ra khi cập nhật avatar.', 'error')
+                    return redirect(url_for('auth.edit_profile'))
+        
+        try:
+            db.session.commit()
+            flash('Thông tin cá nhân đã được cập nhật thành công!', 'success')
+            return redirect(url_for('auth.profile', username=current_user.username))
+        except Exception as e:
+            db.session.rollback()
+            flash('Có lỗi xảy ra khi cập nhật thông tin.', 'error')
+            return redirect(url_for('auth.edit_profile'))
+    
+    return render_template('auth/edit_profile.html', user=current_user)
 
