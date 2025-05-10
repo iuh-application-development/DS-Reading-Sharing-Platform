@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mt-4 mx-auto max-w-4xl">
+    <h2 class="text-2xl font-bold text-indigo-800 mb-6 text-center">
+        Kết quả tìm kiếm cho "<span class="text-orange-600">{{ query }}</span>"
+        {% if search_type != 'all' %}
+        <span class="text-base font-normal text-gray-500">
+            (Tìm theo {{ {'title': 'bài viết', 'author': 'tác giả', 'hashtag': 'hashtag'}[search_type] }})
+        </span>
+        {% endif %}
+    </h2>
+
+    {# Tác giả #}
+    {% if search_type == 'author' or (search_type == 'all' and authors) %}
+    <div class="mb-8">
+        <div class="flex items-center mb-2">
+            <i class="fas fa-user text-indigo-500 mr-2"></i>
+            <h3 class="text-lg font-semibold text-indigo-700">Tác giả</h3>
+        </div>
+        {% if authors %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for author in authors %}
+            <div class="bg-white rounded-xl shadow hover:shadow-lg p-4 flex items-center border border-indigo-100">
+                <img src="{{ author.avatar_url or url_for('static', filename=author.get_avatar_path()) }}" alt="{{ author.username }}" class="h-14 w-14 rounded-full object-cover ring-2 ring-indigo-200">
+                <div class="ml-4 flex-1">
+                    <div class="font-bold text-lg text-indigo-700">{{ author.full_name or author.username }}</div>
+                    <div class="text-gray-500">@{{ author.username }}</div>
+                    <a href="{{ url_for('main.my_posts') }}?user_id={{ author.id }}" class="text-blue-500 hover:underline text-sm">Xem bài viết</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-gray-400 italic text-center py-4">Không tìm thấy tác giả nào.</div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {# Bài viết theo hashtag #}
+    {% if search_type == 'hashtag' or (search_type == 'all' and hashtag_posts) %}
+    <div class="mb-8">
+        <div class="flex items-center mb-2">
+            <i class="fas fa-hashtag text-orange-500 mr-2"></i>
+            <h3 class="text-lg font-semibold text-orange-700">Bài viết theo hashtag</h3>
+        </div>
+        {% set posts_to_show = hashtag_posts if search_type == 'all' else posts %}
+        {% if posts_to_show %}
+        <div class="space-y-6">
+            {% for post in posts_to_show %}
+            <div class="bg-white rounded-xl shadow hover:shadow-lg p-6 border border-orange-100">
+                <div class="flex items-center mb-2">
+                    <img src="{{ post.author.avatar_url }}" alt="{{ post.author.username }}" class="h-10 w-10 rounded-full object-cover ring-2 ring-orange-200">
+                    <div class="ml-3">
+                        <span class="font-semibold text-indigo-700">{{ post.author.full_name }}</span>
+                        <span class="text-xs text-gray-400 ml-2"><i class="far fa-clock mr-1"></i>{{ post.created_at.strftime('%d/%m/%Y') }}</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('main.view_post', post_id=post.id) }}" class="block text-xl font-bold text-gray-900 hover:text-orange-500 mb-2">{{ post.title }}</a>
+                <p class="text-gray-600 mb-2">{{ post.content[:150] }}{% if post.content|length > 150 %}...{% endif %}</p>
+                <div class="flex flex-wrap gap-2 mb-2">
+                    {% for tag in post.get_tags_list() %}
+                    <span class="px-3 py-1 bg-gradient-to-r from-orange-500/10 to-blue-500/10 text-gray-700 text-sm rounded-full flex items-center">
+                        <i class="fas fa-tag text-orange-500 mr-1 text-xs"></i>{{ tag }}
+                    </span>
+                    {% endfor %}
+                </div>
+                <div class="flex justify-between items-center mt-2">
+                    <a href="{{ post.source_link }}" target="_blank" class="flex items-center text-blue-500 hover:text-blue-600 text-sm"><i class="fas fa-link mr-1"></i>Nguồn</a>
+                    <a href="{{ url_for('main.view_post', post_id=post.id) }}" class="text-orange-600 hover:underline text-sm">Xem chi tiết</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-gray-400 italic text-center py-4">Không tìm thấy bài viết nào với hashtag này.</div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {# Bài viết #}
+    {% if search_type == 'title' or (search_type == 'all' and posts) %}
+    <div class="mb-8">
+        <div class="flex items-center mb-2">
+            <i class="fas fa-file-alt text-blue-500 mr-2"></i>
+            <h3 class="text-lg font-semibold text-blue-700">Bài viết</h3>
+        </div>
+        {% if posts %}
+        <div class="space-y-6">
+            {% for post in posts %}
+            <div class="bg-white rounded-xl shadow hover:shadow-lg p-6 border border-blue-100">
+                <div class="flex items-center mb-2">
+                    <img src="{{ post.author.avatar_url }}" alt="{{ post.author.username }}" class="h-10 w-10 rounded-full object-cover ring-2 ring-blue-200">
+                    <div class="ml-3">
+                        <span class="font-semibold text-indigo-700">{{ post.author.full_name }}</span>
+                        <span class="text-xs text-gray-400 ml-2"><i class="far fa-clock mr-1"></i>{{ post.created_at.strftime('%d/%m/%Y') }}</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('main.view_post', post_id=post.id) }}" class="block text-xl font-bold text-gray-900 hover:text-blue-500 mb-2">{{ post.title }}</a>
+                <p class="text-gray-600 mb-2">{{ post.content[:150] }}{% if post.content|length > 150 %}...{% endif %}</p>
+                <div class="flex flex-wrap gap-2 mb-2">
+                    {% for tag in post.get_tags_list() %}
+                    <span class="px-3 py-1 bg-gradient-to-r from-orange-500/10 to-blue-500/10 text-gray-700 text-sm rounded-full flex items-center">
+                        <i class="fas fa-tag text-orange-500 mr-1 text-xs"></i>{{ tag }}
+                    </span>
+                    {% endfor %}
+                </div>
+                <div class="flex justify-between items-center mt-2">
+                    <a href="{{ post.source_link }}" target="_blank" class="flex items-center text-blue-500 hover:text-blue-600 text-sm"><i class="fas fa-link mr-1"></i>Nguồn</a>
+                    <a href="{{ url_for('main.view_post', post_id=post.id) }}" class="text-blue-600 hover:underline text-sm">Xem chi tiết</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-gray-400 italic text-center py-4">Không tìm thấy bài viết nào.</div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
