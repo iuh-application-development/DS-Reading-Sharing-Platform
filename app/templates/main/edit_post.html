@@ -19,8 +19,8 @@
             {% endif %}
         {% endwith %}
 
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <form method="POST" action="{{ url_for('main.edit_post', post_id=post.id) }}" class="p-8">
+        <div class="bg-white rounded-xl shadow-lg">
+            <form method="POST" action="{{ url_for('main.edit_post', post_id=post.id) }}" enctype="multipart/form-data" class="p-8">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <!-- Nguồn bài viết -->
                     <div class="space-y-6">
@@ -31,15 +31,40 @@
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Link bài viết gốc</label>
-                            <input type="url" name="source_link" 
-                                   value="{{ post.source_link or '' }}"
+                            <input type="url" name="source_link" value="{{ post.source_link }}"
                                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all">
                         </div>
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nội dung gốc</label>
                             <textarea name="source_content" rows="10"
-                                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all">{{ post.source_content or '' }}</textarea>
+                                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all">{{ post.source_content }}</textarea>
+                        </div>
+
+                        <!-- Phần upload ảnh -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ảnh đính kèm</label>
+                            {% if post.image_url %}
+                            <div class="mb-4">
+                                <img src="{{ post.image_url }}" alt="Ảnh hiện tại" class="max-h-48 rounded-lg">
+                                <p class="text-sm text-gray-500 mt-2">Ảnh hiện tại</p>
+                            </div>
+                            {% endif %}
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
+                                <div class="space-y-1 text-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    <div class="flex text-sm text-gray-600">
+                                        <label for="image" class="relative cursor-pointer bg-white rounded-md font-medium text-orange-600 hover:text-orange-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-orange-500">
+                                            <span>Tải ảnh mới lên</span>
+                                            <input id="image" name="image" type="file" class="sr-only" accept="image/*">
+                                        </label>
+                                        <p class="pl-1">hoặc kéo thả vào đây</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500">PNG, JPG, GIF tối đa 10MB</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -52,8 +77,7 @@
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Tiêu đề</label>
-                            <input type="text" name="title" required
-                                   value="{{ post.title }}"
+                            <input type="text" name="title" required value="{{ post.title }}"
                                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all">
                         </div>
                         
@@ -65,8 +89,7 @@
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Tags</label>
-                            <input type="text" name="tags"
-                                   value="{{ post.tags }}"
+                            <input type="text" name="tags" value="{{ post.tags }}"
                                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"
                                    placeholder="Ví dụ: công nghệ, tin tức, khoa học">
                             <p class="mt-1 text-sm text-gray-500">Phân cách các tags bằng dấu phẩy</p>
@@ -74,32 +97,46 @@
                     </div>
                 </div>
 
-                <div class="mt-8 flex items-center justify-between">
-                    <a href="{{ url_for('main.view_post', post_id=post.id) }}"
-                       class="text-gray-600 hover:text-gray-800 transition-colors flex items-center">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        Quay lại
-                    </a>
-                    
-                    <div class="flex space-x-4">
-                        <select name="visibility" readonly class="me-8 px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500">
-                            
-                            <option value=0 {% if post.visibility == 0 %}selected{% endif %}>
-                                 Công khai                      
-                            </option>
-                            <option value=1 {% if post.visibility == 1 %}selected{% endif %}>
-                                 Chỉ mình tôi
-                            </option>
-                        </select>
-                        <button type="submit"
-                                class="bg-gradient-to-r from-orange-500 to-blue-500 px-6 py-2.5 rounded-lg text-white font-semibold hover:shadow-lg transition-all duration-300 flex items-center">
-                            <i class="fas fa-save mr-2"></i>
-                            Lưu thay đổi
-                        </button>
-                    </div>
+                <div class="mt-8 flex justify-end">
+                    <select name="visibility" readonly class="me-8 px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500">
+                        <option value="0" {% if post.visibility == 0 %}selected{% endif %}>
+                            Công khai
+                        </option>
+                        <option value="1" {% if post.visibility == 1 %}selected{% endif %}>
+                            Chỉ mình tôi
+                        </option>
+                    </select>
+                  
+                    <button type="submit" class="bg-gradient-to-r from-orange-500 to-red-500 px-6 py-2.5 rounded-lg text-white font-semibold hover:shadow-lg transition-all duration-300 flex items-center">
+                      <i class="fas fa-save mr-2"></i>
+                      Lưu thay đổi
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<!-- Thêm JavaScript để xử lý preview ảnh -->
+<script>
+document.getElementById('image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.createElement('img');
+            preview.src = e.target.result;
+            preview.className = 'mt-2 max-h-48 rounded-lg';
+            
+            const container = document.querySelector('.border-dashed');
+            const existingPreview = container.querySelector('img');
+            if (existingPreview) {
+                container.removeChild(existingPreview);
+            }
+            container.appendChild(preview);
+        }
+        reader.readAsDataURL(file);
+    }
+});
+</script>
 {% endblock %} 

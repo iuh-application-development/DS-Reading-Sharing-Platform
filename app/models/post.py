@@ -10,6 +10,7 @@ class Post(db.Model):
     source_link = db.Column(db.String(500))
     source_content = db.Column(db.Text)
     visibility = db.Column(db.Integer, default=0) #Định__mmber # 0: Công khai, 1: Hạn chế 
+    image_url = db.Column(db.String(500))  # Thêm trường lưu đường dẫn ảnh
     
     # Metadata
     status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
@@ -23,6 +24,7 @@ class Post(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     author = db.relationship('User', backref=db.backref('posts', lazy=True))
     likes = db.relationship('Like', backref='post', lazy='dynamic')
+    comments = db.relationship('Comment', backref='post', lazy='dynamic')
 
     
     def __repr__(self):
