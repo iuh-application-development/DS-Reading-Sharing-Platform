@@ -5,7 +5,7 @@ from app.models.post import Post
 from app.models.user import User
 from app.models.comment import Comment
 from app.models.saved_post import SavedPost
-
+# from app.models.notification import Notification
 from app import db
 from datetime import datetime
 
@@ -249,3 +249,12 @@ def toggle_like(post_id):
         except Exception as e:
             db.session.rollback()
             flash('Có lỗi xảy ra', 'error')
+
+@bp.route('/notifications')
+@login_required
+def notifications():
+    notifications = [
+        {'content': 'Bạn vừa được theo dõi!', 'is_read': False, 'created_at': datetime.utcnow()},
+        {'content': 'Ai đó đã tag bạn trong bình luận.', 'is_read': True, 'created_at': datetime.utcnow()},
+    ]
+    return render_template('main/notifications.html', notifications=notifications)
