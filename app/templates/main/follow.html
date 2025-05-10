@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <!-- Tab Navigation -->
+            <div class="border-b border-gray-200">
+                <nav class="flex -mb-px">
+                    <button onclick="switchTab('followers')" 
+                            id="followers-tab"
+                            class="w-1/2 py-4 px-6 text-center border-b-2 font-medium text-sm transition-colors duration-200
+                                   {% if active_tab == 'followers' %}border-orange-500 text-orange-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %}">
+                        <i class="fas fa-users mr-2"></i>
+                        Người theo dõi
+                    </button>
+                    <button onclick="switchTab('following')"
+                            id="following-tab"
+                            class="w-1/2 py-4 px-6 text-center border-b-2 font-medium text-sm transition-colors duration-200
+                                   {% if active_tab == 'following' %}border-orange-500 text-orange-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %}">
+                        <i class="fas fa-user-plus mr-2"></i>
+                        Đang theo dõi
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Followers Tab Content -->
+            <div id="followers-content" class="{% if active_tab == 'followers' %}block{% else %}hidden{% endif %}">
+                <div class="divide-y divide-gray-200">
+                    {% if followers %}
+                        {% for follow in followers %}
+                        <div class="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center space-x-4">
+                                <img src="{% if follow.follower.avatar_filename %}{{ url_for('static', filename=follow.follower.get_avatar_path()) }}{% elif follow.follower.avatar_url %}{{ follow.follower.avatar_url }}{% else %}{{ url_for('static', filename='img/default-avatar.png') }}{% endif %}" 
+                                     alt="{{ follow.follower.username }}" 
+                                     class="w-12 h-12 rounded-full object-cover">
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">{{ follow.follower.full_name or follow.follower.username }}</h3>
+                                    <p class="text-sm text-gray-500">@{{ follow.follower.username }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <a href="{{ url_for('auth.profile', username=follow.follower.username) }}" 
+                                   class="text-blue-600 hover:text-blue-800">
+                                    Xem trang cá nhân
+                                </a>
+                                {% if current_user.id != follow.follower.id %}
+                                <button onclick="toggleFollow({{ follow.follower.id }})"
+                                        class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                        id="follow-btn-{{ follow.follower.id }}">
+                                    {% if follow.follower in current_user.following %}
+                                    <span class="text-gray-600 hover:text-red-600">Unfollow</span>
+                                    {% else %}
+                                    <span class="text-blue-600 hover:text-blue-800">Follow</span>
+                                    {% endif %}
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="p-6 text-center text-gray-500">
+                            <i class="far fa-user text-4xl mb-4"></i>
+                            <p>Chưa có ai theo dõi bạn</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Following Tab Content -->
+            <div id="following-content" class="{% if active_tab == 'following' %}block{% else %}hidden{% endif %}">
+                <div class="divide-y divide-gray-200">
+                    {% if following %}
+                        {% for follow in following %}
+                        <div class="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center space-x-4">
+                                <img src="{% if follow.followed.avatar_filename %}{{ url_for('static', filename=follow.followed.get_avatar_path()) }}{% elif follow.followed.avatar_url %}{{ follow.followed.avatar_url }}{% else %}{{ url_for('static', filename='img/default-avatar.png') }}{% endif %}" 
+                                     alt="{{ follow.followed.username }}" 
+                                     class="w-12 h-12 rounded-full object-cover">
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">{{ follow.followed.full_name or follow.followed.username }}</h3>
+                                    <p class="text-sm text-gray-500">@{{ follow.followed.username }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <a href="{{ url_for('auth.profile', username=follow.followed.username) }}" 
+                                   class="text-blue-600 hover:text-blue-800">
+                                    Xem trang cá nhân
+                                </a>
+                                <button onclick="toggleFollow({{ follow.followed.id }})"
+                                        class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                        id="follow-btn-{{ follow.followed.id }}">
+                                    <span class="text-gray-600 hover:text-red-600">Unfollow</span>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="p-6 text-center text-gray-500">
+                            <i class="far fa-user text-4xl mb-4"></i>
+                            <p>Bạn chưa theo dõi ai</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function switchTab(tab) {
+    // Update URL without page reload
+    const url = new URL(window.location);
+    url.searchParams.set('tab', tab);
+    window.history.pushState({}, '', url);
+
+    // Update active tab
+    document.getElementById('followers-tab').classList.toggle('border-orange-500', tab === 'followers');
+    document.getElementById('followers-tab').classList.toggle('text-orange-600', tab === 'followers');
+    document.getElementById('following-tab').classList.toggle('border-orange-500', tab === 'following');
+    document.getElementById('following-tab').classList.toggle('text-orange-600', tab === 'following');
+
+    // Show/hide content
+    document.getElementById('followers-content').classList.toggle('hidden', tab !== 'followers');
+    document.getElementById('following-content').classList.toggle('hidden', tab !== 'following');
+}
+
+function toggleFollow(userId) {
+    const button = document.getElementById(`follow-btn-${userId}`);
+    const isFollowing = button.textContent.trim() === 'Unfollow';
+    const url = isFollowing ? `/unfollow/${userId}` : `/follow/${userId}`;
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (isFollowing) {
+                button.innerHTML = '<span class="text-blue-600 hover:text-blue-800">Follow</span>';
+            } else {
+                button.innerHTML = '<span class="text-gray-600 hover:text-red-600">Unfollow</span>';
+            }
+            showMessage(data.message, 'success');
+        } else {
+            showMessage(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('Có lỗi xảy ra', 'error');
+    });
+}
+
+function showMessage(message, type) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 flex items-center ${
+        type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+    }`;
+    messageDiv.innerHTML = `
+        <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-2"></i>
+        ${message}
+    `;
+    document.body.appendChild(messageDiv);
+    setTimeout(() => messageDiv.remove(), 3000);
+}
+
+// Initialize tab based on URL parameter
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTab = urlParams.get('tab') || 'followers';
+    switchTab(activeTab);
+});
+</script>
+{% endblock %} 
