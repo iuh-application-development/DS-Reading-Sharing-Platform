@@ -45,6 +45,18 @@ Hệ thống có cơ chế **quản trị viên (admin)** để giám sát nội
 
 * Lọc bài theo tag hoặc từ khóa.
 
+✅ **Quản lý follow** :
+
+* Theo dõi người dùng khác.
+* Xem danh sách người đang theo dõi và người theo dõi mình.
+* Nhận thông báo khi người theo dõi đăng bài mới.
+
+✅ **Đăng bài với hình ảnh** :
+
+* Đính kèm hình ảnh khi đăng bài.
+* Hỗ trợ nhiều định dạng ảnh (JPG, PNG, GIF).
+* Tự động resize ảnh để tối ưu hiệu suất.
+
 ---
 
 ### **3.2. Chức năng dành cho admin**
@@ -79,9 +91,9 @@ Hệ thống có cơ chế **quản trị viên (admin)** để giám sát nội
 
 ### **4.2. Bảng `posts` (quản lý bài viết)**
 
-| post_id  | user_id (FK) | title | content | source_link | tags | created_at |
-| -------- | ------------ | ----- | ------- | ----------- | ---- | ---------- |
-| INT (PK) | INT          | TEXT  | TEXT    | TEXT        | TEXT | TIMESTAMP  |
+| post_id  | user_id (FK) | title | content | source_link | tags | image_url | created_at |
+| -------- | ------------ | ----- | ------- | ----------- | ---- | --------- | ---------- |
+| INT (PK) | INT          | TEXT  | TEXT    | TEXT        | TEXT | TEXT      | TIMESTAMP  |
 
 ### **4.3. Bảng `comments` (bình luận bài viết)**
 
@@ -94,6 +106,26 @@ Hệ thống có cơ chế **quản trị viên (admin)** để giám sát nội
 | like_id  | post_id (FK) | user_id (FK) | created_at |
 | -------- | ------------ | ------------ | ---------- |
 | INT (PK) | INT          | INT          | TIMESTAMP  |
+
+### **4.5. Bảng `follows` (quản lý follow)**
+
+| follow_id | follower_id (FK) | followed_id (FK) | created_at |
+| --------- | ---------------- | ---------------- | ---------- |
+| INT (PK)  | INT              | INT              | TIMESTAMP  |
+
+* `follower_id`: ID của người theo dõi
+* `followed_id`: ID của người được theo dõi
+* Mỗi cặp follower_id và followed_id là duy nhất
+
+### **4.6. Bảng `images` (quản lý hình ảnh)**
+
+| image_id  | post_id (FK) | filename | file_path | created_at |
+| --------- | ------------ | -------- | --------- | ---------- |
+| INT (PK)  | INT          | TEXT     | TEXT      | TIMESTAMP  |
+
+* `filename`: Tên file gốc
+* `file_path`: Đường dẫn lưu trữ file
+* Mỗi bài viết có thể có nhiều hình ảnh
 
 ---
 
