@@ -47,7 +47,7 @@
         <div class="flex justify-between  select-none">
             <a href="{{url_for('auth.register')}}" class="dark:md:hover:text-blue-500 cursor-pointer">
                 Tạo tài khoản</a>
-            <a href="{{url_for('auth.reset_password')}}" class="ark:md:hover:text-blue-500 cursor-pointer">
+            <a href="{{url_for('auth.forgotPassword')}}" class="ark:md:hover:text-blue-500 cursor-pointer">
                 Quên mật khẩu</a>
         </div>
 
@@ -76,4 +76,6 @@
 
 </div>
 <script src="{{ url_for('static', filename='login-auth.js') }}" type="module"> </script>
+<script src="{{ url_for('static', filename='login.js') }}" type="module"> </script>
+
 {% endblock %}
