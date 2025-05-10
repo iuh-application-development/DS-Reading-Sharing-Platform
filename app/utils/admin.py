@@ -17,7 +17,7 @@ def create_initial_admin():
     admin = User(
         username=admin_username,
         email=admin_email,
-        password_hash=generate_password_hash(admin_password),
+        firebase_uid = 'admin1',
         role='admin',
         is_initial_admin=True
     )
@@ -29,3 +29,4 @@ def create_initial_admin():
     except Exception as e:
         db.session.rollback()
         print(f"Error creating initial admin: {str(e)}") 
+    pass
