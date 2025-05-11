@@ -8,6 +8,11 @@ class Config:
     # Cấu hình bảo mật
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-key-please-change-in-production'
     
+    # Google API Key
+    GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
+    if not GOOGLE_API_KEY:
+        print("Warning: GOOGLE_API_KEY not set in .env file")
+    
     # Cấu hình database - sử dụng PostgreSQL
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     if not SQLALCHEMY_DATABASE_URI:

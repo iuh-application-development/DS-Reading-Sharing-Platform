@@ -1,56 +1,74 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-    <h2 class="text-2xl font-bold mb-6 text-center">Đăng ký tài khoản</h2>
-    
+<div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8 fade-in transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+    <h2 class="text-2xl font-bold mb-6 text-center scale-in">Đăng ký tài khoản</h2>
+
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="mb-4 p-4 rounded {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div
+        class="mb-4 p-4 rounded {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
     {% endwith %}
-    
-    <form method="POST" action="{{ url_for('auth.register') }}" class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Thông tin đăng nhập -->
-            <div>
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="username">
-                    Tên đăng nhập *
-                </label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                       id="username" name="username" type="text" required>
+
+    <form method="POST" action="{{ url_for('auth.register') }}" class="space-y-6">
+        <div class="flex flex-col ">
+            <!-- Thông tin đăng ký -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm text-gray-700 font-bold mb-3 mt-3" for="last_name">
+                        Họ *
+                    </label>
+                    <input
+                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                        id="last_name" name="last_name" type="text" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm text-gray-700 font-bold mb-3 mt-3" for="first_name">
+                        Tên *
+                    </label>
+                    <input
+                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                        id="first_name" name="first_name" type="text" required>
+                </div>
             </div>
-            
+
+
             <div>
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
+                <label class="block text-sm text-gray-700 font-bold mb-3 mt-3" for="email">
                     Email *
                 </label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                       id="email" name="email" type="email" required>
+                <input
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                    id="email" name="email" type="email" required>
             </div>
-            
+
             <div>
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
+                <label class="block text-sm text-gray-700 font-bold mb-3 mt-3" for="password">
                     Mật khẩu *
                 </label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                       id="password" name="password" type="password" required>
+                <input
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                    id="password" name="password" type="password" required>
             </div>
-            
+
             <div>
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="confirm_password">
+                <label class="block text-gray-700 text-sm font-bold mb-3 mt-3" for="confirm_password">
                     Xác nhận mật khẩu *
                 </label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                       id="confirm_password" name="confirm_password" type="password" required>
+                <input
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                    id="confirm_password" name="confirm_password" type="password" required>
+                <p id="password-message" class="text-sm mt-2"></p>
             </div>
-            
+
             <!-- Thông tin cá nhân -->
-            <div>
+            <!-- <div>
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="full_name">
                     Họ và tên
                 </label>
@@ -94,18 +112,51 @@
             </label>
             <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                       id="bio" name="bio" rows="3"></textarea>
-        </div>
-        
-        <div class="flex items-center justify-between">
-            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    type="submit">
-                Đăng ký
-            </button>
-            <a class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
-               href="{{ url_for('auth.login') }}">
-                Đã có tài khoản? Đăng nhập
-            </a>
-        </div>
+        </div> -->
+
+            <div class="flex flex-col pt-4 ">
+                <button
+                    class=" flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 disabled:bg-gray-400 cursor-not-allowed hover:scale-105"
+                    type="submit" disabled>
+                    Đăng Ký
+                </button>
+
+                <span class='gap-1 pt-4 flex justify-end'>
+                    Đã có tài khoản?
+                    <a href="{{ url_for('auth.login') }}" class="dark:md:hover:text-blue-500 cursor-pointer">
+                        Đăng nhập
+                    </a>
+                </span>
+            </div>
+
     </form>
 </div>
-{% endblock %} 
+
+<script>
+    const password = document.getElementById('password');
+    const confirm_password = document.getElementById('confirm_password');
+    const message_password = document.getElementById('password-message');
+    const submitBtn = document.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    function checkPassword() {
+        if (password.value === "" || confirm_password.value === "") {
+            message_password.textContent = "";
+            submitBtn.disabled = true;
+            submitBtn.className = 'flex-1 bg-gray-400 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 cursor-not-allowed';
+        } else if (password.value === confirm_password.value) {
+            message_password.textContent = "";
+            submitBtn.disabled = false;
+            submitBtn.className = 'flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200';
+        } else {
+            message_password.textContent = "❌ Mật khẩu không khớp.";
+            message_password.style.color = "red";
+            submitBtn.disabled = true;
+            submitBtn.className = 'flex-1 bg-gray-400 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 cursor-not-allowed';
+        }
+    }
+    password.addEventListener('input', checkPassword);
+    confirm_password.addEventListener('input', checkPassword);
+
+</script>
+<script src="{{ url_for('static', filename='register.js') }}" type="module"> </script>
+{% endblock %}
