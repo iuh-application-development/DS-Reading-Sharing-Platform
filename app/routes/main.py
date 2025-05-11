@@ -8,6 +8,7 @@ from app.models.saved_post import SavedPost
 # from app.models.notification import Notification
 from app import db
 from datetime import datetime
+from app.services.notification_service import NotificationService
 
 bp = Blueprint('main', __name__)
 
@@ -250,11 +251,9 @@ def toggle_like(post_id):
             db.session.rollback()
             flash('Có lỗi xảy ra', 'error')
 
+# Thong bao
 @bp.route('/notifications')
 @login_required
 def notifications():
-    notifications = [
-        {'content': 'Bạn vừa được theo dõi!', 'is_read': False, 'created_at': datetime.utcnow()},
-        {'content': 'Ai đó đã tag bạn trong bình luận.', 'is_read': True, 'created_at': datetime.utcnow()},
-    ]
+    notifications = NotificationService.get_user_notifications(current_user.id, limit=100)
     return render_template('main/notifications.html', notifications=notifications)
