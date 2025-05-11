@@ -195,85 +195,98 @@ def refresh_avatar():
     return redirect(url_for('auth.profile')) 
 
 # Chức năng tìm kiếm
-@bp.route('/search', methods=['GET', 'POST'])
+@bp.route('/search', methods=['GET'])
 def search_posts():
-    """Tìm kiếm bài đăng, tác giả, hashtag và hiển thị riêng từng loại"""
-    query = request.args.get('query', '').strip()
-    search_type = request.args.get('search_type', 'all')
+    """Tìm kiếm bài đăng theo tiêu đề, tác giả, hashtag và hiển thị gợi ý"""
+    query = request.args.get('query', '').strip()  # Lấy query từ thanh tìm kiếm
+    search_type = request.args.get('search_type', 'all')  # Lấy loại tìm kiếm
+    suggestions = []
     posts = []
     authors = []
-    hashtag_posts = []
-    hashtags = []
-
-    def normalize_hashtag(q):
-        return q.lstrip('#').strip().lower()
 
     if query:
-        if search_type == 'author':
+        # Chỉ lấy bài đăng đã duyệt
+        base_query = Post.query.filter(Post.status == 'approved')
+
+        # Xử lý quyền xem bài viết
+        if current_user.is_authenticated:
+            if not current_user.is_initial_admin:
+                base_query = base_query.filter(
+                    db.or_(
+                        Post.visibility == 0,  # Công khai
+                        db.and_(Post.visibility == 1, Post.user_id == current_user.id)  # Chỉ mình tôi
+                    )
+                )
+        else:
+            base_query = base_query.filter(Post.visibility == 0)  # Chỉ hiện bài công khai cho người chưa đăng nhập
+
+        # Các loại tìm kiếm
+        if search_type == 'all':
+            posts = base_query.filter(
+                db.or_(
+                    Post.title.ilike(f'%{query}%'),
+                    Post.content.ilike(f'%{query}%'),
+                    Post.tags.ilike(f'%{query}%')
+                )
+            ).order_by(Post.created_at.desc()).all()
+
+            # Tìm tác giả luôn
             authors = User.query.filter(
                 db.or_(
                     User.username.ilike(f'%{query}%'),
                     User.full_name.ilike(f'%{query}%')
                 )
             ).all()
-        elif search_type == 'hashtag':
-            tag = normalize_hashtag(query)
-            posts = Post.query.filter(
-                Post.status == 'approved',
-                db.or_(
-                    Post.tags.ilike(f'%#{tag}%'),
-                    Post.tags.ilike(f'%{tag}%')
-                )
-            ).order_by(Post.created_at.desc()).all()
-            hashtags = [tag]
+
         elif search_type == 'title':
-            posts = Post.query.filter(
-                Post.status == 'approved',
-                db.or_(
-                    Post.title.ilike(f'%{query}%'),
-                    Post.content.ilike(f'%{query}%')
-                )
-            ).order_by(Post.created_at.desc()).all()
-        else:  # search_type == 'all'
-            # Tìm tác giả
+            posts = base_query.filter(Post.title.ilike(f'%{query}%')).order_by(Post.created_at.desc()).all()
+
+        elif search_type == 'author':
+            posts = base_query.join(User, Post.user_id == User.id)\
+                .filter(db.or_(
+                    User.username.ilike(f'%{query}%'),
+                    User.full_name.ilike(f'%{query}%')
+                ))\
+                .order_by(Post.created_at.desc()).all()
+
             authors = User.query.filter(
                 db.or_(
                     User.username.ilike(f'%{query}%'),
                     User.full_name.ilike(f'%{query}%')
                 )
             ).all()
-            # Tìm bài viết theo tiêu đề/nội dung
-            posts = Post.query.filter(
-                Post.status == 'approved',
-                db.or_(
-                    Post.title.ilike(f'%{query}%'),
-                    Post.content.ilike(f'%{query}%')
-                )
-            ).order_by(Post.created_at.desc()).all()
-            # Tìm bài viết theo hashtag
-            tag = normalize_hashtag(query)
-            hashtag_posts = Post.query.filter(
-                Post.status == 'approved',
-                db.or_(
-                    Post.tags.ilike(f'%#{tag}%'),
-                    Post.tags.ilike(f'%{tag}%')
-                )
-            ).order_by(Post.created_at.desc()).all()
-            hashtags = [tag]
 
-    likes = Like.query.filter_by(user_id=current_user.id).all()
-    total_likes_query = db.session.query(Like.post_id, db.func.count(Like.post_id).label('like_count'))\
-        .group_by(Like.post_id).all()
-    total_likes_dict = {post_id: like_count for post_id, like_count in total_likes_query}
+        elif search_type == 'hashtag':
+            posts = base_query.filter(Post.tags.ilike(f'%{query}%')).order_by(Post.created_at.desc()).all()
 
-    return render_template('main/search.html',
-                         query=query,
-                         search_type=search_type,
-                         posts=posts,
-                         authors=authors,
-                         hashtags=hashtags,
-                         hashtag_posts=hashtag_posts,
-                         likes=total_likes_dict)
+        # Gợi ý tìm kiếm (chỉ với bài đã duyệt và có quyền xem)
+        suggestions = base_query.filter(
+            db.or_(
+                Post.title.ilike(f'%{query}%'),
+                Post.tags.ilike(f'%{query}%')
+            )
+        ).order_by(Post.title).limit(5).all()
+
+    # Xử lý likes
+    likes = []
+    liked_post_ids = []
+    total_likes_dict = {}
+    
+    if current_user.is_authenticated:
+        likes = Like.query.filter_by(user_id=current_user.id).all()
+        liked_post_ids = [like.post_id for like in likes] if likes else []
+        total_likes_query = db.session.query(Like.post_id, db.func.count(Like.post_id).label('like_count'))\
+            .group_by(Like.post_id).all()
+        total_likes_dict = {post_id: like_count for post_id, like_count in total_likes_query}
+
+    return render_template('main/search.html', 
+                     query=query, 
+                     search_type=search_type,
+                     posts=posts, 
+                     suggestions=suggestions, 
+                     likes=total_likes_dict,
+                     liked_post_ids=liked_post_ids,
+                     authors=authors)
 
 @bp.route('/search/suggestion', methods=['POST'])
 def select_suggestion():
