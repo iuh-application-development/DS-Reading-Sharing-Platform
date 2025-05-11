@@ -3,219 +3,337 @@
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto">
+        <!-- Nút quay lại -->
+        <a href="{{ url_for('main.index') }}" class="inline-flex items-center text-gray-600 hover:text-gray-900 mb-6">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Quay lại
+        </a>
+
+        <!-- Bài viết -->
         <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <!-- Ảnh đính kèm (nếu có) -->
+            {% if post.image_url %}
+            <div class="w-full h-96 relative">
+                <img src="{{ post.image_url }}" alt="{{ post.title }}" class="w-full h-full object-cover">
+            </div>
+            {% endif %}
+
             <div class="p-8">
-                <!-- Title and meta -->
-                <div class="mb-8">
-                    <div class="flex items-center justify-between">
-                        <h1 class="text-3xl font-bold mb-4 text-gray-900">{{ post.title }}</h1>
-                        {% if current_user.is_authenticated %}
-                        <button onclick="toggleSavePost({{ post.id }}, this)"
-                            class="text-gray-400 hover:text-orange-500 transition-colors save-button p-2 rounded-full hover:bg-orange-50"
-                            data-post-id="{{ post.id }}">
-                            <i
-                                class="{% if post.id in current_user.saved_posts|map(attribute='post_id') %}fas{% else %}far{% endif %} fa-bookmark text-xl"></i>
-                        </button>
-                        {% endif %}
-                    </div>
-                    <div class="flex items-center flex-wrap gap-4 text-gray-600">
-                        <div class="flex items-center">
-                            <img src="{{ url_for('static', filename=post.author.get_avatar_path()) if post.author.avatar_filename else post.author.avatar_url }}"
-                                alt="{{ post.author.username }}"
-                                class="h-12 w-12 rounded-full object-cover ring-2 ring-orange-100">
-                            <div class="ml-4">
-                                <h2 class="text-lg font-semibold">{{ post.author.full_name or post.author.username }}</h2>
-                                <p class="text-sm text-gray-500">
-                                    {{ post.created_at.strftime('%d/%m/%Y %H:%M') }}
-                                </p>
-                            </div>
+                <!-- Tiêu đề -->
+                <h1 class="text-3xl font-bold text-gray-900 mb-4">{{ post.title }}</h1>
+
+                <!-- Thông tin tác giả và thời gian -->
+                <div class="flex items-center text-gray-600 mb-6">
+                    <div class="flex items-center space-x-3">
+                        <img src="{% if post.author.avatar_filename %}{{ url_for('static', filename=post.author.get_avatar_path()) }}{% elif post.author.avatar_url %}{{ post.author.avatar_url }}{% else %}{{ url_for('static', filename='img/default-avatar.png') }}{% endif %}" 
+                             alt="{{ post.author.username }}" 
+                             class="w-10 h-10 rounded-full object-cover">
+                        <div>
+                            <a href="{{ url_for('auth.profile', username=post.author.username) }}" class="font-medium text-gray-900 hover:text-blue-600">
+                                {{ post.author.full_name or post.author.username }}
+                            </a>
+                            <p class="text-sm text-gray-500">{{ post.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
                         </div>
-                        {% if post.updated_at and post.updated_at != post.created_at %}
-                        <span class="flex items-center text-sm text-gray-500">
-                            <i class="fas fa-edit mr-1"></i>
-                            Đã chỉnh sửa: {{ post.updated_at.strftime('%d/%m/%Y %H:%M') }}
-                        </span>
-                        {% endif %}
                     </div>
                 </div>
 
-                <!-- Source section -->
-                {% if post.source_link or post.source_content %}
-                <div
-                    class="mb-8 p-6 bg-gradient-to-r from-orange-500/5 to-blue-500/5 rounded-xl border border-orange-100">
-                    <h2 class="text-lg font-semibold mb-3 text-gray-900 flex items-center">
-                        <i class="fas fa-link text-orange-500 mr-2"></i>
-                        Nguồn bài viết
-                    </h2>
-                    {% if post.source_link %}
-                    <a href="{{ post.source_link }}" class="text-blue-500 hover:text-blue-600 block mb-2 break-all"
-                        target="_blank">
-                        {{ post.source_link }}
-                    </a>
-                    {% endif %}
-                    {% if post.source_content %}
-                    <div class="text-gray-600 prose max-w-none">
-                        {{ post.source_content }}
-                    </div>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-                <!-- Main content -->
-                <div class="prose max-w-none mb-8 text-gray-800">
-                    {{ post.content }}
+                <!-- Nội dung -->
+                <div class="prose max-w-none mb-8">
+                    {{ post.content | safe }}
                 </div>
 
                 <!-- Tags -->
                 {% if post.tags %}
-                <div class="flex flex-wrap gap-2 mb-8">
+                <div class="flex flex-wrap gap-2 mb-6">
                     {% for tag in post.get_tags_list() %}
-                    <span
-                        class="px-3 py-1 bg-gradient-to-r from-orange-500/10 to-blue-500/10 text-gray-700 text-sm rounded-full flex items-center">
-                        <i class="fas fa-tag text-orange-500 mr-1 text-xs"></i>
-                        {{ tag }}
+                    <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
+                        #{{ tag }}
                     </span>
                     {% endfor %}
                 </div>
                 {% endif %}
 
-                <!-- Actions -->
-                {% if current_user.is_authenticated and current_user.id == post.user_id %}
-                <div class="flex justify-end space-x-3">
-                    <a href="{{ url_for('main.edit_post', post_id=post.id) }}"
-                        class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-2.5 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center">
-                        <i class="fas fa-edit mr-2"></i>
-                        Chỉnh sửa
+                <!-- Nguồn bài viết -->
+                {% if post.source_link or post.source_content %}
+                <div class="mt-8 p-6 bg-gray-50 rounded-lg">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Nguồn bài viết</h3>
+                    {% if post.source_link %}
+                    <a href="{{ post.source_link }}" target="_blank" class="text-blue-600 hover:text-blue-800 mb-4 block">
+                        {{ post.source_link }}
                     </a>
-                    <form action="{{ url_for('main.delete_post', post_id=post.id) }}" method="POST"
-                        onsubmit="return confirm('Bạn có chắc chắn muốn xóa bài viết này?');" class="inline">
-                        <button type="submit"
-                            class="bg-gradient-to-r from-red-500 to-orange-600 text-white px-6 py-2.5 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center">
-                            <i class="fas fa-trash-alt mr-2"></i>
-                            Xóa
-                        </button>
-                    </form>
+                    {% endif %}
+                    {% if post.source_content %}
+                    <div class="prose max-w-none">
+                        {{ post.source_content | safe }}
+                    </div>
+                    {% endif %}
                 </div>
                 {% endif %}
-                <form method="POST" action="{{ url_for('main.add_comment', post_id=post.id) }}"
-                    class="flex items-center mt-8">
-                    <img src="{{ url_for('static', filename=current_user.get_avatar_path()) if current_user.avatar_filename else current_user.avatar_url }}"
-                        alt="{{ current_user.username }}"
-                        class="h-10 w-10 rounded-full object-cover ring-2 ring-orange-100 mr-4">
-                    <div class="flex items-center w-full">
-                        <input type="text" name="comment"
-                            class="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"
-                            placeholder="Nhập bình luận của bạn">
-                        <button type="submit"
-                            class="ml-2 px-3 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors">
-                            <i class="fa-solid fa-paper-plane"></i>
+
+                <!-- Các nút tương tác -->
+                <div class="mt-8 flex items-center justify-between border-t border-gray-200 pt-6">
+                    <div class="flex items-center space-x-4">
+                        <!-- Nút like -->
+                        <button onclick="toggleLike({{ post.id }})" 
+                                class="flex items-center space-x-2 text-gray-600 hover:text-red-500 transition-colors">
+                            <i class="fas fa-heart {% if post.id in likes %}text-red-500{% endif %}"></i>
+                            <span id="like-count-{{ post.id }}">{{ post.total_likes }}</span>
+                        </button>
+
+                        <!-- Nút lưu -->
+                        <button onclick="toggleSave({{ post.id }})"
+                                class="flex items-center space-x-2 text-gray-600 hover:text-yellow-500 transition-colors">
+                            <i class="fas fa-bookmark"></i>
+                            <span>Lưu</span>
                         </button>
                     </div>
-                </form>
-                <div class="mt-8">
-                    <h2 class="font-bold">{{comments | length}} Bình luận</h2>
-                    {% for comment in comments %}
-                    <div class="flex space-x-4 mb-4">
-                        <img src="{{ url_for('static', filename=comment.user.get_avatar_path()) if comment.user.avatar_filename else comment.user.avatar_url }}"
-                            alt="{{ comment.user.username }}"
-                            class="h-10 w-10 rounded-full object-cover">
-                        <div class="flex-1">
-                            <div class="bg-gray-100 rounded-lg p-4">
-                                <div class="flex items-center justify-between mb-2">
-                                    <h3 class="font-semibold">{{ comment.user.full_name or comment.user.username }}</h3>
-                                    <span class="text-sm text-gray-500">{{ comment.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
-                                </div>
-                                <p>{{ comment.content }}</p>
-                            </div>
-                        </div>
+
+                    <!-- Nút chỉnh sửa/xóa (chỉ hiện với tác giả) -->
+                    {% if current_user.is_authenticated and post.user_id == current_user.id %}
+                    <div class="flex items-center space-x-4">
+                        <a href="{{ url_for('main.edit_post', post_id=post.id) }}" 
+                           class="text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-edit"></i>
+                            Chỉnh sửa
+                        </a>
+                        <button onclick="deletePost({{ post.id }})"
+                                class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash"></i>
+                            Xóa
+                        </button>
                     </div>
-                    {% endfor %}
+                    {% endif %}
                 </div>
             </div>
         </div>
+
+        <!-- Phần bình luận -->
+        <div class="mt-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <i class="fas fa-comments text-orange-500 mr-3"></i>
+                Bình luận
+            </h2>
+
+            <!-- Danh sách bình luận -->
+            <div class="space-y-6">
+                {% for comment in comments %}
+                <div class="flex space-x-4 bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex-shrink-0">
+                        <img src="{% if comment.user.avatar_filename %}{{ url_for('static', filename=comment.user.get_avatar_path()) }}{% elif comment.user.avatar_url %}{{ comment.user.avatar_url }}{% else %}{{ url_for('static', filename='img/default-avatar.png') }}{% endif %}" 
+                             alt="{{ comment.user.username }}" 
+                             class="w-12 h-12 rounded-full object-cover ring-2 ring-orange-100">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-1">
+                            <div class="flex items-center space-x-2">
+                                <h4 class="font-semibold text-gray-900">{{ comment.user.full_name or comment.user.username }}</h4>
+                                <span class="text-sm text-gray-500">{{ comment.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                            </div>
+                        </div>
+                        <div class="prose prose-sm max-w-none">
+                            <p class="text-gray-700 whitespace-pre-wrap break-words">{{ comment.content }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% if not comments %}
+                <div class="text-center py-12 bg-white rounded-lg shadow-sm">
+                    <i class="far fa-comment-dots text-gray-400 text-4xl mb-4"></i>
+                    <p class="text-gray-600">Chưa có bình luận nào. Hãy là người đầu tiên bình luận!</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Form bình luận -->
+            {% if current_user.is_authenticated %}
+            <form method="POST" action="{{ url_for('main.add_comment', post_id=post.id) }}" class="mt-8 bg-white rounded-lg p-6 shadow-sm">
+                <div class="flex items-start space-x-4">
+                    <img src="{% if current_user.avatar_filename %}{{ url_for('static', filename=current_user.get_avatar_path()) }}{% elif current_user.avatar_url %}{{ current_user.avatar_url }}{% else %}{{ url_for('static', filename='img/default-avatar.png') }}{% endif %}" 
+                         alt="{{ current_user.username }}" 
+                         class="w-12 h-12 rounded-full object-cover ring-2 ring-orange-100">
+                    <div class="flex-1">
+                        <textarea name="comment" rows="3" 
+                                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all resize-none"
+                                  placeholder="Viết bình luận của bạn..."></textarea>
+                        <div class="mt-3 flex justify-end">
+                            <button type="submit" 
+                                    class="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:shadow-lg transition-all duration-300 flex items-center">
+                                <i class="fas fa-paper-plane mr-2"></i>
+                                Gửi bình luận
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            {% else %}
+            <div class="mt-8 text-center py-8 bg-white rounded-lg shadow-sm">
+                <i class="fas fa-lock text-gray-400 text-4xl mb-4"></i>
+                <p class="text-gray-600">Vui lòng <a href="{{ url_for('auth.login') }}" class="text-orange-500 hover:text-orange-600 font-medium">đăng nhập</a> để bình luận.</p>
+            </div>
+            {% endif %}
+        </div>
     </div>
 </div>
-{% if current_user.is_authenticated %}
+
+<!-- JavaScript cho các chức năng tương tác -->
 <script>
-    function toggleSavePost(postId, button) {
-        fetch(`{{ url_for('main.toggle_save_post', post_id=0) }}`.replace('0', postId), {
+function toggleLike(postId) {
+    fetch(`/post/${postId}/like`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const likeCount = document.getElementById(`like-count-${postId}`);
+            const likeIcon = likeCount.previousElementSibling;
+            
+            if (data.status === 'liked') {
+                likeIcon.classList.add('text-red-500');
+                likeCount.textContent = parseInt(likeCount.textContent) + 1;
+            } else {
+                likeIcon.classList.remove('text-red-500');
+                likeCount.textContent = parseInt(likeCount.textContent) - 1;
+            }
+        }
+    });
+}
+
+function toggleSave(postId) {
+    fetch(`/post/${postId}/toggle_save`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Có thể thêm thông báo hoặc animation ở đây
+        }
+    });
+}
+
+function deletePost(postId) {
+    if (confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
+        fetch(`/post/${postId}/delete`, {
             method: 'POST',
             headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/json'
-            },
-            credentials: 'same-origin'
+                'Content-Type': 'application/json',
+            }
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Update icon
-                    const icon = button.querySelector('i');
-                    if (data.status === 'saved') {
-                        icon.classList.remove('far');
-                        icon.classList.add('fas');
-                        button.classList.add('text-orange-500');
-                        button.classList.remove('text-gray-400');
-                    } else {
-                        icon.classList.remove('fas');
-                        icon.classList.add('far');
-                        button.classList.remove('text-orange-500');
-                        button.classList.add('text-gray-400');
-                    }
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = '/my-posts';
+            }
+        });
+    }
+}
 
-                    // Show notification
-                    showMessage(data.message, 'success');
-                }
-            })
-            .catch(error => {
-                showMessage('Đã xảy ra lỗi khi lưu bài viết', 'error');
-            });
+// Xử lý form bình luận
+document.querySelector('form[action*="add_comment"]').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const form = this;
+    const textarea = form.querySelector('textarea');
+    const content = textarea.value.trim();
+    
+    if (!content) {
+        showMessage('Vui lòng nhập nội dung bình luận', 'error');
+        return;
     }
 
-    function showMessage(message, type) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 flex items-center ${type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
-            }`;
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalText = submitButton.innerHTML;
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Đang gửi...';
 
-        messageDiv.innerHTML = `
+    fetch(form.action, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams(new FormData(form))
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Tạo element bình luận mới
+            const commentsContainer = document.querySelector('.space-y-6');
+            const newComment = document.createElement('div');
+            newComment.className = 'flex space-x-4 animate-fade-in';
+            newComment.innerHTML = `
+                <img src="${data.avatar_url}" 
+                     alt="${data.username}" 
+                     class="w-10 h-10 rounded-full object-cover ring-2 ring-orange-100">
+                <div class="flex-1">
+                    <div class="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <h4 class="font-medium text-gray-900">${data.full_name || data.username}</h4>
+                                <span class="mx-2 text-gray-400">•</span>
+                                <span class="text-sm text-gray-500">Vừa xong</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 leading-relaxed">${data.content}</p>
+                    </div>
+                </div>
+            `;
+
+            // Xóa thông báo "chưa có bình luận" nếu có
+            const emptyMessage = commentsContainer.querySelector('.text-center');
+            if (emptyMessage) {
+                emptyMessage.remove();
+            }
+
+            // Thêm bình luận mới vào đầu danh sách
+            commentsContainer.insertBefore(newComment, commentsContainer.firstChild);
+
+            // Scroll đến bình luận mới
+            newComment.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Reset form
+            textarea.value = '';
+            showMessage('Bình luận của bạn đã được đăng', 'success');
+        } else {
+            showMessage(data.message || 'Có lỗi xảy ra khi đăng bình luận', 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('Có lỗi xảy ra khi đăng bình luận', 'error');
+    })
+    .finally(() => {
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalText;
+    });
+});
+
+function showMessage(message, type) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 flex items-center ${
+        type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+    }`;
+    messageDiv.innerHTML = `
         <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-2"></i>
         ${message}
     `;
-
-        // Add animation classes
-        messageDiv.style.transition = 'all 0.3s ease';
-        messageDiv.style.transform = 'translateY(-1rem)';
-        messageDiv.style.opacity = '0';
-
-        document.body.appendChild(messageDiv);
-
-        // Trigger animation
-        setTimeout(() => {
-            messageDiv.style.transform = 'translateY(0)';
-            messageDiv.style.opacity = '1';
-        }, 10);
-
-        // Remove after delay
-        setTimeout(() => {
-            messageDiv.style.transform = 'translateY(-1rem)';
-            messageDiv.style.opacity = '0';
-            setTimeout(() => messageDiv.remove(), 300);
-        }, 3000);
-    }
+    document.body.appendChild(messageDiv);
+    setTimeout(() => messageDiv.remove(), 3000);
+}
 </script>
 
 <style>
-    .save-button {
-        transition: all 0.3s ease;
-    }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
-    .save-button:hover {
-        transform: scale(1.1);
-    }
-
-    .save-button:active {
-        transform: scale(0.95);
-    }
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
 </style>
-{% endif %}
 {% endblock %}

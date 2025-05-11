@@ -22,3 +22,10 @@ instance/*
 *.db
 *.sqlite
 *.sqlite3 
+
+# Firebase credentials
+.firebase-auth.json
+
+# Uploads folder
+app/static/uploads/*
+!app/static/uploads/.gitkeep

@@ -11,13 +11,13 @@ def create_initial_admin():
 
     # Tạo admin initial với thông tin từ biến môi trường hoặc mặc định
     admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
-    admin_email = os.environ.get('ADMIN_EMAIL', 'admin@example.com')
+    # admin_email = os.environ.get('ADMIN_EMAIL', 'admin@example.com')
     admin_password = os.environ.get('ADMIN_PASSWORD', 'admin123')
 
     admin = User(
         username=admin_username,
-        email=admin_email,
-        password_hash=generate_password_hash(admin_password),
+        email='admin@admin.com',
+        firebase_uid = 'pYEIwF3gr7T4JvezUtLNBVUa9wv1',
         role='admin',
         is_initial_admin=True
     )
@@ -29,3 +29,4 @@ def create_initial_admin():
     except Exception as e:
         db.session.rollback()
         print(f"Error creating initial admin: {str(e)}") 
+    pass

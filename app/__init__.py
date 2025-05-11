@@ -1,11 +1,13 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_migrate import Migrate 
 from config import Config
 import os
-from sqlalchemy import inspect  # Import inspect từ sqlalchemy
+from sqlalchemy import inspect
 
 db = SQLAlchemy()
+migrate = Migrate()  
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 
@@ -20,6 +22,7 @@ def create_app():
         pass
 
     db.init_app(app)
+    migrate.init_app(app, db) 
     login_manager.init_app(app)
 
     @login_manager.user_loader
@@ -27,7 +30,7 @@ def create_app():
         from app.models.user import User
         return User.query.get(int(id))
 
-    # Import các models
+    # Import models
     from app.models.user import User
     from app.models.post import Post
     
@@ -40,12 +43,11 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
 
-    # Chỉ tạo database và admin nếu cần
+    
     with app.app_context():
-        # Kiểm tra xem bảng đã tồn tại chưa
-        inspector = inspect(db.engine)  # Sử dụng inspect từ sqlalchemy
-        if not inspector.has_table('user'):  # Kiểm tra bảng 'user'
-            db.create_all()  # Tạo database nếu chưa tồn tại
+        inspector = inspect(db.engine)
+        if not inspector.has_table('user'):
+            db.create_all()
             from app.utils.admin import create_initial_admin
             create_initial_admin()
             print("Database initialized with initial admin")

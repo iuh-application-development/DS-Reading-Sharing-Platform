@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <h1 class="text-2xl font-bold text-gray-900">Đang theo dõi</h1>
+                <p class="text-gray-600 mt-1">Danh sách những người bạn đang theo dõi</p>
+            </div>
+
+            <div class="divide-y divide-gray-200">
+                {% if following %}
+                    {% for follow in following %}
+                    <div class="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center space-x-4">
+                            <img src="{% if follow.followed.avatar_filename %}{{ url_for('static', filename=follow.followed.get_avatar_path()) }}{% elif follow.followed.avatar_url %}{{ follow.followed.avatar_url }}{% else %}{{ url_for('static', filename='img/default-avatar.png') }}{% endif %}" 
+                                 alt="{{ follow.followed.username }}" 
+                                 class="w-12 h-12 rounded-full object-cover">
+                            <div>
+                                <h3 class="font-semibold text-gray-900">{{ follow.followed.full_name or follow.followed.username }}</h3>
+                                <p class="text-sm text-gray-500">@{{ follow.followed.username }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <a href="{{ url_for('main.user_profile', username=follow.followed.username) }}" 
+                               class="text-blue-600 hover:text-blue-800">
+                                Xem trang cá nhân
+                            </a>
+                            <button onclick="toggleFollow({{ follow.followed.id }})"
+                                    class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                    id="follow-btn-{{ follow.followed.id }}">
+                                <span class="text-gray-600 hover:text-red-600">Unfollow</span>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="p-6 text-center text-gray-500">
+                        <i class="far fa-user text-4xl mb-4"></i>
+                        <p>Bạn chưa theo dõi ai</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleFollow(userId) {
+    const button = document.getElementById(`follow-btn-${userId}`);
+    const isFollowing = button.textContent.trim() === 'Unfollow';
+    const url = isFollowing ? `/unfollow/${userId}` : `/follow/${userId}`;
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (isFollowing) {
+                button.innerHTML = '<span class="text-blue-600 hover:text-blue-800">Follow</span>';
+            } else {
+                button.innerHTML = '<span class="text-gray-600 hover:text-red-600">Unfollow</span>';
+            }
+            showMessage(data.message, 'success');
+        } else {
+            showMessage(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('Có lỗi xảy ra', 'error');
+    });
+}
+
+function showMessage(message, type) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 flex items-center ${
+        type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+    }`;
+    messageDiv.innerHTML = `
+        <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-2"></i>
+        ${message}
+    `;
+    document.body.appendChild(messageDiv);
+    setTimeout(() => messageDiv.remove(), 3000);
+}
+</script>
+{% endblock %} 

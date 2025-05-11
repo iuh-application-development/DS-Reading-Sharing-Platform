@@ -5,12 +5,19 @@ from app.models.post import Post
 from app.models.user import User
 from app.models.comment import Comment
 from app.models.saved_post import SavedPost
+from werkzeug.utils import secure_filename
+import os
 # from app.models.notification import Notification
 from app import db
 from datetime import datetime
+from app.models.follow import Follow
 from app.services.notification_service import NotificationService
 
 bp = Blueprint('main', __name__)
+
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @bp.route('/')
 def index():
@@ -43,6 +50,7 @@ def index():
     for post in posts.items:
         post.total_likes = total_likes_dict.get(post.id, 0)  # Mặc định 0 nếu không có lượt thích
     return render_template('main/index.html', posts=posts, likes=liked_post_ids)
+
 @bp.route('/create_post', methods=['GET', 'POST'])
 @login_required
 def create_post():
@@ -58,9 +66,24 @@ def create_post():
         source_content = request.form.get('source_content')
         tags = request.form.get('tags')
         visibility = request.form.get('visibility')
+        
         if not title or not content:
             flash('Tiêu đề và nội dung không được để trống.', 'error')
             return redirect(url_for('main.create_post'))
+
+        # Xử lý upload ảnh
+        image_url = None
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                # Tạo tên file duy nhất bằng cách thêm timestamp
+                filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
+                # Lưu file vào thư mục uploads
+                file_path = os.path.join('app/static/uploads', filename)
+                file.save(file_path)
+                # Lưu đường dẫn tương đối
+                image_url = f'/static/uploads/{filename}'
 
         post = Post(
             title=title,
@@ -70,7 +93,8 @@ def create_post():
             tags=tags,
             user_id=current_user.id,
             status='approved',  # Bài viết được đăng trực tiếp
-            visibility=visibility
+            visibility=visibility,
+            image_url=image_url
         )
 
         try:
@@ -104,7 +128,10 @@ def view_post(post_id):
     """Xem chi tiết bài viết"""
     post = Post.query.get_or_404(post_id)
     comments = Comment.query.filter_by(post_id=post.id).order_by(Comment.created_at.desc()).all()
-    return render_template('main/view_post.html', post=post, comments=comments)
+    likes = []
+    if current_user.is_authenticated:
+        likes = [like.post_id for like in Like.query.filter_by(user_id=current_user.id).all()]
+    return render_template('main/view_post.html', post=post, comments=comments, likes=likes)
 
 @bp.route('/post/<int:post_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -124,6 +151,23 @@ def edit_post(post_id):
         post.tags = request.form.get('tags')
         post.visibility = request.form.get('visibility')
         post.updated_at = datetime.utcnow()
+
+        # Xử lý upload ảnh mới
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename and allowed_file(file.filename):
+                # Xóa ảnh cũ nếu có
+                if post.image_url:
+                    old_image_path = os.path.join('app', post.image_url.lstrip('/'))
+                    if os.path.exists(old_image_path):
+                        os.remove(old_image_path)
+
+                # Lưu ảnh mới
+                filename = secure_filename(file.filename)
+                filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
+                file_path = os.path.join('app/static/uploads', filename)
+                file.save(file_path)
+                post.image_url = f'/static/uploads/{filename}'
         
         try:
             db.session.commit()
@@ -188,10 +232,13 @@ def saved_posts():
         .order_by(SavedPost.saved_at.desc())\
         .all()
     return render_template('main/saved_posts.html', saved_posts=saved) 
+
 @bp.route('/post/<int:post_id>/comment', methods=['POST'])
 @login_required
 def add_comment(post_id):
     post = Post.query.get_or_404(post_id)
+    
+
     if not current_user.is_authenticated:
         flash('Bạn cần đăng nhập để bình luận.', 'warning')
     if request.method == 'POST':  
@@ -214,7 +261,6 @@ def add_comment(post_id):
             flash('Có lỗi xảy ra khi đăng bình luận.', 'error')
     
     return redirect(url_for('main.view_post', post_id=post_id))
-
 
 # chua hoan thanh 
 @bp.route('/post/<int:post_id>/like', methods=['POST'])
@@ -250,6 +296,78 @@ def toggle_like(post_id):
         except Exception as e:
             db.session.rollback()
             flash('Có lỗi xảy ra', 'error')
+
+@bp.route('/follow/<int:user_id>', methods=['POST'])
+@login_required
+def follow_user(user_id):
+    if current_user.id == user_id:
+        return jsonify({
+            'success': False,
+            'message': 'Bạn không thể follow chính mình'
+        })
+    
+    user_to_follow = User.query.get_or_404(user_id)
+    existing_follow = Follow.query.filter_by(
+        follower_id=current_user.id,
+        followed_id=user_id
+    ).first()
+    
+    if existing_follow:
+        return jsonify({
+            'success': False,
+            'message': 'Bạn đã follow người dùng này'
+        })
+    
+    follow = Follow(follower_id=current_user.id, followed_id=user_id)
+    db.session.add(follow)
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': f'Đã follow {user_to_follow.username}'
+    })
+
+@bp.route('/unfollow/<int:user_id>', methods=['POST'])
+@login_required
+def unfollow_user(user_id):
+    follow = Follow.query.filter_by(
+        follower_id=current_user.id,
+        followed_id=user_id
+    ).first_or_404()
+    
+    db.session.delete(follow)
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': 'Đã unfollow thành công'
+    })
+
+@bp.route('/follow')
+@login_required
+def follow():
+    """Hiển thị trang Follow với hai tab: Người theo dõi và Đang theo dõi"""
+    active_tab = request.args.get('tab', 'followers')
+    
+    followers = Follow.query.filter_by(followed_id=current_user.id).all()
+    following = Follow.query.filter_by(follower_id=current_user.id).all()
+    
+    return render_template('main/follow.html',
+                         followers=followers,
+                         following=following,
+                         active_tab=active_tab)
+
+@bp.route('/followers')
+@login_required
+def followers():
+    """Chuyển hướng đến trang Follow với tab Người theo dõi"""
+    return redirect(url_for('main.follow', tab='followers'))
+
+@bp.route('/following')
+@login_required
+def following():
+    """Chuyển hướng đến trang Follow với tab Đang theo dõi"""
+    return redirect(url_for('main.follow', tab='following'))
 
 # Thong bao
 @bp.route('/notifications')
