@@ -21,9 +21,13 @@ def create_app():
     except OSError:
         pass
 
+    # Khởi tạo các extension
     db.init_app(app)
-    migrate.init_app(app, db) 
     login_manager.init_app(app)
+    
+    # Khởi tạo Flask-Migrate
+    with app.app_context():
+        migrate.init_app(app, db)
 
     @login_manager.user_loader
     def load_user(id):
@@ -43,13 +47,12 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
 
-    
     with app.app_context():
         inspector = inspect(db.engine)
-        if not inspector.has_table('user'):
+        if not inspector.has_table('users'):
             db.create_all()
             from app.utils.admin import create_initial_admin
-            # create_initial_admin()
+            create_initial_admin()
             print("Database initialized with initial admin")
         else:
             print("Database already exists, skipping initialization")
