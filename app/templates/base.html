@@ -185,10 +185,15 @@
                                 Tài khoản
                             </h2>
                             
-                            <a href="{{ url_for('auth.profile') }}"
+                            <a href="{{ url_for('auth.profile', username=current_user.username) }}" 
                                class="flex items-center mt-2 py-2.5 px-4 text-white hover:bg-white/10 rounded-lg transition-all duration-200">
-                                <i class="fas fa-user-circle w-6 text-center"></i>
+                                <i class="fas fa-user w-6 text-center"></i>
                                 <span class="ml-3">Hồ sơ cá nhân</span>
+                            </a>
+                            <a href="{{ url_for('main.follow') }}" 
+                               class="flex items-center mt-2 py-2.5 px-4 text-white hover:bg-white/10 rounded-lg transition-all duration-200">
+                                <i class="fas fa-user-friends w-6 text-center"></i>
+                                <span class="ml-3">Follow</span>
                             </a>
                             
                             <a href="{{ url_for('auth.logout') }}"
