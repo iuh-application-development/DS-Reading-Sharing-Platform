@@ -309,17 +309,13 @@ def authorize():
         # Xác minh token
         token = token[7:]
         decoded_token = auth.verify_id_token(token, check_revoked=True, clock_skew_seconds=60)
-        
-        # print("Decoded token:", decoded_token)
-        # print(f"Headers: {request.headers}")
-        # print(f"Payload: {request.get_json()}")
+        firebase_uid = decoded_token['uid']
 
         data = request.get_json()
         email = data.get("email")
         full_name = data.get('full_name')
         phone = data.get('phone')
 
-        # photo = data.get('photo') 
 
         user = User.query.filter_by(email=email).first()
 
@@ -327,14 +323,14 @@ def authorize():
             user = User(
                     username=email,
                     email=email,
-                    password_hash=generate_password_hash(""),
                     full_name=full_name,
                     phone=phone,
                     date_of_birth=None,
                     gender=None,
                     bio=None,
                     avatar_url=User.generate_random_avatar(),  
-                    created_at=datetime.utcnow()
+                    created_at=datetime.utcnow(),
+                    firebase_uid = firebase_uid
                 )
             db.session.add(user)
             db.session.commit()

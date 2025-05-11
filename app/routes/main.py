@@ -235,31 +235,30 @@ def saved_posts():
 @login_required
 def add_comment(post_id):
     post = Post.query.get_or_404(post_id)
-    content = request.form.get('comment', '').strip()
     
-    if not content:
-        return jsonify({
-            'success': False,
-            'message': 'Nội dung bình luận không được để trống'
-        })
-    
-    comment = Comment(
-        content=content,
-        user_id=current_user.id,
-        post_id=post.id
-    )
-    db.session.add(comment)
-    db.session.commit()
-    
-    return jsonify({
-        'success': True,
-        'content': comment.content,
-        'username': current_user.username,
-        'full_name': current_user.full_name,
-        'avatar_url': current_user.avatar_url or url_for('static', filename='img/default-avatar.png'),
-        'created_at': comment.created_at.strftime('%d/%m/%Y %H:%M')
-    })
 
+    if not current_user.is_authenticated:
+        flash('Bạn cần đăng nhập để bình luận.', 'warning')
+    if request.method == 'POST':  
+        content = request.form.get('comment')
+        if not content:
+            flash('Nội dung bình luận không được để trống.', 'warning')
+            return redirect(url_for('main.view_post', post_id=post_id))
+        
+        comment = Comment(
+            content=content,
+            user_id=current_user.id,
+            post_id=post.id
+        )
+        try:
+            db.session.add(comment)
+            db.session.commit()
+            flash('Bình luận của bạn đã được đăng.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash('Có lỗi xảy ra khi đăng bình luận.', 'error')
+    
+    return redirect(url_for('main.view_post', post_id=post_id))
 
 # chua hoan thanh 
 @bp.route('/post/<int:post_id>/like', methods=['POST'])
