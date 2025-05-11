@@ -9,7 +9,6 @@ class Notification(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
     message = db.Column(db.String(255), nullable=False)
     is_read = db.Column(db.Boolean, default=False)  # False = chưa đọc, True = đã đọc
-    notification_type = db.Column(db.String(20), nullable=False)  # 'online' hoặc 'offline'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships

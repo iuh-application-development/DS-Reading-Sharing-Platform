@@ -8,13 +8,12 @@
         <ul class="space-y-6">
             {% for n in notifications %}
             <li class="bg-white rounded-xl shadow p-6 flex items-center border-l-8 {% if not n.is_read %}border-orange-400{% else %}border-gray-200{% endif %}">
-{% extends "base.html" %}
                 <div class="flex-1">
                     <div class="text-lg text-gray-800 font-semibold">
                         {% if not n.is_read %}
                             <span class="inline-block w-3 h-3 bg-orange-500 rounded-full mr-3 align-middle"></span>
                         {% endif %}
-                        {{ n.content }}
+                        {{ n.message }}
                     </div>
                     <div class="text-sm text-gray-400 mt-2"><i class="far fa-clock mr-2"></i>{{ n.created_at.strftime('%d/%m/%Y %H:%M') }}</div>
                 </div>
