@@ -19,7 +19,6 @@ bp = Blueprint('auth', __name__)
 
 # Tao firebase-admin app
 cred = credentials.Certificate("firebase-auth.json")
-print(cred)
 firebase_admin.initialize_app(cred)
 firebase_db  = firestore.client()
 
