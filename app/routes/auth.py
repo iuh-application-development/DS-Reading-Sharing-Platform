@@ -197,7 +197,8 @@ def firebase_register_status():
                     firebase_uid=uid,
                     email=email,
                     username=email.split('@')[0],
-                    full_name=f"{last_name} {first_name}"
+                    full_name=f"{last_name} {first_name}",
+                    avatar_url=User.generate_random_avatar()
                 )
                 db.session.add(new_user)
                 db.session.commit()
