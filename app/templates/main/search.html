@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Search Header -->
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold text-gray-800 mb-4">
+            Kết quả tìm kiếm cho "{{ query }}"
+            {% if search_type != 'all' %}
+            <span class="text-base font-normal text-gray-500">
+                (Tìm theo {{ {'title': 'bài viết', 'author': 'tác giả', 'hashtag': 'hashtag'}[search_type] }})
+            </span>
+            {% endif %}
+        </h2>
+        
+        <!-- Search Filters -->
+        <div class="flex flex-wrap gap-4 mb-6">
+            <a href="{{ url_for('auth.search_posts', query=query, search_type='all') }}" 
+               class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
+                      {% if search_type == 'all' %}
+                      bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200
+                      {% else %}
+                      bg-gray-100 text-gray-600 hover:bg-gray-200
+                      {% endif %}">
+                Tất cả
+            </a>
+            <a href="{{ url_for('auth.search_posts', query=query, search_type='title') }}"
+               class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
+                      {% if search_type == 'title' %}
+                      bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200
+                      {% else %}
+                      bg-gray-100 text-gray-600 hover:bg-gray-200
+                      {% endif %}">
+                Bài viết
+            </a>
+            <a href="{{ url_for('auth.search_posts', query=query, search_type='author') }}"
+               class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
+                      {% if search_type == 'author' %}
+                      bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200
+                      {% else %}
+                      bg-gray-100 text-gray-600 hover:bg-gray-200
+                      {% endif %}">
+                Tác giả
+            </a>
+            <a href="{{ url_for('auth.search_posts', query=query, search_type='hashtag') }}"
+               class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
+                      {% if search_type == 'hashtag' %}
+                      bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200
+                      {% else %}
+                      bg-gray-100 text-gray-600 hover:bg-gray-200
+                      {% endif %}">
+                Hashtag
+            </a>
+        </div>
+    </div>
+
+    <!-- Search Results -->
+    <div class="space-y-8">
+        <!-- Authors Section -->
+        {% if search_type == 'author' or (search_type == 'all' and authors) %}
+        <section class="bg-white rounded-2xl shadow-sm p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-users text-indigo-500 mr-2"></i>
+                Tác giả
+            </h3>
+            {% if authors %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for author in authors %}
+                <div class="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md transition-all duration-200">
+                    <div class="flex items-center space-x-4">
+                        <img src="{{ author.avatar_url or url_for('static', filename=author.get_avatar_path()) }}" 
+                             alt="{{ author.username }}" 
+                             class="h-16 w-16 rounded-full object-cover ring-2 ring-indigo-100">
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-lg font-semibold text-gray-900 truncate">
+                                {{ author.full_name or author.username }}
+                            </h4>
+                            <p class="text-gray-500 text-sm">@{{ author.username }}</p>
+                            <a href="{{ url_for('main.my_posts') }}?user_id={{ author.id }}" 
+                               class="inline-flex items-center mt-2 text-sm text-indigo-600 hover:text-indigo-700">
+                                <i class="fas fa-book-open mr-1"></i>
+                                Xem bài viết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-8">
+                <i class="fas fa-search text-gray-300 text-4xl mb-3"></i>
+                <p class="text-gray-500">Không tìm thấy tác giả nào.</p>
+            </div>
+            {% endif %}
+        </section>
+        {% endif %}
+
+        <!-- Hashtags Section -->
+        {% if (search_type == 'hashtag' or search_type == 'all') and hashtags %}
+        <section class="bg-white rounded-2xl shadow-sm p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-hashtag text-indigo-500 mr-2"></i>
+                Hashtag
+            </h3>
+            <div class="flex flex-wrap gap-3">
+                {% for post in hashtags %}
+                {% for tag in post.get_tags_list() %}
+                {% if query|lower in tag|lower %}
+                <a href="{{ url_for('auth.search_posts', query=tag, search_type='hashtag') }}" class="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-full text-sm font-medium hover:bg-indigo-100 transition-all duration-200 flex items-center">
+                    <i class="fas fa-hashtag mr-1"></i> {{ tag }}
+                </a>
+                {% endif %}
+                {% endfor %}
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Posts Section -->
+        {% if search_type in ['title', 'hashtag', 'all'] and posts %}
+        <section class="bg-white rounded-2xl shadow-sm p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-newspaper text-indigo-500 mr-2"></i>
+                Bài viết
+            </h3>
+            <div class="space-y-6">
+                {% for post in posts %}
+                <article class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-lg transition-all duration-200">
+                    <!-- Post Header -->
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center space-x-4">
+                            <img src="{{ post.author.avatar_url }}" 
+                                 alt="{{ post.author.username }}"
+                                 class="h-12 w-12 rounded-full object-cover ring-2 ring-indigo-100">
+                            <div>
+                                <h4 class="font-semibold text-gray-900">{{ post.author.full_name }}</h4>
+                                <div class="flex items-center space-x-3 text-sm text-gray-500">
+                                    <span class="flex items-center">
+                                        <i class="far fa-clock mr-1"></i>
+                                        {{ post.created_at.strftime('%d/%m/%Y') }}
+                                    </span>
+                                    <span class="flex items-center">
+                                        {% if post.visibility == 0 %}
+                                        <i class="fa-solid fa-globe"></i>
+                                        {% else %}
+                                        <i class="fa-solid fa-lock"></i>
+                                        {% endif %}
+                                    </span>
+                                    {% if post.status == 'pending' %}
+                                    <span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs">
+                                        Đang chờ duyệt
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% if current_user.is_authenticated %}
+                        <button onclick="toggleSavePost({{ post.id }}, this)"
+                                class="text-gray-400 hover:text-indigo-500 transition-colors save-button"
+                                data-post-id="{{ post.id }}">
+                            <i class="{% if post.id in current_user.saved_posts|map(attribute='post_id') %}fas{% else %}far{% endif %} fa-bookmark"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+
+                    <!-- Post Content -->
+                    <div class="mb-4">
+                        <h2 class="text-xl font-bold mb-2">
+                            <a href="{{ url_for('main.view_post', post_id=post.id) }}"
+                               class="text-gray-900 hover:text-indigo-600 transition-colors">
+                                {{ post.title }}
+                            </a>
+                        </h2>
+                        <p class="text-gray-600 line-clamp-3">
+                            {{ post.content[:300] }}...
+                            <a href="{{ url_for('main.view_post', post_id=post.id) }}"
+                               class="text-indigo-500 hover:text-indigo-600 font-medium">
+                                Xem thêm
+                            </a>
+                        </p>
+                    </div>
+
+                    <!-- Tags -->
+                    {% if post.tags %}
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        {% for tag in post.get_tags_list() %}
+                        <span class="px-3 py-1 bg-indigo-50 text-indigo-700 text-sm rounded-full flex items-center">
+                            <i class="fas fa-tag mr-1 text-xs"></i>
+                            {{ tag }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Post Footer -->
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                        <a href="{{ post.source_link }}" target="_blank"
+                           class="text-sm text-gray-500 hover:text-indigo-600 flex items-center">
+                            <i class="fas fa-link mr-1"></i>
+                            Nguồn
+                        </a>
+                        <div class="flex items-center space-x-4">
+                            {% if current_user.is_authenticated %}
+                            <button onclick="toggle_like({{ post.id }}, this)"
+                                    class="flex items-center space-x-1 text-gray-500 hover:text-indigo-600 transition-colors">
+                                <i class="{% if post.id in liked_post_ids %}fas{% else %}far{% endif %} fa-thumbs-up"></i>
+                                <span>{% if post.id in likes %}{{ likes[post.id] }}{% else %}0{% endif %}</span>
+                            </button>
+                            {% else %}
+                            <a href="{{ url_for('auth.login') }}"
+                               class="flex items-center space-x-1 text-gray-500 hover:text-indigo-600 transition-colors">
+                                <i class="far fa-thumbs-up"></i>
+                                <span>{% if post.id in likes %}{{ likes[post.id] }}{% else %}0{% endif %}</span>
+                            </a>
+                            {% endif %}
+                            <a href="{{ url_for('main.view_post', post_id=post.id) }}"
+                               class="flex items-center space-x-1 text-gray-500 hover:text-indigo-600 transition-colors">
+                                <i class="far fa-comment"></i>
+                                <span>Bình luận</span>
+                            </a>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+        {% elif search_type in ['title', 'hashtag', 'all'] %}
+        <div class="text-center py-12 bg-white rounded-2xl shadow-sm">
+            <i class="fas fa-search text-gray-300 text-5xl mb-4"></i>
+            <p class="text-gray-500 text-lg">Không tìm thấy bài viết nào phù hợp.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-8 flex flex-col items-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent mb-4"></div>
+        <p class="text-gray-700">Đang tìm kiếm...</p>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show loading overlay when changing search type
+    const searchLinks = document.querySelectorAll('a[href*="search_type"]');
+    searchLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            document.getElementById('loading-overlay').classList.remove('hidden');
+            document.getElementById('loading-overlay').classList.add('flex');
+        });
+    });
+});
+</script>
+{% endblock %}
