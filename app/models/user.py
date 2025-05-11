@@ -5,13 +5,13 @@ import random
 import os
 import hashlib
 from app.models.saved_post import SavedPost
+from app.models.follow import Follow
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)  # đổi về Integer
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     firebase_uid = db.Column(db.String(120), unique=True)
-
 
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -30,6 +30,22 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     last_login = db.Column(db.DateTime)
+
+    # Quan hệ followers/following thông qua model Follow
+    following = db.relationship(
+        'Follow',
+        foreign_keys='Follow.follower_id',
+        backref='follower_user',
+        lazy='dynamic',
+        cascade='all, delete-orphan'
+    )
+    followers = db.relationship(
+        'Follow',
+        foreign_keys='Follow.followed_id',
+        backref='followed_user',
+        lazy='dynamic',
+        cascade='all, delete-orphan'
+    )
 
     def is_admin(self):
         return self.role == 'admin'

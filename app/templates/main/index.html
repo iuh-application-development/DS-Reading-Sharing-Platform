@@ -15,38 +15,15 @@
             <div class="p-6">
                 <!-- Header -->
                 <div class="flex items-start justify-between">
-                    <div class="flex items-center">
-                        <img src="{{ url_for('static', filename=post.author.get_avatar_path()) if post.author.avatar_filename else post.author.avatar_url }}"
-                            alt="{{ post.author.username }}"
-                            class="h-10 w-10 rounded-full object-cover">
-                        <div class="ml-4">
-                            <h2 class="text-xl font-bold">
-                                <span class="flex items-center">
-                                    {{ post.author.full_name }}
-                                </span>
-                            </h2>
-                            <div class="flex items-center flex-wrap mt-1 text-sm text-gray-500">
-                                <span class="flex items-center">
-                                    <i class="far fa-clock mr-1"></i>
-                                    {{ post.created_at.strftime('%d/%m/%Y') }}
-                                </span>
-                                <span class="ml-2 flex items-center">
-                                    {% if post.visibility == 0 %}
-                                    <i class="fa-solid fa-globe"></i>
-                                    {% else %}
-                                    <i class="fa-solid fa-lock"></i>
-                                    {% endif %}
-
-                                </span>
-                                {% if post.source_link %}
-                                {% endif %}
-                                {% if post.status == 'pending' %}
-                                <span
-                                    class="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
-                                    Đang chờ duyệt
-                                </span>
-                                {% endif %}
-                            </div>
+                    <div class="flex items-center space-x-3">
+                        <img src="{% if post.author.avatar_filename %}{{ url_for('static', filename=post.author.get_avatar_path()) }}{% elif post.author.avatar_url %}{{ post.author.avatar_url }}{% else %}{{ url_for('static', filename='img/default-avatar.png') }}{% endif %}" 
+                             alt="{{ post.author.username }}" 
+                             class="w-10 h-10 rounded-full object-cover">
+                        <div>
+                            <a href="{{ url_for('auth.profile', username=post.author.username) }}" class="font-medium text-gray-900 hover:text-blue-600">
+                                {{ post.author.full_name or post.author.username }}
+                            </a>
+                            <p class="text-sm text-gray-500">{{ post.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
                         </div>
                     </div>
 

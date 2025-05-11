@@ -23,5 +23,9 @@ instance/*
 *.sqlite
 *.sqlite3 
 
-# Firebase credentials giu lai file firebase-auth
-# .firebase-auth.json
+# Firebase credentials
+.firebase-auth.json
+
+# Uploads folder
+app/static/uploads/*
+!app/static/uploads/.gitkeep
