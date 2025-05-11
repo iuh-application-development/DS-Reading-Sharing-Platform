@@ -23,7 +23,7 @@
             <!-- Main content editor -->
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 fade-in">
-                    <form method="POST" action="{{ url_for('main.create_post') }}" class="p-8">
+                    <form method="POST" action="{{ url_for('main.create_post') }}" enctype="multipart/form-data" class="p-8">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <!-- Nguồn bài viết -->
                             <div class="space-y-6">
@@ -31,132 +31,178 @@
                                     <i class="fas fa-link text-blue-500 mr-2"></i>
                                     Nguồn bài viết
                                 </h2>
-                                
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Link bài viết gốc</label>
-                                    <input type="url" name="source_link" 
-                                           class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"
-                                           placeholder="Nhập URL bài viết gốc">
+                                    <input type="url" name="source_link" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all" placeholder="Nhập URL bài viết gốc">
                                 </div>
-                                
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Nội dung gốc</label>
-                                    <textarea name="source_content" rows="10"
-                                            class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"
-                                            placeholder="Nhập hoặc dán nội dung bài viết gốc"></textarea>
+                                    <textarea name="source_content" rows="10" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all" placeholder="Nhập hoặc dán nội dung bài viết gốc"></textarea>
                                 </div>
-                            </div>
-        <div class="bg-white rounded-xl shadow-lg">
-            <form method="POST" action="{{ url_for('main.create_post') }}" enctype="multipart/form-data" class="p-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Nguồn bài viết -->
-                    <div class="space-y-6">
-                        <h2 class="text-xl font-semibold text-gray-800 pb-2 border-b border-gray-200 flex items-center">
-                            <i class="fas fa-link text-blue-500 mr-2"></i>
-                            Nguồn bài viết
-                        </h2>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Link bài viết gốc</label>
-                            <input type="url" name="source_link" 
-                                   class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Nội dung gốc</label>
-                            <textarea name="source_content" rows="10"
-                                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"></textarea>
-                        </div>
-
-                        <!-- Thêm phần upload ảnh -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Ảnh đính kèm</label>
-                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
-                                <div class="space-y-1 text-center">
-                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                    <div class="flex text-sm text-gray-600">
-                                        <label for="image" class="relative cursor-pointer bg-white rounded-md font-medium text-orange-600 hover:text-orange-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-orange-500">
-                                            <span>Tải ảnh lên</span>
-                                            <input id="image" name="image" type="file" class="sr-only" accept="image/*">
-                                        </label>
-                                        <p class="pl-1">hoặc kéo thả vào đây</p>
+                                <!-- Upload ảnh đính kèm -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Ảnh đính kèm</label>
+                                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
+                                        <div class="space-y-1 text-center">
+                                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                            <div class="flex text-sm text-gray-600 justify-center">
+                                                <label for="image" class="relative cursor-pointer bg-white rounded-md font-medium text-orange-600 hover:text-orange-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-orange-500">
+                                                    <span>Tải ảnh lên</span>
+                                                    <input id="image" name="image" type="file" class="sr-only" accept="image/*">
+                                                </label>
+                                                <p class="pl-1">hoặc kéo thả vào đây</p>
+                                            </div>
+                                            <div id="image-preview"></div>
+                                            <p class="text-xs text-gray-500">PNG, JPG, GIF tối đa 10MB</p>
+                                        </div>
                                     </div>
-                                    <p class="text-xs text-gray-500">PNG, JPG, GIF tối đa 10MB</p>
+                                </div>
+                            </div>
+                            <!-- Bài viết của bạn -->
+                            <div class="space-y-6">
+                                <h2 class="text-xl font-semibold text-gray-800 pb-2 border-b border-gray-200 flex items-center">
+                                    <i class="fas fa-pencil-alt text-orange-500 mr-2"></i>
+                                    Bài viết của bạn
+                                </h2>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Tiêu đề</label>
+                                    <input type="text" name="title" required class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all" placeholder="Nhập tiêu đề bài viết">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Nội dung</label>
+                                    <textarea name="content" rows="10" required class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all" placeholder="Viết nội dung bài viết của bạn"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+                                    <input type="text" name="tags" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all" placeholder="Ví dụ: công nghệ, tin tức, khoa học">
+                                    <p class="mt-1 text-sm text-gray-500">Phân cách các tags bằng dấu phẩy</p>
                                 </div>
                             </div>
                         </div>
+                        <div class="mt-8 flex items-center justify-between">
+                            <a href="{{ url_for('main.index') }}" class="text-gray-600 hover:text-gray-800 transition-colors flex items-center">
+                                <i class="fas fa-arrow-left mr-2"></i>
+                                Quay lại
+                            </a>
+                            <div class="flex space-x-4">
+                                <select name="visibility" class="me-8 px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500">
+                                    <option value="0" {% if visibility == '0' %}selected{% endif %}>Công khai</option>
+                                    <option value="1" {% if visibility == '1' %}selected{% endif %}>Chỉ mình tôi</option>
+                                </select>
+                                <button type="submit" class="bg-gradient-to-r from-orange-500 to-blue-500 px-6 py-2.5 rounded-lg text-white font-semibold hover:shadow-lg transition-all duration-300 flex items-center">
+                                    <i class="fas fa-paper-plane mr-2"></i>
+                                    Đăng bài
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!-- AI Assistant Chat -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-lg p-6 sticky top-4">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+                        <i class="fas fa-robot text-blue-500 mr-2"></i>
+                        AI Assistant
+                    </h2>
+                    <!-- Chat messages -->
+                    <div id="chat-messages" class="h-[500px] overflow-y-auto mb-4 space-y-4 bg-gray-50 rounded-lg p-4">
+                        <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+                            <p class="text-sm text-gray-700">Xin chào! Tôi là trợ lý AI, có thể giúp bạn:</p>
+                            <ul class="text-sm list-disc list-inside mt-2 text-gray-600">
+                                <li>Trả lời câu hỏi về nhiều chủ đề</li>
+                                <li>Giúp đỡ viết và chỉnh sửa nội dung</li>
+                                <li>Đưa ra gợi ý và tư vấn</li>
+                                <li>Thảo luận về các vấn đề xã hội, công nghệ, khoa học</li>
+                                <li>Hỗ trợ học tập và nghiên cứu</li>
+                            </ul>
+                        </div>
                     </div>
-
-                    <!-- Bài viết của bạn -->
-                    <div class="space-y-6">
-                        <h2 class="text-xl font-semibold text-gray-800 pb-2 border-b border-gray-200 flex items-center">
-                            <i class="fas fa-pencil-alt text-orange-500 mr-2"></i>
-                            Bài viết của bạn
-                        </h2>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Tiêu đề</label>
-                            <input type="text" name="title" required
-                                   class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Nội dung</label>
-                            <textarea name="content" rows="10" required
-                                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"></textarea>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Tags</label>
-                            <input type="text" name="tags"
-                                   class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"
-                                   placeholder="Ví dụ: công nghệ, tin tức, khoa học">
-                            <p class="mt-1 text-sm text-gray-500">Phân cách các tags bằng dấu phẩy</p>
-                        </div>
+                    <!-- Chat input -->
+                    <div class="flex space-x-2">
+                        <input type="text" id="chat-input" class="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all" placeholder="Nhập câu hỏi hoặc yêu cầu của bạn...">
+                        <button onclick="sendMessage()" class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2.5 rounded-lg hover:shadow-md transition-all duration-200 flex items-center">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            Gửi
+                        </button>
                     </div>
                 </div>
-
-                <div class="mt-8 flex justify-end">
-                    <select name="visibility" readonly class="me-8 px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500">
-                        <option value="0" {% if visibility == '0' %}selected{% endif %}>
-                            Công khai
-                        </option>
-                        <option value="1" {% if visibility == '1' %}selected{% endif %}>
-                            Chỉ mình tôi
-                        </option>
-                    </select>
-                  
-                    <button type="submit" class="bg-gradient-to-r from-orange-500 to-red-500 px-6 py-2.5 rounded-lg text-white font-semibold hover:shadow-lg transition-all duration-300 flex items-center">
-                      <i class="fas fa-paper-plane mr-2"></i>
-                      Đăng bài
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
+{% endblock %}
 
-<!-- Thêm JavaScript để xử lý preview ảnh -->
+{% block scripts %}
 <script>
-document.getElementById('image').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const preview = document.createElement('img');
-            preview.src = e.target.result;
-            preview.className = 'mt-2 max-h-48 rounded-lg';
-            
-            const container = document.querySelector('.border-dashed');
-            const existingPreview = container.querySelector('img');
-            if (existingPreview) {
-                container.removeChild(existingPreview);
+// Preview ảnh upload
+const imageInput = document.getElementById('image');
+if (imageInput) {
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                let preview = document.getElementById('image-preview');
+                if (!preview) {
+                    preview = document.createElement('img');
+                    preview.id = 'image-preview';
+                    preview.className = 'mt-2 max-h-48 rounded-lg mx-auto';
+                    imageInput.parentNode.parentNode.appendChild(preview);
+                }
+                preview.src = e.target.result;
             }
-            container.appendChild(preview);
+            reader.readAsDataURL(file);
         }
-        reader.readAsDataURL(file);
+    });
+}
+
+// AI Chat Bot
+function addMessage(message, isUser = false) {
+    const chatMessages = document.getElementById('chat-messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `rounded-lg p-4 ${isUser ? 'bg-blue-50 ml-12 border border-blue-100' : 'bg-white mr-12 border border-gray-100'} shadow-sm`;
+    messageDiv.innerHTML = `<p class="text-sm text-gray-700">${message}</p>`;
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const sendButton = input.nextElementSibling;
+    const message = input.value.trim();
+    if (!message) return;
+    input.disabled = true;
+    sendButton.disabled = true;
+    addMessage(message, true);
+    input.value = '';
+    try {
+        const response = await fetch('/api/ai/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: message, context: '' })
+        });
+        if (!response.ok) throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
+        const data = await response.json();
+        if (data.error) {
+            addMessage(`Lỗi: ${data.error}`, false);
+        } else {
+            addMessage(data.response || 'Không có phản hồi từ AI.', false);
+        }
+    } catch (error) {
+        addMessage(`Lỗi: ${error.message}. Vui lòng kiểm tra kết nối hoặc thử lại.`, false);
+    } finally {
+        input.disabled = false;
+        sendButton.disabled = false;
+        input.focus();
+    }
+}
+
+document.getElementById('chat-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        sendMessage();
     }
 });
 </script>
