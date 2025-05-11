@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+      - uploads_data:/app/app/static/uploads
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql://postgres:wsunicorn@db:5432/ds_reading_db
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=wsunicorn
+      - POSTGRES_DB=ds_reading_db
+    ports:
+      - "5433:5432"
+
+volumes:
+  postgres_data:
+  uploads_data: 

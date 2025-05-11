@@ -1,0 +1,15 @@
+runtime: python39
+entrypoint: gunicorn -b :$PORT run:app
+
+env_variables:
+  FLASK_APP: "run.py"
+  FLASK_ENV: "production"
+  SECRET_KEY: "your-secret-key-here"
+  # Cloud SQL connection sẽ được thêm sau
+  
+instance_class: F1
+
+automatic_scaling:
+  target_cpu_utilization: 0.65
+  min_instances: 1
+  max_instances: 10 
