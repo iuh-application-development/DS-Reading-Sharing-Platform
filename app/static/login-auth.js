@@ -1,9 +1,9 @@
 import { auth, provider } from "./firebase-config.js";
 
-import { createUserWithEmailAndPassword,
-         signInWithEmailAndPassword,
-         signInWithPopup,
-         sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+import { 
+         
+         signInWithPopup
+         } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 
 
 const signInWithGoogleButtonEl = document.getElementById("google_login");
@@ -15,7 +15,7 @@ async function authWithGoogle(){
     // provider la dich vu google
     // auth la dich vu xac thuc
     try {
-        const result = await signInWithPopup(auth, provider); // ✅ await để đợi popup hoàn tất
+        const result = await signInWithPopup(auth, provider); // 
         if (!result) {
             throw new Error("Không có kết quả từ Google Sign-In.");
         }

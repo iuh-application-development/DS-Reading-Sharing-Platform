@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify, session
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify, session
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.models.user import User
@@ -10,6 +11,10 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 import os
 from app.utils.pexels import get_random_avatar
+from firebase_admin import credentials, firestore, auth
+import firebase_admin
+from flask import jsonify
+
 from firebase_admin import credentials, firestore, auth
 import firebase_admin
 from flask import jsonify
@@ -32,7 +37,15 @@ def allowed_file(filename):
 # def login():
 #     if current_user.is_authenticated:
 #         return redirect(url_for('main.index'))
+# @bp.route('/login', methods=['GET', 'POST'])
+# def login():
+#     if current_user.is_authenticated:
+#         return redirect(url_for('main.index'))
         
+#     if request.method == 'POST':
+#         login_id = request.form.get('login_id')  # Có thể là username hoặc email
+#         password = request.form.get('password')
+#         remember = request.form.get('remember', False)
 #     if request.method == 'POST':
 #         login_id = request.form.get('login_id')  # Có thể là username hoặc email
 #         password = request.form.get('password')
@@ -42,7 +55,15 @@ def allowed_file(filename):
 #         user = User.query.filter(
 #             (User.username == login_id) | (User.email == login_id)
 #         ).first()
+#         # Tìm user theo username hoặc email
+#         user = User.query.filter(
+#             (User.username == login_id) | (User.email == login_id)
+#         ).first()
         
+#         if user and check_password_hash(user.password_hash, password):
+#             if not user.is_active:
+#                 flash('Tài khoản của bạn đã bị vô hiệu hóa.', 'error')
+#                 return redirect(url_for('auth.login'))
 #         if user and check_password_hash(user.password_hash, password):
 #             if not user.is_active:
 #                 flash('Tài khoản của bạn đã bị vô hiệu hóa.', 'error')
@@ -51,17 +72,31 @@ def allowed_file(filename):
 #             login_user(user, remember=remember)
 #             user.last_login = datetime.utcnow()
 #             db.session.commit()
+#             login_user(user, remember=remember)
+#             user.last_login = datetime.utcnow()
+#             db.session.commit()
             
+#             next_page = request.args.get('next')
+#             return redirect(next_page or url_for('main.index'))
+#         else:
+#             flash('Tên đăng nhập/email hoặc mật khẩu không đúng.', 'error')
 #             next_page = request.args.get('next')
 #             return redirect(next_page or url_for('main.index'))
 #         else:
 #             flash('Tên đăng nhập/email hoặc mật khẩu không đúng.', 'error')
     
 #     return render_template('auth/login.html')
+# @bp.route('/login', methods=['GET', 'POST'])
+# def login():
+#     return render_template('auth/login.html')
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     return render_template('auth/login.html')
 
+# @bp.route('/register', methods=['GET', 'POST'])
+# def register():
+#     if current_user.is_authenticated:
+#         return redirect(url_for('main.index'))
 # @bp.route('/register', methods=['GET', 'POST'])
 # def register():
 #     if current_user.is_authenticated:
@@ -77,7 +112,21 @@ def login():
 #         date_of_birth = request.form.get('date_of_birth')
 #         gender = request.form.get('gender')
 #         bio = request.form.get('bio')
+#     if request.method == 'POST':
+#         username = request.form.get('username')
+#         email = request.form.get('email')
+#         password = request.form.get('password')
+#         confirm_password = request.form.get('confirm_password')
+#         full_name = request.form.get('full_name')
+#         phone = request.form.get('phone')
+#         date_of_birth = request.form.get('date_of_birth')
+#         gender = request.form.get('gender')
+#         bio = request.form.get('bio')
         
+#         # Kiểm tra mật khẩu xác nhận
+#         if password != confirm_password:
+#             flash('Mật khẩu xác nhận không khớp.', 'error')
+#             return redirect(url_for('auth.register'))
 #         # Kiểm tra mật khẩu xác nhận
 #         if password != confirm_password:
 #             flash('Mật khẩu xác nhận không khớp.', 'error')
@@ -87,7 +136,15 @@ def login():
 #         if User.query.filter_by(username=username).first():
 #             flash('Tên đăng nhập đã được sử dụng.', 'error')
 #             return redirect(url_for('auth.register'))
+#         # Kiểm tra username đã tồn tại
+#         if User.query.filter_by(username=username).first():
+#             flash('Tên đăng nhập đã được sử dụng.', 'error')
+#             return redirect(url_for('auth.register'))
             
+#         # Kiểm tra email đã tồn tại
+#         if User.query.filter_by(email=email).first():
+#             flash('Email đã được sử dụng.', 'error')
+#             return redirect(url_for('auth.register'))
 #         # Kiểm tra email đã tồn tại
 #         if User.query.filter_by(email=email).first():
 #             flash('Email đã được sử dụng.', 'error')
@@ -104,7 +161,21 @@ def login():
 #             gender=gender,
 #             bio=bio
 #         )
+#         # Tạo user mới
+#         new_user = User(
+#             username=username,
+#             email=email,
+#             password_hash=generate_password_hash(password),
+#             full_name=full_name,
+#             phone=phone,
+#             date_of_birth=datetime.strptime(date_of_birth, '%Y-%m-%d').date() if date_of_birth else None,
+#             gender=gender,
+#             bio=bio
+#         )
         
+#         # Lấy avatar ngẫu nhiên khi tạo user
+#         new_user.random_avatar_url = get_random_avatar()
+#         new_user.avatar_updated_at = datetime.utcnow()
 #         # Lấy avatar ngẫu nhiên khi tạo user
 #         new_user.random_avatar_url = get_random_avatar()
 #         new_user.avatar_updated_at = datetime.utcnow()
@@ -236,71 +307,18 @@ def logout():
     logout_user()
     return redirect(url_for('main.index'))
 
-@bp.route('/profile', methods=['GET', 'POST'])
-@login_required
-def profile():
-    if request.method == 'POST':
-        try:
-            # Cập nhật thông tin profile
-            current_user.full_name = request.form.get('full_name')
-            current_user.bio = request.form.get('bio')
-            current_user.phone = request.form.get('phone')
-            
-            # Xử lý ngày sinh
-            date_of_birth = request.form.get('date_of_birth')
-            if date_of_birth:
-                current_user.date_of_birth = datetime.strptime(date_of_birth, '%Y-%m-%d')
-            
-            current_user.gender = request.form.get('gender')
-
-            # Xử lý upload avatar nếu có
-            if 'avatar' in request.files:
-                file = request.files['avatar']
-                if file and file.filename != '' and allowed_file(file.filename):
-                    # Tạo tên file an toàn
-                    filename = secure_filename(file.filename)
-                    # Thêm timestamp vào tên file để tránh trùng lặp
-                    filename = f"{current_user.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
-                    
-                    # Lưu file
-                    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'avatars')
-                    os.makedirs(upload_folder, exist_ok=True)
-                    file_path = os.path.join(upload_folder, filename)
-                    file.save(file_path)
-                    
-                    # Xóa avatar cũ nếu có
-                    if current_user.avatar_filename:
-                        old_file_path = os.path.join(upload_folder, current_user.avatar_filename)
-                        if os.path.exists(old_file_path):
-                            os.remove(old_file_path)
-                    
-                    # Cập nhật thông tin avatar trong database
-                    current_user.avatar_filename = filename
-                    current_user.avatar_url = None
-
-            db.session.commit()
-            
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({
-                    'success': True,
-                    'message': 'Cập nhật thông tin thành công!',
-                    'avatar_url': url_for('static', filename=current_user.get_avatar_path()) if current_user.avatar_filename else current_user.avatar_url
-                })
-            
-            flash('Cập nhật thông tin thành công!', 'success')
-            return redirect(url_for('auth.profile'))
-            
-        except Exception as e:
-            db.session.rollback()
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({
-                    'success': False,
-                    'error': 'Có lỗi xảy ra khi cập nhật thông tin.'
-                }), 400
-                
-            flash('Có lỗi xảy ra khi cập nhật thông tin.', 'error')
-            
-    return render_template('auth/profile.html')
+@bp.route('/profile/<username>')
+def profile(username):
+    """Xem profile của người dùng"""
+    user = User.query.filter_by(username=username).first_or_404()
+    page = request.args.get('page', 1, type=int)
+    
+    # Lấy danh sách bài viết của người dùng
+    posts = Post.query.filter_by(user_id=user.id)\
+        .order_by(Post.created_at.desc())\
+        .paginate(page=page, per_page=10, error_out=False)
+    
+    return render_template('auth/user_profile.html', user=user, posts=posts)
 
 @bp.route('/refresh-avatar', methods=['POST'])
 @login_required
@@ -363,17 +381,13 @@ def authorize():
         # Xác minh token
         token = token[7:]
         decoded_token = auth.verify_id_token(token, check_revoked=True, clock_skew_seconds=60)
-        
-        # print("Decoded token:", decoded_token)
-        # print(f"Headers: {request.headers}")
-        # print(f"Payload: {request.get_json()}")
+        firebase_uid = decoded_token['uid']
 
         data = request.get_json()
         email = data.get("email")
         full_name = data.get('full_name')
         phone = data.get('phone')
 
-        # photo = data.get('photo') 
 
         user = User.query.filter_by(email=email).first()
 
@@ -381,14 +395,14 @@ def authorize():
             user = User(
                     username=email,
                     email=email,
-                    password_hash=generate_password_hash(""),
                     full_name=full_name,
                     phone=phone,
                     date_of_birth=None,
                     gender=None,
                     bio=None,
                     avatar_url=User.generate_random_avatar(),  
-                    created_at=datetime.utcnow()
+                    created_at=datetime.utcnow(),
+                    firebase_uid = firebase_uid
                 )
             db.session.add(user)
             db.session.commit()
@@ -456,3 +470,56 @@ def upload_avatar():
         
     return redirect(url_for('auth.profile'))
 
+@bp.route('/edit_profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    if request.method == 'POST':
+        current_user.full_name = request.form.get('full_name')
+        current_user.phone = request.form.get('phone')
+        current_user.date_of_birth = datetime.strptime(request.form.get('date_of_birth'), '%Y-%m-%d') if request.form.get('date_of_birth') else None
+        current_user.gender = request.form.get('gender')
+        current_user.bio = request.form.get('bio')
+        
+        # Xử lý avatar
+        if 'avatar' in request.files:
+            file = request.files['avatar']
+            if file and file.filename:
+                try:
+                    # Tạo tên file an toàn
+                    filename = secure_filename(file.filename)
+                    # Thêm timestamp vào tên file để tránh trùng lặp
+                    filename = f"{current_user.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
+                    
+                    # Lưu file
+                    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'avatars')
+                    os.makedirs(upload_folder, exist_ok=True)
+                    file_path = os.path.join(upload_folder, filename)
+                    
+                    # Xóa avatar cũ nếu có
+                    if current_user.avatar_filename:
+                        old_file_path = os.path.join(upload_folder, current_user.avatar_filename)
+                        if os.path.exists(old_file_path):
+                            os.remove(old_file_path)
+                    
+                    # Lưu avatar mới
+                    file.save(file_path)
+                    
+                    # Cập nhật thông tin avatar trong database
+                    current_user.avatar_filename = filename
+                    current_user.avatar_url = None  # Reset avatar_url khi có avatar_filename
+                    
+                except Exception as e:
+                    print(f"Error uploading avatar: {str(e)}")
+                    flash('Có lỗi xảy ra khi cập nhật avatar.', 'error')
+                    return redirect(url_for('auth.edit_profile'))
+        
+        try:
+            db.session.commit()
+            flash('Thông tin cá nhân đã được cập nhật thành công!', 'success')
+            return redirect(url_for('auth.profile', username=current_user.username))
+        except Exception as e:
+            db.session.rollback()
+            flash('Có lỗi xảy ra khi cập nhật thông tin.', 'error')
+            return redirect(url_for('auth.edit_profile'))
+    
+    return render_template('auth/edit_profile.html', user=current_user)

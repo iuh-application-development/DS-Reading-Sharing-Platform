@@ -2,11 +2,14 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate 
+from flask_migrate import Migrate 
 from config import Config
 import os
 from sqlalchemy import inspect
+from sqlalchemy import inspect
 
 db = SQLAlchemy()
+migrate = Migrate()  
 migrate = Migrate()  
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
@@ -21,15 +24,21 @@ def create_app():
     except OSError:
         pass
 
+    # Khởi tạo các extension
     db.init_app(app)
     migrate.init_app(app, db) 
     login_manager.init_app(app)
+    
+    # Khởi tạo Flask-Migrate
+    with app.app_context():
+        migrate.init_app(app, db)
 
     @login_manager.user_loader
     def load_user(id):
         from app.models.user import User
         return User.query.get(int(id))
 
+    # Import models
     # Import models
     from app.models.user import User
     from app.models.post import Post
@@ -46,6 +55,9 @@ def create_app():
     
     with app.app_context():
         inspector = inspect(db.engine)
+        if not inspector.has_table('users'):
+            db.create_all()
+        inspector = inspect(db.engine)
         if not inspector.has_table('user'):
             db.create_all()
             from app.utils.admin import create_initial_admin
@@ -55,3 +67,4 @@ def create_app():
             print("Database already exists, skipping initialization")
 
     return app
+
