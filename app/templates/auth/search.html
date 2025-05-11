@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="mt-4 mx-auto">
+<div class="mt-4 mx-auto fade-in">
     <!-- Kết quả tìm kiếm -->
-    <div>
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Kết quả tìm kiếm cho "{{ query }}"</h2>
+    <div class="slide-up">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4 scale-in">Kết quả tìm kiếm cho "{{ query }}"</h2>
         {% if posts %}
-        <div class=" border border-gray-200 rounded-lg shadow-lg max-h max-w  ">
+        <div class="border border-gray-200 rounded-lg shadow-lg max-h max-w fade-in transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
             {% for post in posts %}
             <!-- <a href="{{ url_for('main.view_post', post_id=post.id) }}" class="block px-4 py-3 border-b border-gray-200 last:border-b-0 hover:bg-gray-100 transition-all duration-200">
                 <h5 class="text-gray-800 font-medium">{{ post.title }}</h5>
@@ -16,7 +16,7 @@
                 </div>
             </a> -->
             <div
-            class=" rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 mt-4 mx-4 mb-4">
+            class=" rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 fade-in">
             <div class="p-6">
                 <!-- Header -->
                 <div class="flex items-start justify-between">
@@ -64,9 +64,6 @@
                                 class="{% if post.id in current_user.saved_posts|map(attribute='post_id') %}fas{% else %}far{% endif %} fa-bookmark"></i>
                         </button>
                         {% endif %}
-                        <button class="text-gray-400 hover:text-red-500 transition-colors">
-                            <i class="far fa-heart"></i>
-                        </button>
                     </div>
                 </div>
 
@@ -147,8 +144,43 @@
     </div>
 </div>
 <script >
-function toggle_like(postId, button) {
-        fetch(`{{ url_for('main.toggle_like', post_id=0) }}`.replace('0', postId), {
+    function toggle_like(postId, button) {
+            fetch(`{{ url_for('main.toggle_like', post_id=0) }}`.replace('0', postId), {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update icon
+                        const icon = button.querySelector('i');
+                        if (data.status === 'liked') {
+                            icon.classList.remove('far');
+                            icon.classList.add('fas');
+                            
+                            button.classList.add('text-orange-500');
+                        } else {
+                            icon.classList.remove('fas');
+                            icon.classList.add('far');
+                            
+                            button.classList.remove('text-orange-500');
+                            
+                        }
+
+                        // Show notification
+                        showMessage(data.message, 'success');
+                    }
+                })
+                .catch(error => {
+                    showMessage('Đã xảy ra lỗi khi lưu bài viết', 'error');
+                });
+    }
+    function toggleSavePost(postId, button) {
+        fetch(`{{ url_for('main.toggle_save_post', post_id=0) }}`.replace('0', postId), {
             method: 'POST',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
@@ -161,17 +193,16 @@ function toggle_like(postId, button) {
                 if (data.success) {
                     // Update icon
                     const icon = button.querySelector('i');
-                    if (data.status === 'liked') {
+                    if (data.status === 'saved') {
                         icon.classList.remove('far');
                         icon.classList.add('fas');
-                        
                         button.classList.add('text-orange-500');
+                        button.classList.remove('text-gray-400');
                     } else {
                         icon.classList.remove('fas');
                         icon.classList.add('far');
-                        
                         button.classList.remove('text-orange-500');
-                        
+                        button.classList.add('text-gray-400');
                     }
 
                     // Show notification
@@ -181,6 +212,37 @@ function toggle_like(postId, button) {
             .catch(error => {
                 showMessage('Đã xảy ra lỗi khi lưu bài viết', 'error');
             });
+    }
+
+    function showMessage(message, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 flex items-center ${type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+            }`;
+
+        messageDiv.innerHTML = `
+        <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-2"></i>
+        ${message}
+    `;
+
+        // Add animation classes
+        messageDiv.style.transition = 'all 0.3s ease';
+        messageDiv.style.transform = 'translateY(-1rem)';
+        messageDiv.style.opacity = '0';
+
+        document.body.appendChild(messageDiv);
+
+        // Trigger animation
+        setTimeout(() => {
+            messageDiv.style.transform = 'translateY(0)';
+            messageDiv.style.opacity = '1';
+        }, 10);
+
+        // Remove after delay
+        setTimeout(() => {
+            messageDiv.style.transform = 'translateY(-1rem)';
+            messageDiv.style.opacity = '0';
+            setTimeout(() => messageDiv.remove(), 200);
+        }, 3000);
     }
 </script>
 {% endblock %}

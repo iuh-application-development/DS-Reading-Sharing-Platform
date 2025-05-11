@@ -2,8 +2,8 @@
 {% from 'components/pagination.html' import render_pagination %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-8 text-gray-900 flex items-center">
+<div class="container mx-auto px-4 py-8 fade-in">
+    <h1 class="text-3xl font-bold mb-8 text-gray-900 flex items-center scale-in">
         <i class="fas fa-newspaper text-orange-500 mr-3"></i>
         Bài viết mới nhất
     </h1>
@@ -11,7 +11,7 @@
     <div class="grid grid-cols-1 gap-8">
         {% for post in posts.items %}
         <div
-            class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 fade-in">
             <div class="p-6">
                 <!-- Header -->
                 <div class="flex items-start justify-between">
