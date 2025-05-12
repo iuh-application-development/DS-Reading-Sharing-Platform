@@ -5,7 +5,9 @@ from flask_migrate import Migrate
 from config import Config
 import os
 from sqlalchemy import inspect
+from flask_socketio import SocketIO
 
+socketio = SocketIO()
 db = SQLAlchemy()
 migrate = Migrate()  
 login_manager = LoginManager()
@@ -14,7 +16,7 @@ login_manager.login_view = 'auth.login'
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-    
+    socketio.init_app(app)
     # Đảm bảo thư mục instance tồn tại
     try:
         os.makedirs(app.instance_path)
@@ -38,10 +40,12 @@ def create_app():
     from app.routes.main import bp as main_bp
     from app.routes.auth import bp as auth_bp
     from app.routes.admin import bp as admin_bp
+    from app.routes.notification import bp as notification_bp
     
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(notification_bp)
 
     
     with app.app_context():

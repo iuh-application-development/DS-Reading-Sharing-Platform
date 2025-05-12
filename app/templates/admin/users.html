@@ -77,9 +77,8 @@
                             <form action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" method="POST" class="inline">
                                 <select name="status" onchange="this.form.submit()" 
                                         class="text-sm rounded border-gray-300 focus:border-blue-300 focus:ring focus:ring-blue-200">
-                                    <option value="active" {% if user.account_status == 'active' %}selected{% endif %}>Active</option>
-                                    <option value="suspended" {% if user.account_status == 'suspended' %}selected{% endif %}>Suspended</option>
-                                    <option value="banned" {% if user.account_status == 'banned' %}selected{% endif %}>Banned</option>
+                                    <option value="active" {% if user_status_map[user.id] == 'active' %}selected{% endif %}>Active</option>
+                                    <option value="banned" {% if user_status_map[user.id] == 'banned' %}selected{% endif %}>Banned</option>
                                 </select>
                             </form>
                             

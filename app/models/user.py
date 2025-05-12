@@ -25,7 +25,6 @@ class User(UserMixin, db.Model):
     gender = db.Column(db.String(10))
     
     role = db.Column(db.String(20), default='user')
-    is_active = db.Column(db.Boolean, default=True)
     is_initial_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

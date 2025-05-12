@@ -5,11 +5,19 @@ from app.models.post import Post
 from app.models.user import User
 from app.models.comment import Comment
 from app.models.saved_post import SavedPost
+# from app.models.notification import Notification
 from werkzeug.utils import secure_filename
 import os
 from app import db
 from datetime import datetime
+from app.services.notification_service import NotificationService
 from app.models.follow import Follow
+from flask_socketio import emit
+from app import socketio
+from app.sockets import notification
+import logging
+
+logger = logging.getLogger(__name__)
 
 bp = Blueprint('main', __name__)
 
@@ -99,6 +107,28 @@ def create_post():
             db.session.add(post)
             db.session.commit()
             flash('Bài viết đã được đăng thành công.', 'success')
+            followers = Follow.query.filter_by(followed_id=current_user.id).all()
+            message = f'{current_user.full_name} vừa đăng bài mới!'
+
+
+            for follower in followers:
+                # Tạo thông báo trong database
+                notification = NotificationService.create_post_notification(
+                    user_id=follower.follower_id,
+                    message=message,
+                    post_id=post.id,
+                    type = 'create-post'
+                )
+                
+                if notification:
+                    # Gửi thông báo realtime qua socket
+                    socketio.emit('action_post', {
+                        'message': message,
+                        'user_id': follower.follower_id,
+                        'post_id': post.id,
+                        'type' : 'create-post'
+                    }, room=f'user_{follower.follower_id}')
+
             return redirect(url_for('main.view_post', post_id=post.id))
         except Exception as e:
             db.session.rollback()
@@ -121,15 +151,17 @@ def my_posts():
     
     return render_template('main/my_posts.html', posts=posts)
 
+
+
 @bp.route('/post/<int:post_id>')
 def view_post(post_id):
-    """Xem chi tiết bài viết"""
     post = Post.query.get_or_404(post_id)
     comments = Comment.query.filter_by(post_id=post.id).order_by(Comment.created_at.desc()).all()
     likes = []
     if current_user.is_authenticated:
         likes = [like.post_id for like in Like.query.filter_by(user_id=current_user.id).all()]
     return render_template('main/view_post.html', post=post, comments=comments, likes=likes)
+
 
 @bp.route('/post/<int:post_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -176,6 +208,21 @@ def edit_post(post_id):
             flash('Có lỗi xảy ra khi cập nhật bài viết.', 'error')
             
     return render_template('main/edit_post.html', post=post)
+@bp.route('/mention-users')
+@login_required
+def mention_users():
+    q = request.args.get('q', '').strip().lower()
+    followed_users = User.query.join(Follow, Follow.followed_id == User.id) \
+        .filter(Follow.follower_id == current_user.id) \
+        .filter(User.username.ilike(f'%{q}%')) \
+        .all()
+
+    return jsonify([{
+        'username': u.username,
+        'full_name': u.full_name or '',
+        'avatar_url': u.avatar_url or User.generate_random_avatar()
+    } for u in followed_users])
+
 
 @bp.route('/post/<int:post_id>/delete', methods=['POST'])
 @login_required
@@ -235,7 +282,7 @@ def saved_posts():
 @login_required
 def add_comment(post_id):
     post = Post.query.get_or_404(post_id)
-    
+    user_id_post = post.user_id
 
     if not current_user.is_authenticated:
         flash('Bạn cần đăng nhập để bình luận.', 'warning')
@@ -253,6 +300,23 @@ def add_comment(post_id):
         try:
             db.session.add(comment)
             db.session.commit()
+            if current_user.id != user_id_post:
+                message = f'{current_user.full_name} đã bình luận vào bài viết của bạn'
+                
+                notification = NotificationService.create_post_notification(
+                    user_id=user_id_post,
+                    message=message,
+                    post_id=post.id,
+                    type='comment-post'
+                )
+
+                if notification:
+                    socketio.emit('action_post', {
+                        'user_id': user_id_post,
+                        'message': message,
+                        'post_id': post.id,
+                        'type': 'comment-post'
+                    }, room=f"user_{user_id_post}")
             flash('Bình luận của bạn đã được đăng.', 'success')
         except Exception as e:
             db.session.rollback()
@@ -265,35 +329,54 @@ def add_comment(post_id):
 @login_required
 def toggle_like(post_id):
     post = Post.query.get_or_404(post_id)
-    like = Like.query.filter_by(user_id = current_user.id, post_id = post_id).first()
-    if like is None:
-        like = Like(
-            user_id=current_user.id,
-            post_id=post.id
-        )
-        try:
-            db.session.add(like)
-            db.session.commit()
-            return jsonify({
-                'success': True,
-                'message': 'Đã thích bài viết',
-                'status': 'liked'
-            })
-        except Exception as e:
-            db.session.rollback()
-            flash('Có lỗi xảy ra khi thích bài viết.', 'error')
-    else:
-        try:
-            db.session.delete(like)
+    user_id_post = post.user_id
+    existing_like = Like.query.filter_by(user_id=current_user.id, post_id=post_id).first()
+
+    try:
+        if existing_like:
+            db.session.delete(existing_like)
             db.session.commit()
             return jsonify({
                 'success': True,
                 'message': 'Đã bỏ thích bài viết',
                 'status': 'unliked'
             })
-        except Exception as e:
-            db.session.rollback()
-            flash('Có lỗi xảy ra', 'error')
+
+        # Thêm like mới
+        like = Like(user_id=current_user.id, post_id=post.id)
+        db.session.add(like)
+        db.session.commit()
+
+        # Không cần gửi thông báo cho chính mình
+        if current_user.id != user_id_post:
+            message = f'{current_user.full_name} đã thích bài viết của bạn'
+            
+            notification = NotificationService.create_post_notification(
+                user_id=user_id_post,
+                message=message,
+                post_id=post.id,
+                type='like-post'
+            )
+
+            if notification:
+                socketio.emit('action_post', {
+                    'user_id': user_id_post,
+                    'message': message,
+                    'post_id': post.id,
+                    'type': 'like-post'
+                }, room=f"user_{user_id_post}")
+
+        return jsonify({
+            'success': True,
+            'message': 'Đã thích bài viết',
+            'status': 'liked'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        flash('Có lỗi xảy ra khi xử lý like.', 'error')
+        return jsonify({'success': False, 'message': 'Lỗi hệ thống'}), 500
+
 
 @bp.route('/follow/<int:user_id>', methods=['POST'])
 @login_required
@@ -366,3 +449,10 @@ def followers():
 def following():
     """Chuyển hướng đến trang Follow với tab Đang theo dõi"""
     return redirect(url_for('main.follow', tab='following'))
+
+# Thong bao
+@bp.route('/notifications')
+@login_required
+def notifications():
+    notifications = NotificationService.get_user_notifications(current_user.id, limit=100)
+    return render_template('main/notifications.html', notifications=notifications)
