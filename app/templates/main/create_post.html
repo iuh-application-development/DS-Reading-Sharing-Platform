@@ -8,17 +8,6 @@
             Tạo bài viết mới
         </h1>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="mb-6 p-4 rounded-lg flex items-center {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
-                        <i class="fas {% if category == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} mr-3"></i>
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
         <div class="bg-white rounded-xl shadow-lg">
             <form method="POST" action="{{ url_for('main.create_post') }}" enctype="multipart/form-data" class="p-8">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -28,29 +17,33 @@
                             <i class="fas fa-link text-blue-500 mr-2"></i>
                             Nguồn bài viết
                         </h2>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Link bài viết gốc</label>
-                            <input type="url" name="source_link" 
-                                   class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all">
+                            <input type="url" name="source_link"
+                                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all">
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nội dung gốc</label>
                             <textarea name="source_content" rows="10"
-                                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"></textarea>
+                                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"></textarea>
                         </div>
 
-                        <!-- Thêm phần upload ảnh -->
+                        <!-- Ảnh đính kèm -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Ảnh đính kèm</label>
                             <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
                                 <div class="space-y-1 text-center">
-                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none"
+                                        viewBox="0 0 48 48" aria-hidden="true">
+                                        <path
+                                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
                                     <div class="flex text-sm text-gray-600">
-                                        <label for="image" class="relative cursor-pointer bg-white rounded-md font-medium text-orange-600 hover:text-orange-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-orange-500">
+                                        <label for="image"
+                                            class="relative cursor-pointer bg-white rounded-md font-medium text-orange-600 hover:text-orange-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-orange-500">
                                             <span>Tải ảnh lên</span>
                                             <input id="image" name="image" type="file" class="sr-only" accept="image/*">
                                         </label>
@@ -62,48 +55,49 @@
                         </div>
                     </div>
 
-                    <!-- Bài viết của bạn -->
+                    <!-- Bài viết -->
                     <div class="space-y-6">
                         <h2 class="text-xl font-semibold text-gray-800 pb-2 border-b border-gray-200 flex items-center">
                             <i class="fas fa-pencil-alt text-orange-500 mr-2"></i>
                             Bài viết của bạn
                         </h2>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Tiêu đề</label>
                             <input type="text" name="title" required
-                                   class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all">
+                                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all">
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nội dung</label>
-                            <textarea name="content" rows="10" required
-                                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"></textarea>
+                            <textarea name="content" id="post-content" rows="10" required
+                                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"></textarea>
+                            <div id="mention-suggestions"
+                                class="absolute bg-white border border-gray-300 rounded-md shadow-md z-50 hidden max-h-60 overflow-y-auto w-64">
+                            </div>
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Tags</label>
                             <input type="text" name="tags"
-                                   class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"
-                                   placeholder="Ví dụ: công nghệ, tin tức, khoa học">
+                                class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"
+                                placeholder="Ví dụ: công nghệ, tin tức, khoa học">
                             <p class="mt-1 text-sm text-gray-500">Phân cách các tags bằng dấu phẩy</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="mt-8 flex justify-end">
-                    <select name="visibility" readonly class="me-8 px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500">
-                        <option value="0" {% if visibility == '0' %}selected{% endif %}>
-                            Công khai
-                        </option>
-                        <option value="1" {% if visibility == '1' %}selected{% endif %}>
-                            Chỉ mình tôi
-                        </option>
+                    <select name="visibility" readonly
+                        class="me-8 px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500">
+                        <option value="0" {% if visibility=='0' %}selected{% endif %}>Công khai</option>
+                        <option value="1" {% if visibility=='1' %}selected{% endif %}>Chỉ mình tôi</option>
                     </select>
-                  
-                    <button type="submit" class="bg-gradient-to-r from-orange-500 to-red-500 px-6 py-2.5 rounded-lg text-white font-semibold hover:shadow-lg transition-all duration-300 flex items-center">
-                      <i class="fas fa-paper-plane mr-2"></i>
-                      Đăng bài
+
+                    <button type="submit"
+                        class="bg-gradient-to-r from-orange-500 to-red-500 px-6 py-2.5 rounded-lg text-white font-semibold hover:shadow-lg transition-all duration-300 flex items-center">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Đăng bài
                     </button>
                 </div>
             </form>
@@ -111,26 +105,83 @@
     </div>
 </div>
 
-<!-- Thêm JavaScript để xử lý preview ảnh -->
+<!-- Preview ảnh -->
 <script>
-document.getElementById('image').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const preview = document.createElement('img');
-            preview.src = e.target.result;
-            preview.className = 'mt-2 max-h-48 rounded-lg';
-            
-            const container = document.querySelector('.border-dashed');
-            const existingPreview = container.querySelector('img');
-            if (existingPreview) {
-                container.removeChild(existingPreview);
+    document.getElementById('image').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const preview = document.createElement('img');
+                preview.src = e.target.result;
+                preview.className = 'mt-2 max-h-48 rounded-lg';
+
+                const container = document.querySelector('.border-dashed');
+                const existingPreview = container.querySelector('img');
+                if (existingPreview) {
+                    container.removeChild(existingPreview);
+                }
+                container.appendChild(preview);
             }
-            container.appendChild(preview);
+            reader.readAsDataURL(file);
         }
-        reader.readAsDataURL(file);
-    }
-});
+    });
 </script>
-{% endblock %} 
+
+<!-- Gợi ý mention -->
+<script>
+    const textarea = document.getElementById('post-content');
+    const mentionBox = document.getElementById('mention-suggestions');
+    let mentionStart = null;
+
+    textarea.addEventListener('input', function () {
+        const pos = textarea.selectionStart;
+        const text = textarea.value.slice(0, pos);
+        const match = text.match(/@([\w\s]*)$/); // Cho phép có khoảng trắng
+
+        if (match) {
+            const query = match[1];
+
+            fetch(`/mention-users?q=${query}`)
+                .then(res => res.json())
+                .then(users => {
+                    if (users.length > 0) {
+                        mentionBox.innerHTML = users.map(user => `
+                            <div class="mention-item px-3 py-2 hover:bg-orange-100 cursor-pointer flex items-center gap-2"
+                                 data-username="${user.username}" data-fullname="${user.full_name}">
+                                <img src="${user.avatar_url}" class="w-6 h-6 rounded-full" alt="avatar">
+                                <div>
+                                    <strong>@${user.full_name}</strong><br>
+                                    <span class="text-xs text-gray-500">${user.username}</span>
+                                </div>
+                            </div>
+                        `).join('');
+
+                        const rect = textarea.getBoundingClientRect();
+                        mentionBox.style.top = (window.scrollY + rect.top + 30) + 'px';
+                        mentionBox.style.left = (window.scrollX + rect.left + 20) + 'px';
+                        mentionBox.classList.remove('hidden');
+                        mentionStart = match.index;
+                    } else {
+                        mentionBox.classList.add('hidden');
+                    }
+                });
+        } else {
+            mentionBox.classList.add('hidden');
+        }
+    });
+
+    mentionBox.addEventListener('click', function (e) {
+        const item = e.target.closest('.mention-item');
+        if (item) {
+            const fullName = item.dataset.fullname;
+            const pos = textarea.selectionStart;
+            const before = textarea.value.slice(0, mentionStart);
+            const after = textarea.value.slice(pos);
+            textarea.value = before + '@' + fullName + ' ' + after;
+            textarea.focus();
+            mentionBox.classList.add('hidden');
+        }
+    });
+</script>
+{% endblock %}

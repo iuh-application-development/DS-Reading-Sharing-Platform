@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DS Reading Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='socket.js') }}"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Thêm font Google -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -138,6 +141,11 @@
                                     <i class="fas fa-bookmark w-6 text-center"></i>
                                     <span class="ml-3">Bài viết đã lưu</span>
                                 </a>
+                                <a href="/notifications"
+                                   class="flex items-center mt-2 py-2.5 px-4 text-white hover:bg-white/10 rounded-lg transition-all duration-200">
+                                    <i class="fas fa-bell w-6 text-center"></i>
+                                    <span class="ml-3">Thông báo</span>
+                                </a>
                             </div>
                         {% endif %}
 
@@ -146,7 +154,7 @@
                             <!-- User Info -->
                             <div class="px-4 py-3 mb-2">
                                 <div class="flex items-center space-x-3">
-                                    <img src="{{ url_for('static', filename=current_user.get_avatar_path()) if current_user.avatar_filename else current_user.avatar_url }}"
+                                    <img src="{{ current_user.avatar_url }}" 
                                          alt="{{ current_user.username }}" 
                                          class="h-10 w-10 rounded-full object-cover ring-2 ring-white/30">
                                     <div class="nav-text">
@@ -218,19 +226,25 @@
 
         <!-- Main Content -->
         <div id="main-content" class="flex-1 p-8 bg-gray-50">
+            {% if request.endpoint not in ['main.notifications', 'auth.login', 'auth.register'] %}
             <!-- Thanh tìm kiếm ở trên cùng -->
-            {% if current_user.is_authenticated %}
             <div class="mb-6">
                 <form action="{{ url_for('auth.search_posts') }}" method="GET"
                     class="flex items-center max-w-lg mx-auto relative">
                     <div class="relative w-full">
                         <input type="text" name="query" id="search-input"
                             class="w-full p-3 pl-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            placeholder="Tìm kiếm bài đăng..." autocomplete="off">
+                            placeholder="Tìm kiếm bài đăng, tác giả hoặc #hashtag..." autocomplete="off">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3">
                             <i class="fas fa-search text-gray-400"></i>
                         </div>
                     </div>
+                    <select name="search_type" class="ml-2 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="all">Tất cả</option>
+                        <option value="title">Tiêu đề</option>
+                        <option value="author">Tác giả</option>
+                        <option value="hashtag">Hashtag</option>
+                    </select>
                     <button type="submit"
                         class="ml-2 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200">
                         Tìm
@@ -238,10 +252,103 @@
                 </form>
             </div>
             {% endif %}
+
             <div class="max-w-7xl mx-auto">
                 {% block content %}{% endblock %}
             </div>
         </div>
     </div>
+    
+    <!-- Add this before closing body tag -->
+    {% if current_user.is_authenticated %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Load notifications
+        function loadNotifications() {
+            fetch('/notifications')
+                .then(response => response.json())
+                .then(notifications => {
+                    const notificationList = document.getElementById('notification-list');
+                    notificationList.innerHTML = notifications.map(notification => `
+                        <a href="/post/${notification.post_id}" class="block p-4 border-b hover:bg-gray-50 ${notification.is_read ? '' : 'bg-blue-50'}">
+                            <div class="flex items-start">
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-900">${notification.message}</p>
+                                    <p class="text-xs text-gray-500 mt-1">${notification.created_at}</p>
+                                </div>
+                                ${!notification.is_read ? '<div class="w-2 h-2 bg-blue-500 rounded-full"></div>' : ''}
+                            </div>
+                        </a>
+                    `).join('');
+                });
+        }
+
+        // Update unread count
+        function updateUnreadCount() {
+            fetch('/notifications/unread-count')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.getElementById('notification-badge');
+                    if (data.count > 0) {
+                        badge.textContent = data.count;
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                });
+        }
+
+        // Mark all as read
+        document.getElementById('mark-all-read').addEventListener('click', function() {
+            fetch('/notifications/mark-all-read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadNotifications();
+                    updateUnreadCount();
+                }
+            });
+        });
+
+        // Initial load
+        loadNotifications();
+        updateUnreadCount();
+
+        // Set up polling
+        setInterval(() => {
+            loadNotifications();
+            updateUnreadCount();
+        }, 30000); // Check every 30 seconds
+    });
+    </script>
+    
+    {% endif %}
+ <!-- cai nay la cai chuong ben goc ben phai -->
+    {% if current_user.is_authenticated %}
+    <div class="fixed top-6 right-10 z-50">
+        <div x-data="{ open: false }" class="relative">
+            <button @click="open = !open" class="relative focus:outline-none">
+                <i class="fas fa-bell text-2xl text-gray-500 hover:text-indigo-600"></i>
+                <span id="notification-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 hidden">0</span>
+            </button>
+            <!-- Dropdown -->
+            <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-2 border-b">
+                    <span class="font-semibold text-gray-700">Thông báo</span>
+                    <button id="mark-all-read" class="text-xs text-indigo-600 hover:underline">Đánh dấu đã đọc</button>
+                </div>
+                <div id="notification-list" class="max-h-80 overflow-y-auto">
+                    <div class="p-4 text-gray-400 text-center">Đang tải...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <div id="user-info" data-user-id="{{ current_user.id }}"></div>
 </body>
 </html>

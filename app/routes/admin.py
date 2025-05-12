@@ -4,6 +4,7 @@ from app.models.user import User
 from app.models.post import Post
 from app import db
 from functools import wraps
+from app.firebase_service import auth
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -38,27 +39,46 @@ def dashboard():
                          posts_count=posts_count,
                          pending_posts=pending_posts)
 
+# Lấy trạng thái user từ firebase
+def get_users_with_status():
+    users = User.query.all()
+    user_status_map = {}
+
+    for u in users:
+        fb_user = auth.get_user(u.firebase_uid)
+        user_status_map[u.id] = "banned" if fb_user.disabled else "active"
+
+    return user_status_map
+
+
 @bp.route('/users')
 @admin_required
 def manage_users():
     users = User.query.filter(User.id != current_user.id).all()
-    return render_template('admin/users.html', users=users)
+    user_status_map = get_users_with_status()
+    return render_template('admin/users.html', users=users, user_status_map = user_status_map)
+
 
 @bp.route('/user/<int:user_id>/toggle_status', methods=['POST'])
 @initial_admin_required
 def toggle_user_status(user_id):
     user = User.query.get_or_404(user_id)
-    
+    uid = user.firebase_uid
     if user.is_initial_admin:
         flash('Không thể thay đổi trạng thái của admin initial.', 'error')
         return redirect(url_for('admin.manage_users'))
     
     new_status = request.form.get('status')
-    if new_status in ['active', 'suspended', 'banned']:
-        user.account_status = new_status
-        user.is_active = (new_status == 'active')
-        db.session.commit()
-        flash(f'Đã cập nhật trạng thái tài khoản của {user.username}.', 'success')
+    if new_status in ['active', 'banned']:
+        try:
+            if new_status == 'banned':
+                disabled = True
+            else:
+                disabled = False
+            auth.update_user(uid, disabled=disabled )   
+        except Exception as e:
+            flash(f'Lỗi {e}','error')
+        flash(f'Đã cập nhật trạng thái tài khoản của {user.full_name}.', 'success')
     
     return redirect(url_for('admin.manage_users'))
 
