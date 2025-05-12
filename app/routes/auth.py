@@ -250,7 +250,6 @@ def firebase_register_status():
     first_name = data.get('first_name')
     last_name = data.get('last_name')
 
-
     if status == 'success':
         id_token = data.get('idToken')
         if not id_token:
@@ -265,18 +264,26 @@ def firebase_register_status():
             # Check nếu user chưa tồn tại
             existing_user = User.query.filter_by(firebase_uid=uid).first()
             if not existing_user:
+                # Tạo username duy nhất
+                base_username = email.split('@')[0]
+                username = base_username
+                counter = 1
+                while User.query.filter_by(username=username).first():
+                    username = f"{base_username}{counter}"
+                    counter += 1
+                
                 new_user = User(
                     firebase_uid=uid,
                     email=email,
-                    username=email.split('@')[0],
+                    username=username,
                     full_name=f"{last_name} {first_name}",
-                    avatar_url = User.generate_random_avatar(),
+                    avatar_url=User.generate_random_avatar(),
                 )
                 db.session.add(new_user)
                 db.session.commit()
+                flash('Đăng ký thành công! Vui lòng đăng nhập.', 'success')
             else:
                 flash('Tài khoản đã tồn tại.', 'info')
-
 
             return jsonify({'redirect': url_for('auth.login')}), 200
 
@@ -423,52 +430,52 @@ def authorize():
 def upload_avatar():
     if 'avatar' not in request.files:
         flash('Không có file được chọn.', 'error')
-        return redirect(url_for('auth.profile'))
+        return redirect(url_for('auth.profile', username=current_user.username))
         
     file = request.files['avatar']
     if file.filename == '':
         flash('Không có file được chọn.', 'error')
-        return redirect(url_for('auth.profile'))
+        return redirect(url_for('auth.profile', username=current_user.username))
         
     if file and allowed_file(file.filename):
         try:
             # Tạo tên file an toàn
             filename = secure_filename(file.filename)
-            # Thêm timestamp vào tên file để tránh trùng lặp
             filename = f"{current_user.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
             
-            # Lưu file
-            upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'avatars')
+            # Đường dẫn lưu trữ
+            upload_folder = os.path.join(current_app.config.get('UPLOAD_FOLDER', 'static/uploads'), 'avatars')
             os.makedirs(upload_folder, exist_ok=True)
             file_path = os.path.join(upload_folder, filename)
             
-            print(f"Saving file to: {file_path}")  # Debug log
+            # Lưu file
             file.save(file_path)
-            print(f"File saved successfully")  # Debug log
+            
+            # Kiểm tra xem tệp đã lưu thành công
+            if not os.path.exists(file_path):
+                flash('Lỗi khi lưu tệp avatar.', 'error')
+                return redirect(url_for('auth.profile', username=current_user.username))
             
             # Xóa avatar cũ nếu có
             if current_user.avatar_filename:
                 old_file_path = os.path.join(upload_folder, current_user.avatar_filename)
                 if os.path.exists(old_file_path):
                     os.remove(old_file_path)
-                    print(f"Old avatar removed: {old_file_path}")  # Debug log
             
-            # Cập nhật thông tin avatar trong database
+            # Cập nhật thông tin avatar
             current_user.avatar_filename = filename
-            current_user.avatar_url = None  # Reset avatar_url khi có avatar_filename
+            current_user.avatar_url = None  # Reset avatar_url
             
             db.session.commit()
-            print(f"Database updated with new avatar: {filename}")  # Debug log
-            
             flash('Cập nhật ảnh đại diện thành công!', 'success')
         except Exception as e:
-            print(f"Error uploading avatar: {str(e)}")  # Debug log
+            current_app.logger.error(f"Error uploading avatar: {str(e)}")
             db.session.rollback()
             flash('Có lỗi xảy ra khi cập nhật avatar.', 'error')
     else:
         flash('File không hợp lệ. Chỉ chấp nhận file ảnh (PNG, JPG, JPEG, GIF).', 'error')
         
-    return redirect(url_for('auth.profile'))
+    return redirect(url_for('auth.profile', username=current_user.username))
 
 @bp.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
