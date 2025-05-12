@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from datetime import timedelta
 
-load_dotenv()
+load_dotenv(override=False)  # Không ghi đè biến môi trường từ docker-compose.yml
 
 class Config:
     # Cấu hình bảo mật
@@ -24,7 +24,7 @@ class Config:
     MIGRATIONS_DIR = 'migrations'
     
     # Cấu hình upload
-    UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app', 'static', 'uploads')
+    UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app', 'static', 'Uploads')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
     
