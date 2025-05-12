@@ -386,23 +386,40 @@ def follow_user(user_id):
             'success': False,
             'message': 'Bạn không thể follow chính mình'
         })
-    
+
     user_to_follow = User.query.get_or_404(user_id)
     existing_follow = Follow.query.filter_by(
         follower_id=current_user.id,
         followed_id=user_id
     ).first()
-    
+
     if existing_follow:
         return jsonify({
             'success': False,
             'message': 'Bạn đã follow người dùng này'
         })
-    
+
     follow = Follow(follower_id=current_user.id, followed_id=user_id)
     db.session.add(follow)
     db.session.commit()
+
+    message = f'{current_user.full_name} đã theo dõi bạn'
     
+    # Gửi notification
+    notification = NotificationService.create_post_notification(
+        user_id=user_id,
+        message=message,
+        post_id=current_user.id,
+        type='follow-post'
+    )
+
+    if notification:
+        socketio.emit('follow_action', {
+            'user_id': user_id,
+            'message': message,
+            'follower': current_user.username,
+            'type': 'follow-post'
+        }, room=f'user_{user_id}')
     return jsonify({
         'success': True,
         'message': f'Đã follow {user_to_follow.username}'

@@ -1,67 +1,12 @@
 document.addEventListener('DOMContentLoaded', function () {
     console.log('DOM loaded, initializing socket...');
-    
+
     const socket = io();
 
-    socket.on('connect', () => {
-        console.log('Socket connected successfully');
-        const userInfo = document.getElementById('user-info');
-        if (userInfo) {
-            const userId = userInfo.dataset.userId;
-            console.log('Joining room for user:', userId);
-            socket.emit('join', { user_id: userId });
-        } else {
-            console.warn('No user info element found');
-        }
-    });
-
-    socket.on('disconnect', () => {
-        console.log('Socket disconnected');
-    });
-
-    socket.on('connect_error', (error) => {
-        console.error('Socket connection error:', error);
-    });
-
-    // Handle all post-related notifications
-    socket.on('action_post', (data) => {
-        console.log('Received action_post:', data);
-
-        const userInfo = document.getElementById('user-info');
-        const currentUserId = userInfo?.dataset.userId;
-
-        if (currentUserId === data.user_id) {
-            console.log('Skipping notification for own action');
-            return;
-        }
-
-        // Tùy loại thông báo
-        let link = `/post/${data.post_id}`;
-        let message = data.message;
-
-        if (data.type === 'like-post') {
-            message = data.message || 'Ai đó đã thích bài viết của bạn!';
-        } else if (data.type === 'create-post') {
-            message = data.message || 'Có bài viết mới!';
-        }else if (data.type === 'comment-post') {
-            message = data.message || 'Ai đó đã bình luận vào bài viết của bạn';
-        } else {
-            console.warn('Không rõ type:', data.type);
-            return;
-        }
-
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = 'notification';
-        notification.innerHTML = `
-            <div class="notification-content">
-                <div class="notification-message">${message}</div>
-                <a href="${link}" class="notification-link">Xem bài viết</a>
-            </div>
-        `;
-
-        // Style
+    // Add notification style once
+    
         const style = document.createElement('style');
+        style.id = 'socket-style';
         style.textContent = `
             .notification {
                 position: fixed;
@@ -98,16 +43,80 @@ document.addEventListener('DOMContentLoaded', function () {
                 to { transform: translateX(100%); opacity: 0; }
             }
         `;
-
         document.head.appendChild(style);
-        document.body.appendChild(notification);
+    
 
+    function showSocketNotification(message, linkText, linkHref) {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <div class="notification-message">${message}</div>
+                <a href="${linkHref}" class="notification-link">${linkText}</a>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
         setTimeout(() => {
             notification.style.animation = 'slideOut 0.3s ease-out';
-            setTimeout(() => {
-                document.body.removeChild(notification);
-                document.head.removeChild(style);
-            }, 300);
+            setTimeout(() => notification.remove(), 300);
         }, 5000);
+    }
+
+    socket.on('connect', () => {
+        console.log('Socket connected successfully');
+        const userInfo = document.getElementById('user-info');
+        if (userInfo) {
+            const userId = userInfo.dataset.userId;
+            console.log('Joining room for user:', userId);
+            socket.emit('join', { user_id: userId });
+        } else {
+            console.warn('No user info element found');
+        }
+    });
+
+    socket.on('disconnect', () => {
+        console.log('Socket disconnected');
+    });
+
+    socket.on('connect_error', (error) => {
+        console.error('Socket connection error:', error);
+    });
+
+    socket.on('action_post', (data) => {
+        console.log('Received action_post:', data);
+
+        const userInfo = document.getElementById('user-info');
+        const currentUserId = userInfo?.dataset.userId;
+
+        if (String(currentUserId) !== String(data.user_id)) return;
+
+        let message = data.message;
+        let link = `/post/${data.post_id}`;
+
+        if (data.type === 'like-post') {
+            message = message || 'Ai đó đã thích bài viết của bạn!';
+        } else if (data.type === 'create-post') {
+            message = message || 'Có bài viết mới!';
+        } else if (data.type === 'comment-post') {
+            message = message || 'Ai đó đã bình luận vào bài viết của bạn';
+        } else {
+            console.warn('Không rõ type:', data.type);
+            return;
+        }
+
+        showSocketNotification(message, 'Xem bài viết', link);
+    });
+
+    socket.on('follow_action', (data) => {
+        const userInfo = document.getElementById('user-info');
+        const currentUserId = userInfo?.dataset.userId;
+
+        if (String(currentUserId) !== String(data.user_id)) return;
+
+        const message = data.message || 'Bạn có người theo dõi mới!';
+        const link = `/profile/${data.follower}`;
+
+        showSocketNotification(message, 'Xem thông tin', link);
     });
 });
