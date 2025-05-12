@@ -88,12 +88,17 @@
                             </a>
                             <div class="flex space-x-4">
                                 <select name="visibility" class="me-8 px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500">
-                                    <option value="0" {% if visibility == '0' %}selected{% endif %}>Công khai</option>
-                                    <option value="1" {% if visibility == '1' %}selected{% endif %}>Chỉ mình tôi</option>
+                                    <option value="0">Công khai</option>
+                                    <option value="1">Chỉ mình tôi</option>
                                 </select>
-                                <button type="submit" class="bg-gradient-to-r from-orange-500 to-blue-500 px-6 py-2.5 rounded-lg text-white font-semibold hover:shadow-lg transition-all duration-300 flex items-center">
+                                <button type="submit" class="bg-gradient-to-r from-orange-500 to-blue-500 px-6 py-2.5 rounded-lg text-white font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center">
                                     <i class="fas fa-paper-plane mr-2"></i>
                                     Đăng bài
+                                </button>
+                                <button type="button" onclick="suggestContent()"
+                                        class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-2.5 rounded-lg text-white font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center">
+                                    <i class="fas fa-lightbulb mr-2"></i>
+                                    Gợi ý nội dung
                                 </button>
                             </div>
                         </div>
@@ -136,6 +141,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
 // Preview ảnh upload
 const imageInput = document.getElementById('image');
@@ -159,40 +165,302 @@ if (imageInput) {
     });
 }
 
-// AI Chat Bot
+// Thêm styles cho animation và markdown
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes typing {
+        from { width: 0 }
+        to { width: 100% }
+    }
+    @keyframes blink {
+        50% { border-color: transparent }
+    }
+    .typing-indicator {
+        display: inline-block;
+        padding: 8px 12px;
+        background: #f3f4f6;
+        border-radius: 12px;
+        margin-bottom: 8px;
+    }
+    .typing-dots {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .typing-dot {
+        width: 8px;
+        height: 8px;
+        background: #6b7280;
+        border-radius: 50%;
+        animation: typingDot 1.4s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(1) { animation-delay: 0s; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingDot {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-4px); }
+    }
+    .wave-text {
+        display: inline-block;
+        position: relative;
+        color: #4b5563;
+    }
+    .wave-text span {
+        display: inline-block;
+        animation: wave 1.5s infinite;
+        animation-delay: calc(0.1s * var(--i));
+    }
+    @keyframes wave {
+        0%, 40%, 100% {
+            transform: translateY(0);
+        }
+        20% {
+            transform: translateY(-4px);
+        }
+    }
+    .message-typing {
+        display: inline-block;
+        animation: typing 1s steps(3, end) infinite;
+    }
+    @keyframes typing {
+        0% { opacity: 0.3; }
+        50% { opacity: 1; }
+        100% { opacity: 0.3; }
+    }
+    .message-appear {
+        animation: slideIn 0.3s ease-out forwards;
+    }
+    .message-user {
+        animation: slideIn 0.3s ease-out forwards;
+        transform-origin: right;
+    }
+    .message-bot {
+        animation: slideIn 0.3s ease-out forwards;
+        transform-origin: left;
+    }
+    /* Markdown styles */
+    .markdown-content {
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+    .markdown-content h1, 
+    .markdown-content h2, 
+    .markdown-content h3 {
+        margin-top: 1.5em;
+        margin-bottom: 0.5em;
+        font-weight: 600;
+    }
+    .markdown-content h1 { font-size: 1.5em; }
+    .markdown-content h2 { font-size: 1.3em; }
+    .markdown-content h3 { font-size: 1.1em; }
+    .markdown-content p {
+        margin-bottom: 1em;
+    }
+    .markdown-content ul, 
+    .markdown-content ol {
+        margin: 1em 0;
+        padding-left: 2em;
+    }
+    .markdown-content li {
+        margin: 0.5em 0;
+    }
+    .markdown-content code {
+        background-color: #f3f4f6;
+        padding: 0.2em 0.4em;
+        border-radius: 3px;
+        font-family: monospace;
+    }
+    .markdown-content pre {
+        background-color: #f3f4f6;
+        padding: 1em;
+        border-radius: 6px;
+        overflow-x: auto;
+        margin: 1em 0;
+    }
+    .markdown-content pre code {
+        background-color: transparent;
+        padding: 0;
+    }
+    .markdown-content blockquote {
+        border-left: 4px solid #e5e7eb;
+        padding-left: 1em;
+        margin: 1em 0;
+        color: #4b5563;
+    }
+    .markdown-content a {
+        color: #2563eb;
+        text-decoration: underline;
+    }
+    .markdown-content table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 1em 0;
+    }
+    .markdown-content th,
+    .markdown-content td {
+        border: 1px solid #e5e7eb;
+        padding: 0.5em;
+        text-align: left;
+    }
+    .markdown-content th {
+        background-color: #f9fafb;
+    }
+`;
+document.head.appendChild(style);
+
+// Cấu hình marked options
+marked.setOptions({
+    breaks: true,
+    gfm: true,
+    headerIds: false,
+    mangle: false
+});
+
+function formatMessage(message) {
+    // Chỉ xử lý các trường hợp đặc biệt nếu cần
+    if (message.startsWith('Đề xuất tiêu đề:')) {
+        const titles = message.split('\n').slice(1);
+        return titles.map(title => `- ${title.trim()}`).join('\n');
+    }
+    if (message.startsWith('Đề xuất tags:')) {
+        const tags = message.split(':')[1].trim();
+        return `**Tags đề xuất:** ${tags}`;
+    }
+    if (message.startsWith('Đề xuất cải thiện:')) {
+        try {
+            const improvements = JSON.parse(message.split(':')[1].trim());
+            let formatted = '**Đề xuất cải thiện:**\n\n';
+            for (const [key, value] of Object.entries(improvements)) {
+                formatted += `### ${key}\n${value}\n\n`;
+            }
+            return formatted;
+        } catch (e) {
+            return message;
+        }
+    }
+    return message;
+}
+
 function addMessage(message, isUser = false) {
     const chatMessages = document.getElementById('chat-messages');
     const messageDiv = document.createElement('div');
-    messageDiv.className = `rounded-lg p-4 ${isUser ? 'bg-blue-50 ml-12 border border-blue-100' : 'bg-white mr-12 border border-gray-100'} shadow-sm`;
-    messageDiv.innerHTML = `<p class="text-sm text-gray-700">${message}</p>`;
+    
+    messageDiv.className = `rounded-lg p-4 ${
+        isUser 
+            ? 'bg-blue-50 ml-12 border border-blue-100 message-user' 
+            : 'bg-white mr-12 border border-gray-100 message-bot'
+    } shadow-sm`;
+    
+    if (!isUser) {
+        if (message === 'Đang xử lý...') {
+            messageDiv.innerHTML = `
+                <div class="typing-indicator">
+                    <div class="wave-text">
+                        ${message.split('').map((char, i) => 
+                            `<span style="--i:${i}">${char}</span>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+        } else {
+            messageDiv.innerHTML = `
+                <div class="typing-indicator">
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            setTimeout(() => {
+                const formattedMessage = formatMessage(message);
+                messageDiv.innerHTML = `
+                    <div class="markdown-content">
+                        ${marked.parse(formattedMessage)}
+                    </div>
+                `;
+            }, 1000);
+        }
+    } else {
+        messageDiv.innerHTML = `<p class="text-sm text-gray-700">${message}</p>`;
+    }
+    
     chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
+    return messageDiv;
 }
 
 async function sendMessage() {
     const input = document.getElementById('chat-input');
-    const sendButton = input.nextElementSibling;
     const message = input.value.trim();
+    
     if (!message) return;
+    
+    // Disable input and button
     input.disabled = true;
+    const sendButton = input.nextElementSibling;
     sendButton.disabled = true;
-    addMessage(message, true);
+    
+    // Add user message
+    const userMessageDiv = addMessage(message, true);
     input.value = '';
+
+    // Add loading state
+    const loadingMessage = addMessage('Đang xử lý...', false);
+    
     try {
+        // Set timeout for the fetch request
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
+
         const response = await fetch('/api/ai/chat', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: message, context: '' })
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: message,
+                context: ''
+            }),
+            signal: controller.signal
         });
-        if (!response.ok) throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
+        
+        clearTimeout(timeoutId);
+
+        if (response.status === 429) {
+            // Rate limit exceeded
+            addMessage('Hệ thống đang bận, vui lòng thử lại sau ít phút.', false);
+            return;
+        }
+        
         const data = await response.json();
+        
         if (data.error) {
             addMessage(`Lỗi: ${data.error}`, false);
         } else {
-            addMessage(data.response || 'Không có phản hồi từ AI.', false);
+            // Remove loading message and show actual response
+            loadingMessage.remove();
+            addMessage(data.response, false);
         }
+        
     } catch (error) {
-        addMessage(`Lỗi: ${error.message}. Vui lòng kiểm tra kết nối hoặc thử lại.`, false);
+        console.error('Error:', error);
+        
+        if (error.name === 'AbortError') {
+            addMessage('Yêu cầu của bạn đã hết thời gian chờ. Vui lòng thử lại.', false);
+        } else if (error.message.includes('Failed to fetch')) {
+            addMessage('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng của bạn.', false);
+        } else {
+            addMessage('Xin lỗi, có lỗi xảy ra. Vui lòng thử lại sau.', false);
+        }
     } finally {
         input.disabled = false;
         sendButton.disabled = false;
@@ -200,10 +468,95 @@ async function sendMessage() {
     }
 }
 
+// Handle Enter key in chat input
 document.getElementById('chat-input').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
         sendMessage();
     }
 });
+
+// Thêm hiệu ứng focus cho input
+const chatInput = document.getElementById('chat-input');
+chatInput.addEventListener('focus', () => {
+    chatInput.classList.add('ring-2', 'ring-blue-500/50', 'border-blue-500');
+});
+chatInput.addEventListener('blur', () => {
+    chatInput.classList.remove('ring-2', 'ring-blue-500/50', 'border-blue-500');
+});
+
+// Gợi ý nội dung
+async function suggestContent() {
+    const titleInput = document.querySelector('input[name="title"]').value;
+    const contentInput = document.querySelector('textarea[name="content"]').value;
+    const sourceContent = document.querySelector('textarea[name="source_content"]').value;
+    const sourceLink = document.querySelector('input[name="source_link"]').value;
+
+    const suggestionPrompt = `
+        Dựa trên thông tin sau, hãy đưa ra gợi ý cải thiện bài viết:
+        - Tiêu đề: ${titleInput || 'Chưa có tiêu đề'}
+        - Nội dung: ${contentInput || 'Chưa có nội dung'}
+        - Nguồn bài viết: ${sourceLink || 'Chưa có link nguồn'}
+        - Nội dung nguồn: ${sourceContent || 'Chưa có nội dung nguồn'}
+        
+        Gợi ý cải thiện bao gồm:
+        - Đề xuất tiêu đề hấp dẫn hơn (nếu cần)
+        - Gợi ý cải thiện nội dung (cấu trúc, từ ngữ, ý tưởng bổ sung)
+        - Đề xuất tags phù hợp
+    `;
+
+    const input = document.getElementById('chat-input');
+    input.disabled = true;
+    const sendButton = input.nextElementSibling;
+    sendButton.disabled = true;
+
+    const loadingMessage = addMessage('Đang xử lý...', false);
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+        const response = await fetch('/api/ai/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: suggestionPrompt,
+                context: ''
+            }),
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (response.status === 429) {
+            addMessage('Hệ thống đang bận, vui lòng thử lại sau ít phút.', false);
+            return;
+        }
+
+        const data = await response.json();
+
+        if (data.error) {
+            addMessage(`Lỗi: ${data.error}`, false);
+        } else {
+            loadingMessage.remove();
+            addMessage(data.response, false);
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        if (error.name === 'AbortError') {
+            addMessage('Yêu cầu của bạn đã hết thời gian chờ. Vui lòng thử lại.', false);
+        } else if (error.message.includes('Failed to fetch')) {
+            addMessage('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng của bạn.', false);
+        } else {
+            addMessage('Xin lỗi, có lỗi xảy ra. Vui lòng thử lại sau.', false);
+        }
+    } finally {
+        input.disabled = false;
+        sendButton.disabled = false;
+        input.focus();
+    }
+}
 </script>
-{% endblock %} 
+{% endblock %}
