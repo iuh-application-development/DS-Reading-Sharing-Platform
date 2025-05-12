@@ -17,6 +17,7 @@ login_manager.login_view = 'auth.login'
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
     
     # Đảm bảo thư mục instance tồn tại
     try:

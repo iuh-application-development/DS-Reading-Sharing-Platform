@@ -388,9 +388,9 @@
                             <!-- User Info -->
                             <div class="user-info">
                                 <div class="flex items-center space-x-3">
-                                    <img src="{{ url_for('static', filename=current_user.get_avatar_path()) if current_user.avatar_filename else current_user.avatar_url }}"
-                                         alt="{{ current_user.username }}" 
-                                         class="user-avatar">
+                                    <img src="{{ url_for('static', filename=current_user.get_avatar_path()) if current_user.get_avatar_path().startswith('uploads/avatars/') else current_user.get_avatar_path() }}"
+                                        alt="{{ current_user.username }}"
+                                        class="user-avatar">
                                     <div class="nav-text">
                                         <div class="text-white font-medium truncate">{{ current_user.full_name }}</div>
                                         <div class="text-xs text-blue-200">
