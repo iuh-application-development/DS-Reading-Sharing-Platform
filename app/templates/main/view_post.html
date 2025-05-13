@@ -250,21 +250,29 @@
 
 
     function deletePost(postId) {
-        if (confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
-            fetch(`/post/${postId}/delete`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.href = '/my-posts';
-                    }
-                });
-        }
+    if (confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
+        fetch(`/post/${postId}/delete`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                window.location.href = data.redirect_url;
+            } else {
+                showMessage(data.message || 'Xóa thất bại.', 'error');
+            }
+        })
+        .catch(err => {
+            showMessage('Lỗi khi gửi yêu cầu xóa bài viết', 'error');
+        });
     }
+}
+
 
     // Xử lý form bình luận
     document.querySelector('form[action*="add_comment"]').addEventListener('submit', function (e) {

@@ -21,6 +21,7 @@ import logging
 logger = logging.getLogger(__name__)
 from app.services.notification_service import NotificationService
 from app.models.notification import Notification
+from app.utils.time_vn import vn_now
 
 bp = Blueprint('main', __name__)
 
@@ -98,7 +99,7 @@ def create_post():
                     return redirect(url_for('main.create_post'))
 
                 ext = file.filename.rsplit('.', 1)[1].lower()
-                timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+                timestamp = vn_now.strftime('%Y%m%d_%H%M%S')
                 filename = secure_filename(f"{current_user.username}_{timestamp}.{ext}")
                 upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'posts')
                 os.makedirs(upload_folder, exist_ok=True)
@@ -197,7 +198,7 @@ def edit_post(post_id):
     if post.user_id != current_user.id:
         is_xhr = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         if is_xhr:
-            return jsonify({'success': False, 'error': 'Bạn không có quyền chỉnh sửa bài viết này.'})
+            return jsonify({'success': False, 'error': 'Bạn không có quyền chỉnh sửa bài viết này.'+ str(e)})
         flash('Bạn không có quyền chỉnh sửa bài viết này.', 'error')
         return redirect(url_for('main.index'))
 
@@ -223,7 +224,7 @@ def edit_post(post_id):
         post.source_content = source_content
         post.tags = tags
         post.visibility = visibility
-        post.updated_at = datetime.utcnow()
+        post.updated_at = vn_now()
 
         if 'image' in request.files:
             file = request.files['image']
@@ -269,7 +270,7 @@ def edit_post(post_id):
 
                 # Lưu ảnh mới
                 ext = file.filename.rsplit('.', 1)[1].lower()
-                timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+                timestamp = datetime.uctnow()
                 filename = secure_filename(f"{current_user.username}_{timestamp}.{ext}")
                 upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'posts')
                 os.makedirs(upload_folder, exist_ok=True)
@@ -306,8 +307,8 @@ def edit_post(post_id):
             db.session.rollback()
             current_app.logger.error(f"Failed to commit changes: {str(e)}")
             if is_xhr:
-                return jsonify({'success': False, 'error': 'Có lỗi xảy ra khi cập nhật bài viết.'})
-            flash('Có lỗi xảy ra khi cập nhật bài viết.', 'error')
+                return jsonify({'success': False, 'error': 'Có lỗi xảy ra khi cập nhật bài viết.'+ str(e)})
+            flash('Có lỗi xảy ra khi cập nhật bài viết.' + e, 'error')
             return redirect(url_for('main.edit_post', post_id=post_id))
             
     return render_template('main/edit_post.html', post=post)
@@ -331,39 +332,37 @@ def mention_users():
 @login_required
 def delete_post(post_id):
     post = Post.query.get_or_404(post_id)
-    
+    is_xhr = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
     if post.user_id != current_user.id:
-        flash('Bạn không có quyền xóa bài viết này.', 'error')
+        message = 'Bạn không có quyền xóa bài viết này.'
+        flash(message, 'error')
+        if is_xhr:
+            return jsonify(success=False, message=message), 403
         return redirect(url_for('main.index'))
 
     try:
-        # Xóa ảnh nếu có
+        # Xóa ảnh
         if post.image_url:
             image_path = os.path.join(current_app.root_path, 'static', 'uploads', 'posts', post.image_url.split('/')[-1])
-            current_app.logger.info(f"Attempting to delete image for post {post_id}: {image_path}")
             if os.path.isfile(image_path):
-                try:
-                    if not os.access(image_path, os.W_OK):
-                        current_app.logger.error(f"No write permission for {image_path}")
-                        flash('Không có quyền xóa ảnh của bài viết.', 'error')
-                    else:
-                        os.remove(image_path)
-                        current_app.logger.info(f"Successfully deleted image for post {post_id}: {image_path}")
-                except OSError as e:
-                    current_app.logger.error(f"Failed to delete image {image_path}: {str(e)}")
-                    flash(f'Không thể xóa ảnh của bài viết: {str(e)}', 'error')
-            else:
-                current_app.logger.warning(f"Image not found for post {post_id}: {image_path}")
-        
+                os.remove(image_path)
+
         db.session.delete(post)
         db.session.commit()
-        flash('Bài viết đã được xóa.', 'success')
+        message = 'Bài viết đã được xóa.'
+        flash(message, 'success')
+        if is_xhr:
+            return jsonify(success=True, message=message, redirect_url=url_for('main.my_posts'))
+        return redirect(url_for('main.my_posts'))
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Failed to delete post {post_id}: {str(e)}")
-        flash('Có lỗi xảy ra khi xóa bài viết.', 'error')
-        
-    return redirect(url_for('main.my_posts'))
+        message = 'Có lỗi xảy ra khi xóa bài viết.'
+        flash(message, 'error')
+        if is_xhr:
+            return jsonify(success=False, message=message), 500
+        return redirect(url_for('main.my_posts'))
+
 
 @bp.route('/post/<int:post_id>/toggle_save', methods=['POST'])
 @login_required

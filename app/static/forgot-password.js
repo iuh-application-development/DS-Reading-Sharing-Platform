@@ -7,25 +7,21 @@ document.querySelector('form').addEventListener('submit', (e) => {
 
     sendPasswordResetEmail(auth, email)
         .then(() => {
-            fetch('/forgotPassword', {
+            return fetch('/forgotPassword', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: 'success' })
-            })
-            .then(response => response.json())
-            .then(data => {
-                window.location.href = data.redirect;
             });
         })
         .catch((error) => {
-            fetch('/forgotPassword', {
+            return fetch('/forgotPassword', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: 'error', message: error.message })
-            })
-            .then(response => response.json())
-            .then(data => {
-                window.location.href = data.redirect;
             });
+        })
+        .then(() => {
+            // Reload lại trang để hiện flash message
+            window.location.reload();
         });
 });
