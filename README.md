@@ -1,197 +1,123 @@
-# **Đặc tả dự án DS-Reading-Platform**
+# **Data Sience Reading Sharing Platform**
 
-## **1. Mô tả chung**
-
-**DS-Reading-Platform** là một nền tảng web giúp người dùng đăng bài, chia sẻ bài viết với nội dung phong phú từ nhiều nguồn. Người dùng có thể:
-
-* Đính kèm **link bài viết** hoặc **nội dung text** vào khung bên trái.
-* Soạn bài post của riêng mình ở khung bên phải, có thể viết nhận xét, phân tích hoặc chia sẻ quan điểm.
-* Chia sẻ bài đăng của họ với cộng đồng.
-
-Hệ thống có cơ chế **quản trị viên (admin)** để giám sát nội dung và quản lý người dùng.
-
-## **2. Công nghệ sử dụng**
-
-* **Backend** : Flask
-* **Frontend** : Flask, Tailwindcss và React.js cho giao diện
-* **Cơ sở dữ liệu** : SQLite
-* **Môi trường ảo hóa** : Máy ảo (VM) để đảm bảo tính độc lập và hiệu suất cao (python -m venv venv)
+**Xây dựng nền tảng chia sẻ nội dung thông minh hỗ trợ người dùng trao đổi và lan tỏa tri thức (DS Reading Sharing Platform)
 
 ---
 
-## **3. Chức năng chính**
+## **1. THÔNG TIN NHÓM**
 
-### **3.1. Chức năng dành cho user**
-
-✅ **Đăng ký, đăng nhập, đăng xuất**
-
-✅ **Đăng bài** :
-
-* Nhập **link hoặc nội dung bài viết gốc** vào khung bên trái.
-* Soạn bài viết của riêng mình ở khung bên phải.
-* Có thể thêm tiêu đề, tag, định dạng markdown cơ bản.
-
-✅ **Tương tác với bài viết** :
-
-* Like, bình luận, lưu bài viết.
-* Chia sẻ bài viết của người khác.
-
-✅ **Quản lý bài viết cá nhân** :
-
-* Xem danh sách bài đã đăng.
-* Chỉnh sửa hoặc xóa bài viết của mình.
-
-✅ **Tìm kiếm bài viết** :
-
-* Lọc bài theo tag hoặc từ khóa.
+* Nguyễn Ngọc Lân – nguyenngoclan120904@gmail.com
+* Ngô Trường Định -
+* Nguyễn Tấn Minh
+* Phan Thành Đạt
 
 ---
 
-### **3.2. Chức năng dành cho admin**
+## **2. MÔ TẢ ĐỀ TÀI**
 
-✅ **Quản lý user**
+### **2.1. Mô tả tổng quan**
 
-* Xem danh sách user.
-* Chặn/tắt tài khoản vi phạm.
+Trong thời đại bùng nổ thông tin, việc chia sẻ những bài viết hay, nguồn học liệu chất lượng là điều cần thiết. Tuy nhiên, các nền tảng hiện tại thường thiếu công cụ hỗ trợ cá nhân hóa nội dung hoặc hỗ trợ người dùng tóm tắt bài viết nhanh chóng.
 
-✅ **Duyệt bài viết**
+Đề tài của chúng tôi là một nền tảng web mang tên **DS Reading Sharing Platform** – nơi người dùng có thể chia sẻ link bài viết, nhận tóm tắt nội dung và tương tác với chatbot hỗ trợ viết content. Web app này ứng dụng trí tuệ nhân tạo thông qua API của **Gemini** để hỗ trợ người dùng:
 
-* Kiểm duyệt nội dung bài viết nếu cần.
-* Ẩn hoặc xóa bài nếu vi phạm.
+* Soạn nội dung dễ dàng.
+* Tóm tắt các bài viết dài.
+* Tự động đăng bài viết đã xử lý.
+* Tương tác cơ bản như like, comment, lưu bài viết hay về kho lưu trữ,... cũng được thực hiện trên web app của chúng tôi.
 
-✅ **Phân quyền admin**
+Trang web còn hỗ trợ lưu trữ dữ liệu với PostgreSQL và Firebase, tích hợp Docker để đảm bảo khả năng triển khai dễ dàng trên **Google Cloud Platform** thông qua Cloud Run, Cloud SQL và hỗ trợ realtime nhờ Flask-SocketIO.
 
-* **Admin initial** :
-  * Là admin đầu tiên được tạo khi khởi tạo database.
-  * Không hiển thị trong danh sách user, không user nào có quyền thấy nó.
-  * Có quyền quản lý user khác, đóng/ngắt hoạt động, vô hiệu hóa và kích hoạt user khác.
-  * Ban đầu, chỉ có duy nhất admin initial, không có admin cấp dưới.
+### **2.2. Mục tiêu**
 
----
-
-## **4. Cấu trúc database (SQLite)**
-
-### **4.1. Bảng `users` (quản lý người dùng)**
-
-| user_id  | username | email | password_hash | role              | created_at |
-| -------- | -------- | ----- | ------------- | ----------------- | ---------- |
-| INT (PK) | TEXT     | TEXT  | TEXT          | TEXT (user/admin) | TIMESTAMP  |
-
-### **4.2. Bảng `posts` (quản lý bài viết)**
-
-| post_id  | user_id (FK) | title | content | source_link | tags | created_at |
-| -------- | ------------ | ----- | ------- | ----------- | ---- | ---------- |
-| INT (PK) | INT          | TEXT  | TEXT    | TEXT        | TEXT | TIMESTAMP  |
-
-### **4.3. Bảng `comments` (bình luận bài viết)**
-
-| comment_id | post_id (FK) | user_id (FK) | content | created_at |
-| ---------- | ------------ | ------------ | ------- | ---------- |
-| INT (PK)   | INT          | INT          | TEXT    | TIMESTAMP  |
-
-### **4.4. Bảng `likes` (lượt thích)**
-
-| like_id  | post_id (FK) | user_id (FK) | created_at |
-| -------- | ------------ | ------------ | ---------- |
-| INT (PK) | INT          | INT          | TIMESTAMP  |
+* Xây dựng một nền tảng chia sẻ tri thức thân thiện, dễ sử dụng.
+* Tích hợp AI hỗ trợ người dùng đọc nhanh, viết nhanh, chia sẻ nhanh.
+* Ứng dụng công nghệ hiện đại như Docker, Cloud, Realtime, AI vào một sản phẩm hoàn chỉnh.
 
 ---
 
-## **5. Quy trình hoạt động**
+## **3. PHÂN TÍCH THIẾT KẾ**
 
-### **5.1. Khởi tạo hệ thống**
+### **3.1. Phân tích yêu cầu**
 
-1️⃣ Tạo cơ sở dữ liệu SQLite.
+* **Chức năng**:
 
-2️⃣ Thêm **admin initial** vào database.
+  * Người dùng có thể chia sẻ đường link bài viết.
+  * Hệ thống tự động gọi API để tóm tắt nội dung bài viết.
+  * Tích hợp chatbot (Gemini API) hỗ trợ soạn nội dung hoặc trả lời câu hỏi.
+  * Người dùng có thể tương tác realtime.
+  * Tạo tài khoản, đăng nhập và lưu trữ dữ liệu bài viết đã chia sẻ.
+* **Phi chức năng**:
 
-3️⃣ Admin initial có toàn quyền quản lý user và bài viết, không xuất hiện trong danh sách user thông thường.
+  * Hệ thống phải xử lý nhanh, tối ưu trải nghiệm người dùng.
+  * Giao diện responsive, dễ dùng trên mọi thiết bị.
+  * Khả năng mở rộng tốt (scalable) thông qua container hóa và Cloud Run.
 
-### **5.2. Quy trình đăng bài**
+### **3.2. Đặc tả yêu cầu**
 
-1️⃣ User nhập link bài viết gốc hoặc nội dung gốc vào khung bên trái.
+* **Chức năng 1: Gửi link bài viết**
 
-2️⃣ User viết bài post của mình bên phải.
+  * Giao diện có input để người dùng dán link.
+  * Backend gọi Gemini API để tóm tắt nội dung.
+  * Nội dung được hiển thị trong giao diện và có thể chia sẻ công khai.
+* **Chức năng 2: Tương tác với chatbot**
 
-3️⃣ User nhấn  **Đăng bài** , bài viết sẽ được lưu vào database.
+  * Có khung chat hỗ trợ Gemini API.
+  * Người dùng có thể yêu cầu viết content, tóm tắt, trả lời câu hỏi,…
+* **Chức năng 3: Đăng nhập và quản lý bài viết**
 
-### **5.3. Quy trình phân quyền admin**
+  * Firebase Authentication.
+  * Người dùng có thể xem lại lịch sử bài đã chia sẻ.
 
-* Ban đầu chỉ có admin initial.
-* Admin initial có thể cấp quyền admin cho user khác nếu cần.
-* Admin cấp dưới không thể xóa hoặc thay đổi admin initial.
+### **3.3. Thiết kế hệ thống**
+
+* **Use case diagram**:
+  (Vẽ sơ đồ mô tả người dùng tương tác với chatbot, chia sẻ bài, xem bài tóm tắt, v.v.)
+* **Thiết kế CSDL**:
+
+  * PostgreSQL: lưu metadata các bài viết, nội dung tóm tắt, nội dung do chatbot tạo.
+  * Firebase: xác thực người dùng và lưu realtime tương tác.
+* **Thiết kế giao diện**:
+
+  * Trang chủ: ô nhập link + kết quả tóm tắt.
+  * Trang chat: tích hợp chatbot.
+  * Trang đăng ký/đăng nhập.
+  * Lịch sử các bài viết đã chia sẻ.
 
 ---
 
-## **6. Hạ tầng triển khai**
+## **4. CÔNG CỤ VÀ CÔNG NGHỆ SỬ DỤNG**
 
-* **Máy ảo (VM)** : Tạo môi trường độc lập, tránh xung đột với hệ thống khác.
+* **Ngôn ngữ lập trình**: Python, JavaScript
+* **Backend**: Flask + Flask-SocketIO
+* **Frontend**: HTML, TailwindCSS, JavaScript
+* **AI API**: Gemini API (Google)
+* **Cơ sở dữ liệu**: PostgreSQL + Firebase Realtime
+* **IDE**: Visual Studio Code
+* **Triển khai**: Docker, Google Cloud Platform (Cloud Run, Cloud SQL)
 
-## **7. Cây thư mục:**
+---
 
-ds-reading-platform/<br>
-├── .env                    # Chứa biến môi trường<br>
-├── .gitignore             # Cấu hình git ignore<br>
-├── requirements.txt       # Danh sách package cần thiết<br>
-├── run.py                # File chạy ứng dụng<br>
-├── config.py             # Cấu hình ứng dụng<br>
-│<br>
-├── app/<br>
-│   ├── __init__.py       # Khởi tạo ứng dụng Flask<br>
-│   │<br>
-│   ├── models/           # Các model database<br>
-│   │   ├── __init__.py<br>
-│   │   ├── user.py      # Model User<br>
-│   │   ├── post.py      # Model Post<br>
-│   │   ├── comment.py   # Model Comment<br>
-│   │   └── like.py      # Model Like<br>
-│   │<br>
-│   ├── routes/          # Các route của ứng dụng<br>
-│   │   ├── __init__.py<br>
-│   │   ├── auth.py      # Route xác thực<br>
-│   │   ├── main.py      # Route chính<br>
-│   │   └── admin.py     # Route admin<br>
-│   │<br>
-│   ├── templates/       # Templates HTML<br>
-│   │   ├── base.html    # Template cơ sở<br>
-│   │   ├── auth/<br>
-│   │   │   ├── login.html<br>
-│   │   │   └── register.html<br>
-│   │   ├── main/<br>
-│   │   │   ├── index.html<br>
-│   │   │   ├── create_post.html<br>
-│   │   │   └── view_post.html<br>
-│   │   └── admin/<br>
-│   │       ├── dashboard.html<br>
-│   │       ├── users.html<br>
-│   │       └── posts.html<br>
-│   │<br>
-│   ├── static/         # File tĩnh<br>
-│   │   ├── css/<br>
-│   │   │   └── main.css<br>
-│   │   ├── js/<br>
-│   │   │   └── main.js<br>
-│   │   └── img/<br>
-│   │<br>
-│   └── utils/         # Các hàm tiện ích<br>
-│       ├── __init__.py<br>
-│       └── decorators.py<br>
-│<br>
-├── tests/            # Unit tests<br>
-│   ├── __init__.py<br>
-│   ├── test_auth.py<br>
-│   └── test_posts.py<br>
-│<br>
-└── venv/            # Môi trường ảo Python (sẽ được tạo sau)
+## **5. TRIỂN KHAI**
 
-## **8. Hướng dẫn cài đặt và sử dụng**
+### **5.1. Quy trình xây dựng hệ thống**
 
-### **8.1. Yêu cầu hệ thống**
+1. Thiết kế frontend bằng HTML + Tailwind.
+2. Xây dựng backend Flask: routing, gọi API, xử lý dữ liệu.
+3. Tích hợp SocketIO để hỗ trợ tương tác realtime.
+4. Dùng Docker để tạo image.
+5. Deploy trên Google Cloud Platform:
+
+   * Cloud Run (chạy container).
+   * Cloud SQL (PostgreSQL).
+   * Firebase (Auth + Realtime).
+### **5.2. Hướng dẫn cài đặt và chạy web app**
+#### **5.2.1. Yêu cầu hệ thống**
 * Docker Desktop
 * Git
 * pgAdmin (tùy chọn - để quản lý database)
 
-### **8.2. Các bước cài đặt**
+#### **5.2.2. Các bước cài đặt**
 
 1️⃣ **Clone repository**
 ```bash
@@ -213,10 +139,10 @@ docker-compose up --build
 4️⃣ **Truy cập ứng dụng**
 * Web: http://localhost:5001
 * Tài khoản admin mặc định:
-  * Username: admin
+  * Email: admin@admin.com
   * Password: admin123
 
-### **8.3. Kết nối với pgAdmin**
+### **5.2.3. Kết nối với pgAdmin**
 
 1️⃣ **Mở pgAdmin**
 
@@ -232,7 +158,7 @@ docker-compose up --build
   * Username: postgres
   * Password: wsunicorn
 
-### **8.4. Cấu trúc Docker**
+### **5.2.4. Cấu trúc Docker**
 
 Ứng dụng sử dụng 2 container:
 * **Web container**: Chạy Flask application
@@ -242,7 +168,7 @@ Data được lưu trong Docker volumes:
 * **postgres_data**: Lưu trữ database
 * **uploads_data**: Lưu trữ files upload
 
-### **8.5. Các lệnh Docker hữu ích**
+### **5.2.5. Các lệnh Docker hữu ích**
 
 ```bash
 # Khởi động ứng dụng
@@ -268,7 +194,7 @@ docker-compose restart web
 docker-compose down -v
 ```
 
-### **8.6. Lưu ý quan trọng**
+### **5.2.6. Lưu ý quan trọng**
 
 1️⃣ **Bảo mật**
 * Thay đổi mật khẩu admin mặc định sau khi cài đặt
@@ -284,3 +210,54 @@ docker-compose down -v
 * Nếu gặp lỗi port conflict, kiểm tra và đổi port trong docker-compose.yml
 * Nếu không kết nối được database, kiểm tra thông tin trong .env
 * Xem logs để debug khi có lỗi xảy ra
+---
+
+## **6. KIỂM THỬ**
+
+* **Functional Testing**:
+
+  * Kiểm tra từng chức năng: chia sẻ link, hiển thị tóm tắt, trò chuyện với chatbot,...
+* **Performance Testing**:
+
+  * Đo thời gian phản hồi khi gửi link.
+  * Kiểm thử đồng thời nhiều người dùng tương tác với chatbot.
+
+---
+
+## **7. KẾT QUẢ**
+
+### **7.1. Kết quả đạt được**
+
+* Nền tảng chia sẻ nội dung hoạt động ổn định.
+* Tích hợp thành công Gemini API cho các tác vụ viết và tóm tắt.
+* Realtime tương tác chatbot bằng SocketIO hoạt động mượt.
+* Hệ thống đã được container hóa và sẵn sàng cho triển khai trên Cloud.
+
+### **7.2. Kết quả chưa đạt được**
+
+* Chưa có hệ thống gợi ý nội dung theo sở thích người dùng.
+* Tốc độ tóm tắt chưa tối ưu với bài viết rất dài.
+
+### **7.3. Hướng phát triển**
+
+* Bổ sung hệ thống gợi ý nội dung theo profile người dùng (machine learning).
+* Thêm tính năng like, comment, share nội dung.
+* Tối ưu chatbot để hiểu ngữ cảnh sâu hơn.
+* Tạo mobile app (sử dụng Flutter hoặc React Native).
+
+---
+
+## **8. TÀI LIỆU THAM KHẢO**
+
+* \[[https://flutter.dev](https://flutter.dev)]
+* \[[https://dart.dev](https://dart.dev)]
+* \[[https://flask.palletsprojects.com/](https://flask.palletsprojects.com/)]
+* \[[https://cloud.google.com/run](https://cloud.google.com/run)]
+* \[[https://cloud.google.com/sql](https://cloud.google.com/sql)]
+* \[[https://firebase.google.com](https://firebase.google.com)]
+* \[[https://ai.google.dev/gemini-api/docs](https://ai.google.dev/gemini-api/docs)]
+* [TailwindCSS Documentation](https://tailwindcss.com/docs)
+
+---
+
+Nếu bạn cần mình vẽ sơ đồ **Use case diagram** hoặc hỗ trợ thiết kế database / frontend wireframe, chỉ cần hú là mình làm ngay!
