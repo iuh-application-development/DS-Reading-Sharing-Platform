@@ -2,11 +2,16 @@ import os
 from dotenv import load_dotenv
 from datetime import timedelta
 
-load_dotenv()
+load_dotenv(override=False)  # Không ghi đè biến môi trường từ docker-compose.yml
 
 class Config:
     # Cấu hình bảo mật
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-key-please-change-in-production'
+    
+    # Google API Key
+    GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
+    if not GOOGLE_API_KEY:
+        print("Warning: GOOGLE_API_KEY not set in .env file")
     
     # Cấu hình database - sử dụng PostgreSQL
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
@@ -19,7 +24,7 @@ class Config:
     MIGRATIONS_DIR = 'migrations'
     
     # Cấu hình upload
-    UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app', 'static', 'uploads')
+    UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app', 'static', 'Uploads')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
     

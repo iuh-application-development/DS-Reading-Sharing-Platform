@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify, session
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify, session
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.models.user import User
@@ -28,7 +29,15 @@ def allowed_file(filename):
 # def login():
 #     if current_user.is_authenticated:
 #         return redirect(url_for('main.index'))
+# @bp.route('/login', methods=['GET', 'POST'])
+# def login():
+#     if current_user.is_authenticated:
+#         return redirect(url_for('main.index'))
         
+#     if request.method == 'POST':
+#         login_id = request.form.get('login_id')  # Có thể là username hoặc email
+#         password = request.form.get('password')
+#         remember = request.form.get('remember', False)
 #     if request.method == 'POST':
 #         login_id = request.form.get('login_id')  # Có thể là username hoặc email
 #         password = request.form.get('password')
@@ -38,7 +47,15 @@ def allowed_file(filename):
 #         user = User.query.filter(
 #             (User.username == login_id) | (User.email == login_id)
 #         ).first()
+#         # Tìm user theo username hoặc email
+#         user = User.query.filter(
+#             (User.username == login_id) | (User.email == login_id)
+#         ).first()
         
+#         if user and check_password_hash(user.password_hash, password):
+#             if not user.is_active:
+#                 flash('Tài khoản của bạn đã bị vô hiệu hóa.', 'error')
+#                 return redirect(url_for('auth.login'))
 #         if user and check_password_hash(user.password_hash, password):
 #             if not user.is_active:
 #                 flash('Tài khoản của bạn đã bị vô hiệu hóa.', 'error')
@@ -47,17 +64,31 @@ def allowed_file(filename):
 #             login_user(user, remember=remember)
 #             user.last_login = datetime.utcnow()
 #             db.session.commit()
+#             login_user(user, remember=remember)
+#             user.last_login = datetime.utcnow()
+#             db.session.commit()
             
+#             next_page = request.args.get('next')
+#             return redirect(next_page or url_for('main.index'))
+#         else:
+#             flash('Tên đăng nhập/email hoặc mật khẩu không đúng.', 'error')
 #             next_page = request.args.get('next')
 #             return redirect(next_page or url_for('main.index'))
 #         else:
 #             flash('Tên đăng nhập/email hoặc mật khẩu không đúng.', 'error')
     
 #     return render_template('auth/login.html')
+# @bp.route('/login', methods=['GET', 'POST'])
+# def login():
+#     return render_template('auth/login.html')
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     return render_template('auth/login.html')
 
+# @bp.route('/register', methods=['GET', 'POST'])
+# def register():
+#     if current_user.is_authenticated:
+#         return redirect(url_for('main.index'))
 # @bp.route('/register', methods=['GET', 'POST'])
 # def register():
 #     if current_user.is_authenticated:
@@ -73,7 +104,21 @@ def login():
 #         date_of_birth = request.form.get('date_of_birth')
 #         gender = request.form.get('gender')
 #         bio = request.form.get('bio')
+#     if request.method == 'POST':
+#         username = request.form.get('username')
+#         email = request.form.get('email')
+#         password = request.form.get('password')
+#         confirm_password = request.form.get('confirm_password')
+#         full_name = request.form.get('full_name')
+#         phone = request.form.get('phone')
+#         date_of_birth = request.form.get('date_of_birth')
+#         gender = request.form.get('gender')
+#         bio = request.form.get('bio')
         
+#         # Kiểm tra mật khẩu xác nhận
+#         if password != confirm_password:
+#             flash('Mật khẩu xác nhận không khớp.', 'error')
+#             return redirect(url_for('auth.register'))
 #         # Kiểm tra mật khẩu xác nhận
 #         if password != confirm_password:
 #             flash('Mật khẩu xác nhận không khớp.', 'error')
@@ -83,7 +128,15 @@ def login():
 #         if User.query.filter_by(username=username).first():
 #             flash('Tên đăng nhập đã được sử dụng.', 'error')
 #             return redirect(url_for('auth.register'))
+#         # Kiểm tra username đã tồn tại
+#         if User.query.filter_by(username=username).first():
+#             flash('Tên đăng nhập đã được sử dụng.', 'error')
+#             return redirect(url_for('auth.register'))
             
+#         # Kiểm tra email đã tồn tại
+#         if User.query.filter_by(email=email).first():
+#             flash('Email đã được sử dụng.', 'error')
+#             return redirect(url_for('auth.register'))
 #         # Kiểm tra email đã tồn tại
 #         if User.query.filter_by(email=email).first():
 #             flash('Email đã được sử dụng.', 'error')
@@ -100,7 +153,21 @@ def login():
 #             gender=gender,
 #             bio=bio
 #         )
+#         # Tạo user mới
+#         new_user = User(
+#             username=username,
+#             email=email,
+#             password_hash=generate_password_hash(password),
+#             full_name=full_name,
+#             phone=phone,
+#             date_of_birth=datetime.strptime(date_of_birth, '%Y-%m-%d').date() if date_of_birth else None,
+#             gender=gender,
+#             bio=bio
+#         )
         
+#         # Lấy avatar ngẫu nhiên khi tạo user
+#         new_user.random_avatar_url = get_random_avatar()
+#         new_user.avatar_updated_at = datetime.utcnow()
 #         # Lấy avatar ngẫu nhiên khi tạo user
 #         new_user.random_avatar_url = get_random_avatar()
 #         new_user.avatar_updated_at = datetime.utcnow()
@@ -177,11 +244,10 @@ def firebase_register_status():
     first_name = data.get('first_name')
     last_name = data.get('last_name')
 
-
     if status == 'success':
         id_token = data.get('idToken')
         if not id_token:
-            flash('Thiếu idToken để lưu thông tin.', 'error')
+            flash('Thiếu id Token để lưu thông tin.', 'error')
             return jsonify({'redirect': url_for('auth.register')}), 400
 
         try:
@@ -192,18 +258,26 @@ def firebase_register_status():
             # Check nếu user chưa tồn tại
             existing_user = User.query.filter_by(firebase_uid=uid).first()
             if not existing_user:
+                # Tạo username duy nhất
+                base_username = email.split('@')[0]
+                username = base_username
+                counter = 1
+                while User.query.filter_by(username=username).first():
+                    username = f"{base_username}{counter}"
+                    counter += 1
+                
                 new_user = User(
                     firebase_uid=uid,
                     email=email,
-                    username=email.split('@')[0],
+                    username=username,
                     full_name=f"{last_name} {first_name}",
-                    avatar_url=User.generate_random_avatar()
+                    avatar_url=User.generate_random_avatar(),
                 )
                 db.session.add(new_user)
                 db.session.commit()
+                flash('Đăng ký thành công! Vui lòng đăng nhập.', 'success')
             else:
                 flash('Tài khoản đã tồn tại.', 'info')
-
 
             return jsonify({'redirect': url_for('auth.login')}), 200
 
@@ -417,52 +491,52 @@ def authorize():
 def upload_avatar():
     if 'avatar' not in request.files:
         flash('Không có file được chọn.', 'error')
-        return redirect(url_for('auth.profile'))
+        return redirect(url_for('auth.profile', username=current_user.username))
         
     file = request.files['avatar']
     if file.filename == '':
         flash('Không có file được chọn.', 'error')
-        return redirect(url_for('auth.profile'))
+        return redirect(url_for('auth.profile', username=current_user.username))
         
     if file and allowed_file(file.filename):
         try:
             # Tạo tên file an toàn
             filename = secure_filename(file.filename)
-            # Thêm timestamp vào tên file để tránh trùng lặp
             filename = f"{current_user.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
             
-            # Lưu file
-            upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'avatars')
+            # Đường dẫn lưu trữ
+            upload_folder = os.path.join(current_app.config.get('UPLOAD_FOLDER', 'static/uploads'), 'avatars')
             os.makedirs(upload_folder, exist_ok=True)
             file_path = os.path.join(upload_folder, filename)
             
-            print(f"Saving file to: {file_path}")  # Debug log
+            # Lưu file
             file.save(file_path)
-            print(f"File saved successfully")  # Debug log
+            
+            # Kiểm tra xem tệp đã lưu thành công
+            if not os.path.exists(file_path):
+                flash('Lỗi khi lưu tệp avatar.', 'error')
+                return redirect(url_for('auth.profile', username=current_user.username))
             
             # Xóa avatar cũ nếu có
             if current_user.avatar_filename:
                 old_file_path = os.path.join(upload_folder, current_user.avatar_filename)
                 if os.path.exists(old_file_path):
                     os.remove(old_file_path)
-                    print(f"Old avatar removed: {old_file_path}")  # Debug log
             
-            # Cập nhật thông tin avatar trong database
+            # Cập nhật thông tin avatar
             current_user.avatar_filename = filename
-            current_user.avatar_url = None  # Reset avatar_url khi có avatar_filename
+            current_user.avatar_url = None  # Reset avatar_url
             
             db.session.commit()
-            print(f"Database updated with new avatar: {filename}")  # Debug log
-            
             flash('Cập nhật ảnh đại diện thành công!', 'success')
         except Exception as e:
-            print(f"Error uploading avatar: {str(e)}")  # Debug log
+            current_app.logger.error(f"Error uploading avatar: {str(e)}")
             db.session.rollback()
             flash('Có lỗi xảy ra khi cập nhật avatar.', 'error')
     else:
         flash('File không hợp lệ. Chỉ chấp nhận file ảnh (PNG, JPG, JPEG, GIF).', 'error')
         
-    return redirect(url_for('auth.profile'))
+    return redirect(url_for('auth.profile', username=current_user.username))
 
 @bp.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
@@ -517,4 +591,3 @@ def edit_profile():
             return redirect(url_for('auth.edit_profile'))
     
     return render_template('auth/edit_profile.html', user=current_user)
-
