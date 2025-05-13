@@ -373,12 +373,24 @@ def search_posts():
             ).order_by(Post.created_at.desc()).all()
 
             # Tìm tác giả luôn
-            authors = User.query.filter(
-                db.or_(
-                    User.username.ilike(f'%{query}%'),
-                    User.full_name.ilike(f'%{query}%')
-                )
-            ).all()
+            if current_user.is_authenticated:
+                authors = User.query.filter(
+                    db.and_(
+                        db.or_(
+                            User.username.ilike(f'%{query}%'),
+                            User.full_name.ilike(f'%{query}%')
+                        ),
+                        User.id != current_user.id
+                    )
+                ).all()
+            else:
+                authors = User.query.filter(
+                    db.or_(
+                        User.username.ilike(f'%{query}%'),
+                        User.full_name.ilike(f'%{query}%')
+                    )
+                ).all()
+
 
         elif search_type == 'title':
             posts = base_query.filter(Post.title.ilike(f'%{query}%')).order_by(Post.created_at.desc()).all()
@@ -401,14 +413,8 @@ def search_posts():
         elif search_type == 'hashtag':
             posts = base_query.filter(Post.tags.ilike(f'%{query}%')).order_by(Post.created_at.desc()).all()
 
-        # Gợi ý tìm kiếm (chỉ với bài đã duyệt và có quyền xem)
-        suggestions = base_query.filter(
-            db.or_(
-                Post.title.ilike(f'%{query}%'),
-                Post.tags.ilike(f'%{query}%')
-            )
-        ).order_by(Post.title).limit(5).all()
 
+        
     # Xử lý likes
     likes = []
     liked_post_ids = []
@@ -420,13 +426,17 @@ def search_posts():
         total_likes_query = db.session.query(Like.post_id, db.func.count(Like.post_id).label('like_count'))\
             .group_by(Like.post_id).all()
         total_likes_dict = {post_id: like_count for post_id, like_count in total_likes_query}
-
+    likes = []
+    if current_user.is_authenticated:
+        likes = [like.post_id for like in Like.query.filter_by(user_id=current_user.id).all()]
+    for post in posts:
+            post.total_likes = total_likes_dict.get(post.id, 0)
     return render_template('main/search.html', 
                      query=query, 
                      search_type=search_type,
                      posts=posts, 
                      suggestions=suggestions, 
-                     likes=total_likes_dict,
+                     likes=likes,
                      liked_post_ids=liked_post_ids,
                      authors=authors)
 
