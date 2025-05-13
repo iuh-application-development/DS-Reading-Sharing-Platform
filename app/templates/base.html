@@ -510,6 +510,7 @@
 
             <!-- Thanh tìm kiếm ở trên cùng -->
             {% if current_user.is_authenticated %}
+            {% if request.endpoint != 'main.notifications' %}
             <div class="content-container mb-6">
                 <form action="{{ url_for('auth.search_posts') }}" method="GET"
                     class="flex items-center max-w-lg mx-auto relative">
@@ -573,17 +574,17 @@
         });
     </script>
 
-    <!-- Add JavaScript for flash messages -->
-    <script>
-        function closeFlash(id) {
-            const flash = document.getElementById(id);
-            if (flash) {
-                flash.classList.add('closing');
-                setTimeout(() => {
-                    flash.remove();
-                }, 300);
-            }
+<!-- Add JavaScript for flash messages -->
+<script>
+    function closeFlash(id) {
+        const flash = document.getElementById(id);
+        if (flash) {
+            flash.classList.add('closing');
+            setTimeout(() => {
+                flash.remove();
+            }, 300);
         }
+    }
 
         // Auto close flash messages after 5 seconds
         document.addEventListener('DOMContentLoaded', function () {
