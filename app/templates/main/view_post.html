@@ -25,11 +25,11 @@
                 <!-- Thông tin tác giả và thời gian -->
                 <div class="flex items-center text-gray-600 mb-6">
                     <div class="flex items-center space-x-3">
-                        <img src="{% if post.author.avatar_filename %}{{ url_for('static', filename=post.author.get_avatar_path()) }}{% elif post.author.avatar_url %}{{ post.author.avatar_url }}{% else %}{{ url_for('static', filename='img/default-avatar.png') }}{% endif %}" 
-                             alt="{{ post.author.username }}" 
-                             class="w-10 h-10 rounded-full object-cover">
+                        <img src="{% if post.author.avatar_filename %}{{ url_for('static', filename=post.author.get_avatar_path()) }}{% elif post.author.avatar_url %}{{ post.author.avatar_url }}{% else %}{{ url_for('static', filename='img/default-avatar.png') }}{% endif %}"
+                            alt="{{ post.author.username }}" class="w-10 h-10 rounded-full object-cover">
                         <div>
-                            <a href="{{ url_for('auth.profile', username=post.author.username) }}" class="font-medium text-gray-900 hover:text-blue-600">
+                            <a href="{{ url_for('auth.profile', username=post.author.username) }}"
+                                class="font-medium text-gray-900 hover:text-blue-600">
                                 {{ post.author.full_name or post.author.username }}
                             </a>
                             <p class="text-sm text-gray-500">{{ post.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
@@ -58,7 +58,8 @@
                 <div class="mt-8 p-6 bg-gray-50 rounded-lg">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Nguồn bài viết</h3>
                     {% if post.source_link %}
-                    <a href="{{ post.source_link }}" target="_blank" class="text-blue-600 hover:text-blue-800 mb-4 block">
+                    <a href="{{ post.source_link }}" target="_blank"
+                        class="text-blue-600 hover:text-blue-800 mb-4 block">
                         {{ post.source_link }}
                     </a>
                     {% endif %}
@@ -74,30 +75,36 @@
                 <div class="mt-8 flex items-center justify-between border-t border-gray-200 pt-6">
                     <div class="flex items-center space-x-4">
                         <!-- Nút like -->
-                        <button onclick="toggleLike({{ post.id }})" 
-                                class="flex items-center space-x-2 text-gray-600 hover:text-red-500 transition-colors">
-                            <i class="fas fa-heart {% if post.id in likes %}text-red-500{% endif %}"></i>
-                            <span id="like-count-{{ post.id }}">{{ post.total_likes }}</span>
+                        <button onclick="toggle_like({{ post.id }}, this)" name='like'
+                            class="{% if post.id in likes %} text-orange-500 {%else%} {% endif %} flex items-center justify-center w-full h-full cursor-pointer">
+                            <i
+                                class=" {% if post.id in likes %} fas {%else%} far {% endif %} fa-regular fa-thumbs-up me-2 "></i>
+                            Thích
+
                         </button>
 
                         <!-- Nút lưu -->
-                        <button onclick="toggleSave({{ post.id }})"
-                                class="flex items-center space-x-2 text-gray-600 hover:text-yellow-500 transition-colors">
-                            <i class="fas fa-bookmark"></i>
-                            <span>Lưu</span>
-                        </button>
+                        <div class="flex space-x-2">
+                            {% if current_user.is_authenticated %}
+                            <button onclick="toggleSavePost({{ post.id }}, this)"
+                                class="text-gray-400 hover:text-orange-500 transition-colors save-button p-2 rounded-full hover:bg-orange-50"
+                                data-post-id="{{ post.id }}">
+                                <i
+                                    class="{% if post.id in current_user.saved_posts|map(attribute='post_id') %}fas{% else %}far{% endif %} fa-bookmark text-xl"></i>
+                            </button>
+                            {% endif %}
+                        </div>
                     </div>
 
                     <!-- Nút chỉnh sửa/xóa (chỉ hiện với tác giả) -->
                     {% if current_user.is_authenticated and post.user_id == current_user.id %}
                     <div class="flex items-center space-x-4">
-                        <a href="{{ url_for('main.edit_post', post_id=post.id) }}" 
-                           class="text-blue-600 hover:text-blue-800">
+                        <a href="{{ url_for('main.edit_post', post_id=post.id) }}"
+                            class="text-blue-600 hover:text-blue-800">
                             <i class="fas fa-edit"></i>
                             Chỉnh sửa
                         </a>
-                        <button onclick="deletePost({{ post.id }})"
-                                class="text-red-600 hover:text-red-800">
+                        <button onclick="deletePost({{ post.id }})" class="text-red-600 hover:text-red-800">
                             <i class="fas fa-trash"></i>
                             Xóa
                         </button>
@@ -119,15 +126,17 @@
                 {% for comment in comments %}
                 <div class="flex space-x-4 bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
                     <div class="flex-shrink-0">
-                        <img src="{% if comment.user.avatar_filename %}{{ url_for('static', filename=comment.user.get_avatar_path()) }}{% elif comment.user.avatar_url %}{{ comment.user.avatar_url }}{% else %}{{ url_for('static', filename='img/default-avatar.png') }}{% endif %}" 
-                             alt="{{ comment.user.username }}" 
-                             class="w-12 h-12 rounded-full object-cover ring-2 ring-orange-100">
+                        <img src="{% if comment.user.avatar_filename %}{{ url_for('static', filename=comment.user.get_avatar_path()) }}{% elif comment.user.avatar_url %}{{ comment.user.avatar_url }}{% else %}{{ url_for('static', filename='img/default-avatar.png') }}{% endif %}"
+                            alt="{{ comment.user.username }}"
+                            class="w-12 h-12 rounded-full object-cover ring-2 ring-orange-100">
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center justify-between mb-1">
                             <div class="flex items-center space-x-2">
-                                <h4 class="font-semibold text-gray-900">{{ comment.user.full_name or comment.user.username }}</h4>
-                                <span class="text-sm text-gray-500">{{ comment.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                                <h4 class="font-semibold text-gray-900">{{ comment.user.full_name or
+                                    comment.user.username }}</h4>
+                                <span class="text-sm text-gray-500">{{ comment.created_at.strftime('%d/%m/%Y %H:%M')
+                                    }}</span>
                             </div>
                         </div>
                         <div class="prose prose-sm max-w-none">
@@ -147,18 +156,19 @@
 
             <!-- Form bình luận -->
             {% if current_user.is_authenticated %}
-            <form method="POST" action="{{ url_for('main.add_comment', post_id=post.id) }}" class="mt-8 bg-white rounded-lg p-6 shadow-sm">
+            <form method="POST" action="{{ url_for('main.add_comment', post_id=post.id) }}"
+                class="mt-8 bg-white rounded-lg p-6 shadow-sm">
                 <div class="flex items-start space-x-4">
-                    <img src="{% if current_user.avatar_filename %}{{ url_for('static', filename=current_user.get_avatar_path()) }}{% elif current_user.avatar_url %}{{ current_user.avatar_url }}{% else %}{{ url_for('static', filename='img/default-avatar.png') }}{% endif %}" 
-                         alt="{{ current_user.username }}" 
-                         class="w-12 h-12 rounded-full object-cover ring-2 ring-orange-100">
+                    <img src="{% if current_user.avatar_filename %}{{ url_for('static', filename=current_user.get_avatar_path()) }}{% elif current_user.avatar_url %}{{ current_user.avatar_url }}{% else %}{{ url_for('static', filename='img/default-avatar.png') }}{% endif %}"
+                        alt="{{ current_user.username }}"
+                        class="w-12 h-12 rounded-full object-cover ring-2 ring-orange-100">
                     <div class="flex-1">
-                        <textarea name="comment" rows="3" 
-                                  class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all resize-none"
-                                  placeholder="Viết bình luận của bạn..."></textarea>
+                        <textarea name="comment" rows="3"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all resize-none"
+                            placeholder="Viết bình luận của bạn..."></textarea>
                         <div class="mt-3 flex justify-end">
-                            <button type="submit" 
-                                    class="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:shadow-lg transition-all duration-300 flex items-center">
+                            <button type="submit"
+                                class="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:shadow-lg transition-all duration-300 flex items-center">
                                 <i class="fas fa-paper-plane mr-2"></i>
                                 Gửi bình luận
                             </button>
@@ -169,7 +179,8 @@
             {% else %}
             <div class="mt-8 text-center py-8 bg-white rounded-lg shadow-sm">
                 <i class="fas fa-lock text-gray-400 text-4xl mb-4"></i>
-                <p class="text-gray-600">Vui lòng <a href="{{ url_for('auth.login') }}" class="text-orange-500 hover:text-orange-600 font-medium">đăng nhập</a> để bình luận.</p>
+                <p class="text-gray-600">Vui lòng <a href="{{ url_for('auth.login') }}"
+                        class="text-orange-500 hover:text-orange-600 font-medium">đăng nhập</a> để bình luận.</p>
             </div>
             {% endif %}
         </div>
@@ -178,95 +189,116 @@
 
 <!-- JavaScript cho các chức năng tương tác -->
 <script>
-function toggleLike(postId) {
-    fetch(`/post/${postId}/like`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const likeCount = document.getElementById(`like-count-${postId}`);
-            const likeIcon = likeCount.previousElementSibling;
-            
-            if (data.status === 'liked') {
-                likeIcon.classList.add('text-red-500');
-                likeCount.textContent = parseInt(likeCount.textContent) + 1;
-            } else {
-                likeIcon.classList.remove('text-red-500');
-                likeCount.textContent = parseInt(likeCount.textContent) - 1;
-            }
-        }
-    });
-}
-
-function toggleSave(postId) {
-    fetch(`/post/${postId}/toggle_save`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Có thể thêm thông báo hoặc animation ở đây
-        }
-    });
-}
-
-function deletePost(postId) {
-    if (confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
-        fetch(`/post/${postId}/delete`, {
+    function toggleLike(postId) {
+        fetch(`/post/${postId}/like`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             }
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.href = '/my-posts';
-            }
-        });
-    }
-}
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const likeCount = document.getElementById(`like-count-${postId}`);
+                    const likeIcon = likeCount.previousElementSibling;
 
-// Xử lý form bình luận
-document.querySelector('form[action*="add_comment"]').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const form = this;
-    const textarea = form.querySelector('textarea');
-    const content = textarea.value.trim();
-    
-    if (!content) {
-        showMessage('Vui lòng nhập nội dung bình luận', 'error');
-        return;
+                    if (data.status === 'liked') {
+                        likeIcon.classList.add('text-red-500');
+                        likeCount.textContent = parseInt(likeCount.textContent) + 1;
+                    } else {
+                        likeIcon.classList.remove('text-red-500');
+                        likeCount.textContent = parseInt(likeCount.textContent) - 1;
+                    }
+                }
+            });
     }
 
-    const submitButton = form.querySelector('button[type="submit"]');
-    const originalText = submitButton.innerHTML;
-    submitButton.disabled = true;
-    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Đang gửi...';
+    function toggleSavePost(postId, button) {
+        fetch(`{{ url_for('main.toggle_save_post', post_id=0) }}`.replace('0', postId), {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin'
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update icon
+                    const icon = button.querySelector('i');
+                    if (data.status === 'saved') {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                        button.classList.add('text-orange-500');
+                        button.classList.remove('text-gray-400');
+                    } else {
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                        button.classList.remove('text-orange-500');
+                        button.classList.add('text-gray-400');
+                    }
 
-    fetch(form.action, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams(new FormData(form))
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Tạo element bình luận mới
-            const commentsContainer = document.querySelector('.space-y-6');
-            const newComment = document.createElement('div');
-            newComment.className = 'flex space-x-4 animate-fade-in';
-            newComment.innerHTML = `
+                    // Show notification
+                    showMessage(data.message, 'success');
+                }
+            })
+            .catch(error => {
+                showMessage('Đã xảy ra lỗi khi lưu bài viết', 'error');
+            });
+    }
+
+
+    function deletePost(postId) {
+        if (confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
+            fetch(`/post/${postId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '/my-posts';
+                    }
+                });
+        }
+    }
+
+    // Xử lý form bình luận
+    document.querySelector('form[action*="add_comment"]').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = this;
+        const textarea = form.querySelector('textarea');
+        const content = textarea.value.trim();
+
+        if (!content) {
+            showMessage('Vui lòng nhập nội dung bình luận', 'error');
+            return;
+        }
+
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalText = submitButton.innerHTML;
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Đang gửi...';
+
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams(new FormData(form))
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Tạo element bình luận mới
+                    const commentsContainer = document.querySelector('.space-y-6');
+                    const newComment = document.createElement('div');
+                    newComment.className = 'flex space-x-4 animate-fade-in';
+                    newComment.innerHTML = `
                 <img src="${data.avatar_url}" 
                      alt="${data.username}" 
                      class="w-10 h-10 rounded-full object-cover ring-2 ring-orange-100">
@@ -284,56 +316,97 @@ document.querySelector('form[action*="add_comment"]').addEventListener('submit',
                 </div>
             `;
 
-            // Xóa thông báo "chưa có bình luận" nếu có
-            const emptyMessage = commentsContainer.querySelector('.text-center');
-            if (emptyMessage) {
-                emptyMessage.remove();
-            }
+                    // Xóa thông báo "chưa có bình luận" nếu có
+                    const emptyMessage = commentsContainer.querySelector('.text-center');
+                    if (emptyMessage) {
+                        emptyMessage.remove();
+                    }
 
-            // Thêm bình luận mới vào đầu danh sách
-            commentsContainer.insertBefore(newComment, commentsContainer.firstChild);
+                    // Thêm bình luận mới vào đầu danh sách
+                    commentsContainer.insertBefore(newComment, commentsContainer.firstChild);
 
-            // Scroll đến bình luận mới
-            newComment.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Scroll đến bình luận mới
+                    newComment.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-            // Reset form
-            textarea.value = '';
-            showMessage('Bình luận của bạn đã được đăng', 'success');
-        } else {
-            showMessage(data.message || 'Có lỗi xảy ra khi đăng bình luận', 'error');
-        }
-    })
-    .catch(error => {
-        showMessage('Có lỗi xảy ra khi đăng bình luận', 'error');
-    })
-    .finally(() => {
-        submitButton.disabled = false;
-        submitButton.innerHTML = originalText;
+                    // Reset form
+                    textarea.value = '';
+                    showMessage('Bình luận của bạn đã được đăng', 'success');
+                } else {
+                    showMessage(data.message || 'Có lỗi xảy ra khi đăng bình luận', 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('Có lỗi xảy ra khi đăng bình luận', 'error');
+            })
+            .finally(() => {
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
+            });
     });
-});
 
-function showMessage(message, type) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 flex items-center ${
-        type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
-    }`;
-    messageDiv.innerHTML = `
+    function showMessage(message, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 flex items-center ${type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+            }`;
+        messageDiv.innerHTML = `
         <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-2"></i>
         ${message}
     `;
-    document.body.appendChild(messageDiv);
-    setTimeout(() => messageDiv.remove(), 3000);
-}
+        document.body.appendChild(messageDiv);
+        setTimeout(() => messageDiv.remove(), 3000);
+    }
+    function toggle_like(postId, button) {
+        fetch(`{{ url_for('main.toggle_like', post_id=0) }}`.replace('0', postId), {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin'
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update icon
+                    const icon = button.querySelector('i');
+                    if (data.status === 'liked') {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+
+                        button.classList.add('text-orange-500');
+                    } else {
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+
+                        button.classList.remove('text-orange-500');
+
+                    }
+
+                    // Show notification
+                    showMessage(data.message, 'success');
+                }
+            })
+            .catch(error => {
+                showMessage('Đã xảy ra lỗi khi thích bài viết', 'error');
+            });
+    }
 </script>
 
 <style>
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
 
-.animate-fade-in {
-    animation: fadeIn 0.3s ease-out;
-}
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-out;
+    }
 </style>
 {% endblock %}
