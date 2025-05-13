@@ -98,3 +98,16 @@ class NotificationService:
             logger.error(f"Unexpected error marking notifications as read: {str(e)}")
             db.session.rollback()
             return False 
+    @staticmethod
+    def mark_as_read(user_id, notification_id):
+        try:
+            notification = Notification.query.filter_by(id=notification_id, user_id=user_id).first()
+            if notification and not notification.is_read:
+                notification.is_read = True
+                db.session.commit()
+                return True
+            return False
+        except Exception as e:
+            logger.error(f"Failed to mark notification as read: {str(e)}")
+            db.session.rollback()
+            return False

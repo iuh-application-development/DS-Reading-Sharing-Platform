@@ -119,6 +119,7 @@
             <div class="text-gray-400 text-6xl mb-4">
                 <i class="far fa-newspaper"></i>
             </div>
+            
             <p class="text-gray-500 text-lg">Chưa có bài viết nào.</p>
             {% if current_user.is_authenticated and not current_user.is_admin() %}
             <a href="{{ url_for('main.create_post') }}"
@@ -135,7 +136,6 @@
     {{ render_pagination(posts, 'main.index') }}
 </div>
 
-{% if current_user.is_authenticated %}
 <script>
     function toggleSavePost(postId, button) {
         fetch(`{{ url_for('main.toggle_save_post', post_id=0) }}`.replace('0', postId), {
@@ -284,5 +284,4 @@
         transform: scale(0.95);
     }
 </style>
-{% endif %}
 {% endblock %}

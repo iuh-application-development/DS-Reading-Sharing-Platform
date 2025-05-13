@@ -61,3 +61,15 @@ def mark_all_read():
     else:
         logger.error("Failed to mark notifications as read")
         return jsonify({'error': 'Failed to mark notifications as read'}), 500 
+    
+@bp.route('/notifications/<int:notification_id>/mark-read', methods=['POST'])
+@login_required
+@handle_errors
+def mark_read(notification_id):
+    """Đánh dấu một thông báo là đã đọc"""
+    logger.info(f"Marking notification {notification_id} as read for user {current_user.id}")
+    success = NotificationService.mark_as_read(current_user.id, notification_id)
+    if success:
+        return jsonify({'success': True})
+    else:
+        return jsonify({'error': 'Failed to mark notification as read'}), 500

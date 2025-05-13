@@ -131,7 +131,9 @@ def create_post():
                         'post_id': post.id,
                         'type' : 'create-post'
                     }, room=f'user_{follower.follower_id}')
-
+                    print('Thanh cong')
+                else:
+                    print('khong')
             return redirect(url_for('main.view_post', post_id=post.id))
         except Exception as e:
             db.session.rollback()
@@ -368,7 +370,7 @@ def toggle_like(post_id):
                     'post_id': post.id,
                     'type': 'like-post'
                 }, room=f"user_{user_id_post}")
-
+                
         return jsonify({
             'success': True,
             'message': 'Đã thích bài viết',
