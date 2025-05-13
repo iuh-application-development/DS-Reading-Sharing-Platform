@@ -14,6 +14,7 @@ from app.utils.pexels import get_random_avatar
 # from firebase_admin import credentials, firestore, auth
 from app.firebase_service import auth
 from flask import jsonify
+from app.utils.time_vn import vn_now
 
 
 bp = Blueprint('auth', __name__)
@@ -25,168 +26,19 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# @bp.route('/login', methods=['GET', 'POST'])
-# def login():
-#     if current_user.is_authenticated:
-#         return redirect(url_for('main.index'))
-# @bp.route('/login', methods=['GET', 'POST'])
-# def login():
-#     if current_user.is_authenticated:
-#         return redirect(url_for('main.index'))
-        
-#     if request.method == 'POST':
-#         login_id = request.form.get('login_id')  # Có thể là username hoặc email
-#         password = request.form.get('password')
-#         remember = request.form.get('remember', False)
-#     if request.method == 'POST':
-#         login_id = request.form.get('login_id')  # Có thể là username hoặc email
-#         password = request.form.get('password')
-#         remember = request.form.get('remember', False)
-        
-#         # Tìm user theo username hoặc email
-#         user = User.query.filter(
-#             (User.username == login_id) | (User.email == login_id)
-#         ).first()
-#         # Tìm user theo username hoặc email
-#         user = User.query.filter(
-#             (User.username == login_id) | (User.email == login_id)
-#         ).first()
-        
-#         if user and check_password_hash(user.password_hash, password):
-#             if not user.is_active:
-#                 flash('Tài khoản của bạn đã bị vô hiệu hóa.', 'error')
-#                 return redirect(url_for('auth.login'))
-#         if user and check_password_hash(user.password_hash, password):
-#             if not user.is_active:
-#                 flash('Tài khoản của bạn đã bị vô hiệu hóa.', 'error')
-#                 return redirect(url_for('auth.login'))
-                
-#             login_user(user, remember=remember)
-#             user.last_login = datetime.utcnow()
-#             db.session.commit()
-#             login_user(user, remember=remember)
-#             user.last_login = datetime.utcnow()
-#             db.session.commit()
-            
-#             next_page = request.args.get('next')
-#             return redirect(next_page or url_for('main.index'))
-#         else:
-#             flash('Tên đăng nhập/email hoặc mật khẩu không đúng.', 'error')
-#             next_page = request.args.get('next')
-#             return redirect(next_page or url_for('main.index'))
-#         else:
-#             flash('Tên đăng nhập/email hoặc mật khẩu không đúng.', 'error')
-    
-#     return render_template('auth/login.html')
-# @bp.route('/login', methods=['GET', 'POST'])
-# def login():
-#     return render_template('auth/login.html')
+
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.index'))  
     return render_template('auth/login.html')
-
-# @bp.route('/register', methods=['GET', 'POST'])
-# def register():
-#     if current_user.is_authenticated:
-#         return redirect(url_for('main.index'))
-# @bp.route('/register', methods=['GET', 'POST'])
-# def register():
-#     if current_user.is_authenticated:
-#         return redirect(url_for('main.index'))
-        
-#     if request.method == 'POST':
-#         username = request.form.get('username')
-#         email = request.form.get('email')
-#         password = request.form.get('password')
-#         confirm_password = request.form.get('confirm_password')
-#         full_name = request.form.get('full_name')
-#         phone = request.form.get('phone')
-#         date_of_birth = request.form.get('date_of_birth')
-#         gender = request.form.get('gender')
-#         bio = request.form.get('bio')
-#     if request.method == 'POST':
-#         username = request.form.get('username')
-#         email = request.form.get('email')
-#         password = request.form.get('password')
-#         confirm_password = request.form.get('confirm_password')
-#         full_name = request.form.get('full_name')
-#         phone = request.form.get('phone')
-#         date_of_birth = request.form.get('date_of_birth')
-#         gender = request.form.get('gender')
-#         bio = request.form.get('bio')
-        
-#         # Kiểm tra mật khẩu xác nhận
-#         if password != confirm_password:
-#             flash('Mật khẩu xác nhận không khớp.', 'error')
-#             return redirect(url_for('auth.register'))
-#         # Kiểm tra mật khẩu xác nhận
-#         if password != confirm_password:
-#             flash('Mật khẩu xác nhận không khớp.', 'error')
-#             return redirect(url_for('auth.register'))
-            
-#         # Kiểm tra username đã tồn tại
-#         if User.query.filter_by(username=username).first():
-#             flash('Tên đăng nhập đã được sử dụng.', 'error')
-#             return redirect(url_for('auth.register'))
-#         # Kiểm tra username đã tồn tại
-#         if User.query.filter_by(username=username).first():
-#             flash('Tên đăng nhập đã được sử dụng.', 'error')
-#             return redirect(url_for('auth.register'))
-            
-#         # Kiểm tra email đã tồn tại
-#         if User.query.filter_by(email=email).first():
-#             flash('Email đã được sử dụng.', 'error')
-#             return redirect(url_for('auth.register'))
-#         # Kiểm tra email đã tồn tại
-#         if User.query.filter_by(email=email).first():
-#             flash('Email đã được sử dụng.', 'error')
-#             return redirect(url_for('auth.register'))
-        
-#         # Tạo user mới
-#         new_user = User(
-#             username=username,
-#             email=email,
-#             password_hash=generate_password_hash(password),
-#             full_name=full_name,
-#             phone=phone,
-#             date_of_birth=datetime.strptime(date_of_birth, '%Y-%m-%d').date() if date_of_birth else None,
-#             gender=gender,
-#             bio=bio
-#         )
-#         # Tạo user mới
-#         new_user = User(
-#             username=username,
-#             email=email,
-#             password_hash=generate_password_hash(password),
-#             full_name=full_name,
-#             phone=phone,
-#             date_of_birth=datetime.strptime(date_of_birth, '%Y-%m-%d').date() if date_of_birth else None,
-#             gender=gender,
-#             bio=bio
-#         )
-        
-#         # Lấy avatar ngẫu nhiên khi tạo user
-#         new_user.random_avatar_url = get_random_avatar()
-#         new_user.avatar_updated_at = datetime.utcnow()
-#         # Lấy avatar ngẫu nhiên khi tạo user
-#         new_user.random_avatar_url = get_random_avatar()
-#         new_user.avatar_updated_at = datetime.utcnow()
-        
-#         try:
-#             db.session.add(new_user)
-#             db.session.commit()
-#             flash('Đăng ký thành công! Vui lòng đăng nhập.', 'success')
-#             return redirect(url_for('auth.login'))
-#         except Exception as e:
-#             db.session.rollback()
-#             flash('Có lỗi xảy ra. Vui lòng thử lại.', 'error')
-            
-#     return render_template('auth/register.html')
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
-    
+    if current_user.is_authenticated:
+        return redirect(url_for('main.index')) 
     return render_template('auth/register.html')
+
 @bp.route('/firebase-login', methods=['POST'])
 def firebase_login():
     if not request.is_json:
@@ -290,17 +142,19 @@ def firebase_register_status():
         flash(message or 'Đăng ký thất bại.', 'error')
         return jsonify({'redirect': url_for('auth.register')}), 400
     
-@bp.route('/forgotPassword',methods = ['GET', 'POST'])
+@bp.route('/forgotPassword', methods=['GET', 'POST'])
 def forgotPassword():
     if request.method == 'POST':
         data = request.get_json(silent=True) or {}
         status = data.get('status')
-        
+
         if status == 'success':
-            flash('Kiểm tra địa chỉ email của bạn','success')
+            flash('Kiểm tra địa chỉ email của bạn', 'success')
         else:
-            flash(data.get('message'),'error')
-            return jsonify({'redirect': url_for('auth.forgotPassword')})
+            flash(data.get('message', 'Đã có lỗi xảy ra'), 'error')
+
+        return jsonify({'ok': True})
+    
     return render_template('auth/forgotPassword.html')
 @bp.route('/logout')
 @login_required
@@ -479,13 +333,13 @@ def authorize():
                     gender=None,
                     bio=None,
                     avatar_url=User.generate_random_avatar(),  
-                    created_at=datetime.utcnow(),
+                    created_at=vn_now,
                     firebase_uid = firebase_uid
                 )
             db.session.add(user)
             db.session.commit()
 
-        user.last_login = datetime.utcnow()
+        user.last_login = vn_now
 
         login_user(user, remember=True)
         db.session.commit()

@@ -34,10 +34,17 @@ def dashboard():
     users_count = User.query.count()
     posts_count = Post.query.count()
     pending_posts = Post.query.filter_by(status='pending').count()
+    
+    recent_users = User.query.order_by(User.created_at.desc()).limit(5).all()
+    recent_posts = Post.query.order_by(Post.created_at.desc()).limit(5).all()
+
     return render_template('admin/dashboard.html', 
-                         users_count=users_count,
-                         posts_count=posts_count,
-                         pending_posts=pending_posts)
+                           users_count=users_count,
+                           posts_count=posts_count,
+                           pending_posts=pending_posts,
+                           recent_users=recent_users,
+                           recent_posts=recent_posts)
+
 
 # Lấy trạng thái user từ firebase
 def get_users_with_status():
@@ -162,3 +169,12 @@ def dashboard_stats():
         'recent_users': [{'username': u.username, 'created_at': u.created_at} for u in recent_users],
         'recent_posts': [{'title': p.title, 'author': p.author.username} for p in recent_posts]
     } 
+# xoa bai viet
+@bp.route('/post/<int:post_id>/delete', methods=['POST'])
+@admin_required
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    db.session.delete(post)
+    db.session.commit()
+    flash('Đã xóa bài viết thành công.', 'success')
+    return redirect(url_for('admin.manage_posts'))

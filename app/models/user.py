@@ -7,6 +7,7 @@ import random
 import hashlib
 from app.models.saved_post import SavedPost
 from app.models.follow import Follow
+from app.utils.time_vn import vn_now
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -24,8 +25,8 @@ class User(UserMixin, db.Model):
     gender = db.Column(db.String(10))
     role = db.Column(db.String(20), default='user')
     is_initial_admin = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=vn_now)
+    updated_at = db.Column(db.DateTime, default=vn_now, onupdate=vn_now)
     last_login = db.Column(db.DateTime)
 
     # Quan hệ followers/following
@@ -34,14 +35,22 @@ class User(UserMixin, db.Model):
         foreign_keys='Follow.follower_id',
         back_populates='follower',  # Link to Follow.follower
         lazy='dynamic',
-        cascade='all, delete-orphan'
+        cascade='all, delete-orphan',
+        passive_deletes=True
     )
     followers = db.relationship(
         'Follow',
         foreign_keys='Follow.followed_id',
         back_populates='followed',  # Link to Follow.followed
         lazy='dynamic',
-        cascade='all, delete-orphan'
+        cascade='all, delete-orphan',
+        passive_deletes=True
+    )
+    comments = db.relationship(
+        'Comment',
+        back_populates='user',
+        cascade='all, delete-orphan',
+        passive_deletes=True
     )
 
     def is_admin(self):

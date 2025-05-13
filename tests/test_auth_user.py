@@ -11,6 +11,7 @@ from unittest.mock import patch, MagicMock
 import os
 from werkzeug.utils import secure_filename
 from firebase_admin import auth
+from app.utils.time_vn import vn_now
 
 class TestConfig:
     TESTING = True
@@ -51,7 +52,7 @@ def init_user(app):
             avatar_url=None,  # Đặt avatar_url là None để kiểm tra avatar_filename
             is_active=True,
             role='user',
-            created_at=datetime.utcnow()
+            created_at=vn_now
         )
         db.session.add(user)
         db.session.commit()

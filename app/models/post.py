@@ -1,5 +1,6 @@
 from app import db
 from datetime import datetime
+from app.utils.time_vn import vn_now
 
 class Post(db.Model):
     __tablename__ = 'posts'
@@ -14,17 +15,37 @@ class Post(db.Model):
     
     # Metadata
     status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=vn_now)
+    updated_at = db.Column(db.DateTime, default=vn_now, onupdate=vn_now)
     
     # Tags (stored as comma-separated string)
     tags = db.Column(db.String(200))
     
     # Relationships
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    author = db.relationship('User', backref=db.backref('posts', lazy=True))
-    likes = db.relationship('Like', backref='post', lazy='dynamic')
-    comments = db.relationship('Comment', backref='post', lazy='dynamic')
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id',ondelete="CASCADE"), nullable=False )
+
+
+    author = db.relationship('User', backref=db.backref('posts', lazy=True), passive_deletes=True)
+    likes = db.relationship('Like', backref='post', lazy='dynamic',cascade='all, delete-orphan',
+    passive_deletes=True)
+    comments = db.relationship(
+        'Comment',
+        back_populates='post',
+        cascade='all, delete-orphan',
+        passive_deletes=True,
+        lazy='dynamic'
+    )
+    notifications = db.relationship(
+        'Notification',
+        back_populates='post',
+        cascade='all, delete-orphan',
+        passive_deletes=True,
+        lazy='dynamic'
+    )
+
+
+
+
 
     
     def __repr__(self):

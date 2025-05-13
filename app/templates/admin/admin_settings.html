@@ -35,7 +35,7 @@
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
-                                        <img class="h-10 w-10 rounded-full" src="{{ admin.avatar_url }}" alt="">
+                                        <img class="h-10 w-10 rounded-full" src="{% if admin.avatar_filename %}{{ url_for('static', filename=admin.get_avatar_path()) }}{% elif admin.avatar_url %}{{ admin.avatar_url }}{% else %}{{ url_for('static', filename='default-avatar.png') }}{% endif %}" alt="">
                                         <div class="ml-4">
                                             <div class="text-sm font-medium text-gray-900">
                                                 {{ admin.username }}
