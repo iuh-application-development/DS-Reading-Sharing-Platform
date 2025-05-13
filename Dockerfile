@@ -19,7 +19,9 @@ EXPOSE 5000
 
 # Chạy ứng dụng
 
-# dockre
-# CMD ["flask", "run", "--host=0.0.0.0"]  local
+# docker
+CMD ["flask", "run", "--host=0.0.0.0"]  
+
+
 # cloud
-CMD ["flask", "run", "--host=0.0.0.0", "--port=8080"]
+# CMD ["flask", "run", "--host=0.0.0.0", "--port=8080"]

@@ -5,65 +5,60 @@
         <i class="fas fa-bell mr-3 text-3xl text-blue-500"></i> Thông báo của bạn
     </h2>
     {% if notifications %}
-        <ul class="space-y-6" id="notification-list">
-            {% for n in notifications %}
-            <li class="bg-white rounded-xl shadow p-6 flex items-start border-l-8 transition-all duration-200 {% if not n.is_read %}border-blue-400{% else %}border-gray-200{% endif %} notification-item">
-                <div class="flex-shrink-0 mr-4">
-                    {% if n.type == 'follow' %}
-                        <i class="fas fa-user-plus text-blue-400 text-2xl"></i>
-                    {% elif n.type == 'post' %}
-                        <i class="fas fa-file-alt text-green-400 text-2xl"></i>
-                    {% else %}
-                        <i class="fas fa-info-circle text-gray-400 text-2xl"></i>
-                    {% endif %}
-                </div>
+    <ul class="space-y-6" id="notification-list">
+        {% for n in notifications %}
+        <li
+            class="bg-white rounded-xl shadow p-6 flex items-start border-l-8 transition-all duration-200 {% if not n.is_read %}border-blue-400{% else %}border-gray-200{% endif %} notification-item">
+            <a href="{{ url_for('main.view_post', post_id=n.post_id) }} "
+                onclick="return markAsReadAndGo(event, {{ n.id }}, '{{ url_for('main.view_post', post_id=n.post_id) }}');">
+
+
+
                 <div class="flex-1">
                     <div class="text-lg text-gray-800 font-semibold">
                         {% if not n.is_read %}
-                            <span class="inline-block w-3 h-3 bg-blue-500 rounded-full mr-2 align-middle"></span>
+                        <span class="inline-block w-3 h-3 bg-blue-500 rounded-full mr-2 align-middle"></span>
                         {% endif %}
-                        {% if n.type == 'follow' and n.actor %}
-                            <a href="{{ url_for('auth.profile', username=n.actor.username) }}"
-                               class="hover:underline text-blue-600"
-                               onclick="return markAsReadAndGo(event, {{ n.id }}, '{{ url_for('auth.profile', username=n.actor.username) }}');">{{ n.message }}</a>
-                        {% elif n.type == 'post' and n.post_id %}
-                            <a href="{{ url_for('main.view_post', post_id=n.post_id) }}"
-                               class="hover:underline text-blue-600"
-                               onclick="return markAsReadAndGo(event, {{ n.id }}, '{{ url_for('main.view_post', post_id=n.post_id) }}');">{{ n.message }}</a>
-                        {% else %}
-                            {{ n.message }}
-                        {% endif %}
+                        {{ n.message }}
                     </div>
-                    <div class="text-sm text-gray-400 mt-2 flex items-center"><i class="far fa-clock mr-2"></i>{{ n.created_at.strftime('%d/%m/%Y %H:%M') }}</div>
+                    <div class="text-sm text-gray-400 mt-2 flex items-center"><i class="far fa-clock mr-2"></i>{{
+                        n.created_at.strftime('%d/%m/%Y %H:%M') }}</div>
                 </div>
-            </li>
-            {% endfor %}
-        </ul>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
     {% else %}
-        <div class="text-gray-400 italic py-12 text-lg text-center">Bạn chưa có thông báo nào.</div>
+    <div class="text-gray-400 italic py-12 text-lg text-center">Bạn chưa có thông báo nào.</div>
     {% endif %}
 </div>
 <script>
-// Đánh dấu đã đọc và chuyển trang
-function markAsReadAndGo(event, notificationId, url) {
-    event.preventDefault();
-    const liElement = event.target.closest("li");
-    fetch('/notifications/mark_read/' + notificationId, {method: 'POST'})
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                liElement.classList.remove("border-blue-400");
-                liElement.classList.add("border-gray-200");
-                const blueDot = liElement.querySelector(".bg-blue-500");
-                if (blueDot) blueDot.remove();
-                setTimeout(() => {
-                    window.location.href = url;
-                }, 200);
-            } else {
-                alert("Lỗi: " + data.message);
-            }
+    // Đánh dấu đã đọc và chuyển trang
+    function markAsReadAndGo(event, notificationId, redirectUrl) {
+        event.preventDefault(); // Ngăn mặc định để xử lý trước
+
+        fetch(`/notifications/${notificationId}/mark-read`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin'
         })
-        .catch(() => alert("Lỗi khi đánh dấu đã đọc"));
-}
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = redirectUrl;
+                } else {
+                    console.error("Không thể đánh dấu là đã đọc:", data.error);
+                    window.location.href = redirectUrl;  // fallback vẫn redirect
+                }
+            })
+            .catch(error => {
+                console.error("Lỗi khi gửi yêu cầu:", error);
+                window.location.href = redirectUrl;  // fallback vẫn redirect
+            });
+
+        return false; // Ngăn form mặc định tiếp tục
+    }
 </script>
-{% endblock %} 
+{% endblock %}
