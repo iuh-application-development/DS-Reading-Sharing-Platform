@@ -27,5 +27,5 @@ instance/*
 .firebase-auth.json
 
 # Uploads folder
-app/static/uploads/*
-!app/static/uploads/.gitkeep
+# app/static/uploads/*
+# !app/static/uploads/.gitkeep
