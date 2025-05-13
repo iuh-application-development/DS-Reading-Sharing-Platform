@@ -14,6 +14,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+# db-docker
   db:
     image: postgres:13
     volumes:
@@ -31,5 +32,6 @@ services:
       retries: 5
 
 volumes:
+  #dung docker
   postgres_data:
   uploads_data:
