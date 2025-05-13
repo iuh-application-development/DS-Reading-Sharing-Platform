@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,24 +15,29 @@
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
+
         .gradient-bg {
             background: linear-gradient(135deg, #06cdff 0%, #0a60c3 100%);
         }
+
         .sidebar-gradient {
             background: linear-gradient(180deg, #312e81 0%, #4659e9 100%);
         }
-        
+
         /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
+
         ::-webkit-scrollbar-track {
             background: #f1f1f1;
         }
+
         ::-webkit-scrollbar-thumb {
             background: #6366f1;
             border-radius: 4px;
         }
+
         ::-webkit-scrollbar-thumb:hover {
             background: #4f46e5;
         }
@@ -40,6 +46,7 @@
         .hover-card {
             transition: all 0.3s ease;
         }
+
         .hover-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
@@ -51,15 +58,15 @@
             overflow-x: hidden;
             transition: all 0.3s ease;
         }
-        
+
         #sidebar.collapsed {
             width: 80px;
         }
-        
+
         #sidebar.collapsed .nav-text {
             display: none;
         }
-        
+
         #sidebar.collapsed .sidebar-header-text {
             display: none;
         }
@@ -127,7 +134,7 @@
             justify-content: center;
             border-radius: 0.5rem;
         }
-        
+
         .toggle-btn:hover {
             background: rgba(255, 255, 255, 0.1);
         }
@@ -175,7 +182,7 @@
             transition: all 0.3s ease;
             width: calc(100% - 280px);
         }
-        
+
         #main-content.expanded {
             margin-left: 80px;
             width: calc(100% - 80px);
@@ -236,6 +243,7 @@
                 transform: translateX(100%);
                 opacity: 0;
             }
+
             to {
                 transform: translateX(0);
                 opacity: 1;
@@ -247,6 +255,7 @@
                 transform: translateX(0);
                 opacity: 1;
             }
+
             to {
                 transform: translateX(100%);
                 opacity: 0;
@@ -273,6 +282,7 @@
         }
     </style>
 </head>
+
 <body class="bg-gray-50">
     <div class="flex">
         <!-- Sidebar -->
@@ -284,158 +294,149 @@
                         <i class="fas fa-bars"></i>
                     </button>
                     <h1 class="text-white text-xl font-bold tracking-wider sidebar-header-text">
-                        <a href="{{ url_for('main.index') }}" 
-                           class="flex items-center py-2.5 px-4 text-white-400 hover:bg-indigo-600/30 hover:text-white rounded-lg transition-all duration-200">
+                        <a href="{{ url_for('main.index') }}"
+                            class="flex items-center py-2.5 px-4 text-white-400 hover:bg-indigo-600/30 hover:text-white rounded-lg transition-all duration-200">
                             <span class="ml-3">DS Reading</span>
                         </a>
                     </h1>
                 </div>
             </div>
-            
+
             <!-- Sidebar Navigation -->
             <nav class="mt-6">
                 <div class="nav-container space-y-1">
                     <!-- Home Link -->
-                    <a href="{{ url_for('main.index') }}" 
-                       class="nav-item">
+                    <a href="{{ url_for('main.index') }}" class="nav-item">
                         <i class="fas fa-home"></i>
                         <span class="nav-text">Trang chủ</span>
                     </a>
 
                     {% if current_user.is_authenticated %}
-                        {% if current_user.is_admin() %}
-                            <!-- Admin Section -->
-                            <div class="pt-4">
-                                <h2 class="section-title">
-                                    Quản trị viên
-                                </h2>
-                                
-                                <a href="{{ url_for('admin.dashboard') }}" 
-                                   class="nav-item">
-                                    <i class="fas fa-tachometer-alt"></i>
-                                    <span class="nav-text">Dashboard</span>
-                                </a>
-                                
-                                <a href="{{ url_for('admin.manage_users') }}"
-                                   class="nav-item">
-                                    <i class="fas fa-users"></i>
-                                    <span class="nav-text">Quản lý người dùng</span>
-                                </a>
-                                
-                                <a href="{{ url_for('admin.manage_posts') }}"
-                                   class="nav-item">
-                                    <i class="fas fa-file-alt"></i>
-                                    <span class="nav-text">Quản lý bài viết</span>
-                                </a>
+                    {% if current_user.is_admin() %}
+                    <!-- Admin Section -->
+                    <div class="pt-4">
+                        <h2 class="section-title">
+                            Quản trị viên
+                        </h2>
 
-                                {% if current_user.is_initial_admin %}
-                                    <a href="{{ url_for('admin.admin_settings') }}"
-                                       class="nav-item">
-                                        <i class="fas fa-user-shield"></i>
-                                        <span class="nav-text">Quản lý Admin</span>
-                                    </a>
-                                {% endif %}
-                            </div>
-                        {% else %}
-                            <!-- User Section -->
-                            <div class="pt-4">
-                                <h2 class="section-title">
-                                    Bài viết
-                                </h2>
-                                
-                                <a href="{{ url_for('main.create_post') }}"
-                                   class="nav-item">
-                                    <i class="fas fa-plus-circle"></i>
-                                    <span class="nav-text">Đăng bài</span>
-                                </a>
-                                
-                                <a href="{{ url_for('main.my_posts') }}"
-                                   class="nav-item">
-                                    <i class="fas fa-book"></i>
-                                    <span class="nav-text">Bài viết của tôi</span>
-                                </a>
-                                
-                                <a href="{{ url_for('main.saved_posts') }}"
-                                   class="nav-item">
-                                    <i class="fas fa-bookmark"></i>
-                                    <span class="nav-text">Bài viết đã lưu</span>
-                                </a>
-                            </div>
+                        <a href="{{ url_for('admin.dashboard') }}" class="nav-item">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span class="nav-text">Dashboard</span>
+                        </a>
+
+                        <a href="{{ url_for('admin.manage_users') }}" class="nav-item">
+                            <i class="fas fa-users"></i>
+                            <span class="nav-text">Quản lý người dùng</span>
+                        </a>
+
+                        <a href="{{ url_for('admin.manage_posts') }}" class="nav-item">
+                            <i class="fas fa-file-alt"></i>
+                            <span class="nav-text">Quản lý bài viết</span>
+                        </a>
+
+                        {% if current_user.is_initial_admin %}
+                        <a href="{{ url_for('admin.admin_settings') }}" class="nav-item">
+                            <i class="fas fa-user-shield"></i>
+                            <span class="nav-text">Quản lý Admin</span>
+                        </a>
                         {% endif %}
+                    </div>
+                    {% else %}
+                    <!-- User Section -->
+                    <div class="pt-4">
+                        <h2 class="section-title">
+                            Bài viết
+                        </h2>
 
-                        <!-- Account Section -->
-                        <div class="pt-4">
-                            <!-- User Info -->
-                            <div class="user-info">
-                                <div class="flex items-center space-x-3">
-                                    <img src="{{ current_user.avatar_url }}" 
-                                         alt="{{ current_user.username }}" 
-                                         class="user-avatar">
-                                    <div class="nav-text">
-                                        <div class="text-white font-medium truncate">{{ current_user.full_name }}</div>
-                                        <div class="text-xs text-blue-200">
-                                            {% if current_user.is_admin() %}
-                                                {% if current_user.is_initial_admin %}
-                                                    <span class="flex items-center">
-                                                        <i class="fas fa-shield-alt text-yellow-400 mr-1"></i>
-                                                        Initial Admin
-                                                    </span>
-                                                {% else %}
-                                                    <span class="flex items-center">
-                                                        <i class="fas fa-user-shield text-blue-300 mr-1"></i>
-                                                        Admin
-                                                    </span>
-                                                {% endif %}
-                                            {% else %}
-                                                <span class="flex items-center">
-                                                    <i class="fas fa-user text-green-300 mr-1"></i>
-                                                    User
-                                                </span>
-                                            {% endif %}
-                                        </div>
+                        <a href="{{ url_for('main.create_post') }}" class="nav-item">
+                            <i class="fas fa-plus-circle"></i>
+                            <span class="nav-text">Đăng bài</span>
+                        </a>
+
+                        <a href="{{ url_for('main.my_posts') }}" class="nav-item">
+                            <i class="fas fa-book"></i>
+                            <span class="nav-text">Bài viết của tôi</span>
+                        </a>
+
+                        <a href="{{ url_for('main.saved_posts') }}" class="nav-item">
+                            <i class="fas fa-bookmark"></i>
+                            <span class="nav-text">Bài viết đã lưu</span>
+                        </a>
+                        <a href="/notifications"
+                            class="flex items-center mt-2 py-2.5 px-4 text-white hover:bg-white/10 rounded-lg transition-all duration-200">
+                            <i class="fas fa-bell w-6 text-center"></i>
+                            <span class="ml-3">Thông báo</span>
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- Account Section -->
+                    <div class="pt-4">
+                        <!-- User Info -->
+                        <div class="user-info">
+                            <div class="flex items-center space-x-3">
+                                <img src="{{ current_user.avatar_url }}" alt="{{ current_user.username }}"
+                                    class="user-avatar">
+                                <div class="nav-text">
+                                    <div class="text-white font-medium truncate">{{ current_user.full_name }}</div>
+                                    <div class="text-xs text-blue-200">
+                                        {% if current_user.is_admin() %}
+                                        {% if current_user.is_initial_admin %}
+                                        <span class="flex items-center">
+                                            <i class="fas fa-shield-alt text-yellow-400 mr-1"></i>
+                                            Initial Admin
+                                        </span>
+                                        {% else %}
+                                        <span class="flex items-center">
+                                            <i class="fas fa-user-shield text-blue-300 mr-1"></i>
+                                            Admin
+                                        </span>
+                                        {% endif %}
+                                        {% else %}
+                                        <span class="flex items-center">
+                                            <i class="fas fa-user text-green-300 mr-1"></i>
+                                            User
+                                        </span>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <h2 class="section-title">
-                                Tài khoản
-                            </h2>
-                            
-                            <a href="{{ url_for('auth.profile', username=current_user.username) }}" 
-                               class="nav-item">
-                                <i class="fas fa-user"></i>
-                                <span class="nav-text">Hồ sơ cá nhân</span>
-                            </a>
-                            <a href="{{ url_for('main.follow') }}" 
-                               class="nav-item">
-                                <i class="fas fa-user-friends"></i>
-                                <span class="nav-text">Follow</span>
-                            </a>
-                            
-                            <a href="{{ url_for('auth.logout') }}"
-                               class="nav-item">
-                                <i class="fas fa-sign-out-alt"></i>
-                                <span class="nav-text">Đăng xuất</span>
-                            </a>
-                        </div>
+                        <h2 class="section-title">
+                            Tài khoản
+                        </h2>
+
+                        <a href="{{ url_for('auth.profile', username=current_user.username) }}" class="nav-item">
+                            <i class="fas fa-user"></i>
+                            <span class="nav-text">Hồ sơ cá nhân</span>
+                        </a>
+                        <a href="{{ url_for('main.follow') }}" class="nav-item">
+                            <i class="fas fa-user-friends"></i>
+                            <span class="nav-text">Follow</span>
+                        </a>
+
+                        <a href="{{ url_for('auth.logout') }}" class="nav-item">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="nav-text">Đăng xuất</span>
+                        </a>
+                    </div>
                     {% else %}
-                        <!-- Auth Section -->
-                        <div class="pt-4">
-                            <h2 class="section-title">
-                                Tài khoản
-                            </h2>
-                            <a href="{{ url_for('auth.login') }}"
-                               class="nav-item">
-                                <i class="fas fa-sign-in-alt"></i>
-                                <span class="nav-text">Đăng nhập</span>
-                            </a>
-                            
-                            <a href="{{ url_for('auth.register') }}"
-                               class="nav-item">
-                                <i class="fas fa-user-plus"></i>
-                                <span class="nav-text">Đăng ký</span>
-                            </a>
-                        </div>
+                    <!-- Auth Section -->
+                    <div class="pt-4">
+                        <h2 class="section-title">
+                            Tài khoản
+                        </h2>
+                        <a href="{{ url_for('auth.login') }}" class="nav-item">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span class="nav-text">Đăng nhập</span>
+                        </a>
+
+                        <a href="{{ url_for('auth.register') }}" class="nav-item">
+                            <i class="fas fa-user-plus"></i>
+                            <span class="nav-text">Đăng ký</span>
+                        </a>
+                    </div>
                     {% endif %}
                 </div>
             </nav>
@@ -445,20 +446,21 @@
         <div id="main-content" class="flex-1 bg-gray-50">
             <!-- Flash Messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="flash-message {{ category }}" id="flash-{{ loop.index }}">
-                            <div class="flex-1">{{ message }}</div>
-                            <button class="flash-close" onclick="closeFlash('flash-{{ loop.index }}')">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="flash-message {{ category }}" id="flash-{{ loop.index }}">
+                <div class="flex-1">{{ message }}</div>
+                <button class="flash-close" onclick="closeFlash('flash-{{ loop.index }}')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            {% endfor %}
+            {% endif %}
             {% endwith %}
 
             <!-- Thanh tìm kiếm ở trên cùng -->
             {% if current_user.is_authenticated %}
+            {% if request.endpoint != 'main.notifications' %}
             <div class="content-container mb-6">
                 <form action="{{ url_for('auth.search_posts') }}" method="GET"
                     class="flex items-center max-w-lg mx-auto relative">
@@ -470,7 +472,8 @@
                             <i class="fas fa-search text-gray-400"></i>
                         </div>
                     </div>
-                    <select name="search_type" class="ml-2 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <select name="search_type"
+                        class="ml-2 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="all">Tất cả</option>
                         <option value="title">Tiêu đề</option>
                         <option value="author">Tác giả</option>
@@ -486,68 +489,142 @@
             <div class="content-container">
                 {% block content %}{% endblock %}
             </div>
+            {% endif %}
         </div>
     </div>
-
-    <!-- Add JavaScript for sidebar toggle -->
+    <!-- Neu xoa tu phan nay tro xuong van khong anh huong gi den chuc nang-->
+    <!-- cai nay la noi dung thong bao -->
+    <!-- Add this before closing body tag -->
+    {% if current_user.is_authenticated %}
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('main-content');
-            const toggleBtn = document.getElementById('sidebarToggle');
-            const toggleIcon = toggleBtn.querySelector('i');
-            
-            // Check if sidebar state is saved in localStorage
-            const isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (isSidebarCollapsed) {
-                sidebar.classList.add('collapsed');
-                mainContent.classList.add('expanded');
-                toggleBtn.classList.add('collapsed');
+        document.addEventListener('DOMContentLoaded', function () {
+            // Load notifications
+            function loadNotifications() {
+                fetch('/notifications')
+                    .then(response => response.json())
+                    .then(notifications => {
+                        const notificationList = document.getElementById('notification-list');
+                        notificationList.innerHTML = notifications.map(notification => `
+                        <a href="/post/${notification.post_id}" class="block p-4 border-b hover:bg-gray-50 ${notification.is_read ? '' : 'bg-blue-50'}">
+                            <div class="flex items-start">
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-900">${notification.message}</p>
+                                    <p class="text-xs text-gray-500 mt-1">${notification.created_at}</p>
+                                </div>
+                                ${!notification.is_read ? '<div class="w-2 h-2 bg-blue-500 rounded-full"></div>' : ''}
+                            </div>
+                        </a>
+                    `).join('');
+                    });
             }
-            
-            toggleBtn.addEventListener('click', function() {
-                sidebar.classList.toggle('collapsed');
-                mainContent.classList.toggle('expanded');
-                toggleBtn.classList.toggle('collapsed');
-                
-                // Save state
-                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+
+            // Update unread count
+            function updateUnreadCount() {
+                fetch('/notifications/unread-count')
+                    .then(response => response.json())
+                    .then(data => {
+                        const badge = document.getElementById('notification-badge');
+                        if (data.count > 0) {
+                            badge.textContent = data.count;
+                            badge.classList.remove('hidden');
+                        } else {
+                            badge.classList.add('hidden');
+                        }
+                    });
+            }
+
+            // Mark all as read
+            document.getElementById('mark-all-read').addEventListener('click', function () {
+                fetch('/notifications/mark-all-read', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            loadNotifications();
+                            updateUnreadCount();
+                        }
+                    });
             });
+
+            // Initial load
+            loadNotifications();
+            updateUnreadCount();
+
+            // Set up polling
+            setInterval(() => {
+                loadNotifications();
+                updateUnreadCount();
+            }, 30000); // Check every 30 seconds
         });
     </script>
+    {% endif %}
+</body>
 
-    <!-- Add JavaScript for flash messages -->
-    <script>
-        function closeFlash(id) {
-            const flash = document.getElementById(id);
-            if (flash) {
-                flash.classList.add('closing');
-                setTimeout(() => {
-                    flash.remove();
-                }, 300);
-            }
+</html>
+<!-- Add JavaScript for sidebar toggle -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const toggleIcon = toggleBtn.querySelector('i');
+
+        // Check if sidebar state is saved in localStorage
+        const isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        if (isSidebarCollapsed) {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('expanded');
+            toggleBtn.classList.add('collapsed');
         }
 
-        // Auto close flash messages after 5 seconds
-        document.addEventListener('DOMContentLoaded', function() {
-            const flashMessages = document.querySelectorAll('.flash-message');
-            flashMessages.forEach((flash, index) => {
-                setTimeout(() => {
-                    closeFlash(`flash-${index + 1}`);
-                }, 5000);
-            });
-        });
+        toggleBtn.addEventListener('click', function () {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            toggleBtn.classList.toggle('collapsed');
 
-        // Close flash message when clicking outside
-        document.addEventListener('click', function(event) {
-            const flashMessages = document.querySelectorAll('.flash-message');
-            flashMessages.forEach(flash => {
-                if (!flash.contains(event.target)) {
-                    const id = flash.id;
-                    closeFlash(id);
-                }
-            });
+            // Save state
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
         });
-    </script>
+    });
+</script>
+
+<!-- Add JavaScript for flash messages -->
+<script>
+    function closeFlash(id) {
+        const flash = document.getElementById(id);
+        if (flash) {
+            flash.classList.add('closing');
+            setTimeout(() => {
+                flash.remove();
+            }, 300);
+        }
+    }
+
+    // Auto close flash messages after 5 seconds
+    document.addEventListener('DOMContentLoaded', function () {
+        const flashMessages = document.querySelectorAll('.flash-message');
+        flashMessages.forEach((flash, index) => {
+            setTimeout(() => {
+                closeFlash(`flash-${index + 1}`);
+            }, 5000);
+        });
+    });
+
+    // Close flash message when clicking outside
+    document.addEventListener('click', function (event) {
+        const flashMessages = document.querySelectorAll('.flash-message');
+        flashMessages.forEach(flash => {
+            if (!flash.contains(event.target)) {
+                const id = flash.id;
+                closeFlash(id);
+            }
+        });
+    });
+</script>
 </body>
+
 </html>
