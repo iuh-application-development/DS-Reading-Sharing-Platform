@@ -81,11 +81,16 @@
                         </button>
 
                         <!-- Nút lưu -->
-                        <button onclick="toggleSave({{ post.id }})"
-                                class="flex items-center space-x-2 text-gray-600 hover:text-yellow-500 transition-colors">
-                            <i class="fas fa-bookmark"></i>
-                            <span>Lưu</span>
+                        <div class="flex space-x-2">
+                        {% if current_user.is_authenticated %}
+                        <button onclick="toggleSavePost({{ post.id }}, this)"
+                            class="text-gray-400 hover:text-orange-500 transition-colors save-button p-2 rounded-full hover:bg-orange-50"
+                            data-post-id="{{ post.id }}">
+                            <i
+                                class="{% if post.id in current_user.saved_posts|map(attribute='post_id') %}fas{% else %}far{% endif %} fa-bookmark text-xl"></i>
                         </button>
+                        {% endif %}
+                    </div>
                     </div>
 
                     <!-- Nút chỉnh sửa/xóa (chỉ hiện với tác giả) -->
@@ -202,20 +207,41 @@ function toggleLike(postId) {
     });
 }
 
-function toggleSave(postId) {
-    fetch(`/post/${postId}/toggle_save`, {
+function toggleSavePost(postId, button) {
+    fetch(`{{ url_for('main.toggle_save_post', post_id=0) }}`.replace('0', postId), {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-        }
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin'
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Có thể thêm thông báo hoặc animation ở đây
-        }
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update icon
+                const icon = button.querySelector('i');
+                if (data.status === 'saved') {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
+                    button.classList.add('text-orange-500');
+                    button.classList.remove('text-gray-400');
+                } else {
+                    icon.classList.remove('fas');
+                    icon.classList.add('far');
+                    button.classList.remove('text-orange-500');
+                    button.classList.add('text-gray-400');
+                }
+
+                // Show notification
+                showMessage(data.message, 'success');
+            }
+        })
+        .catch(error => {
+            showMessage('Đã xảy ra lỗi khi lưu bài viết', 'error');
+        });
 }
+
 
 function deletePost(postId) {
     if (confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
