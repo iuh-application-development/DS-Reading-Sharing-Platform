@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, current_app
 from flask_login import login_required, current_user
 from app.models.like import Like
 from app.models.post import Post
@@ -11,6 +11,7 @@ import os
 from app import db
 from datetime import datetime
 from app.services.notification_service import NotificationService
+from app.services.ai_assistant import AIAssistant, AIAssistantError
 from app.models.follow import Follow
 from flask_socketio import emit
 from app import socketio
@@ -377,6 +378,52 @@ def toggle_like(post_id):
         flash('Có lỗi xảy ra khi xử lý like.', 'error')
         return jsonify({'success': False, 'message': 'Lỗi hệ thống'}), 500
 
+
+@bp.route('/api/ai/suggestions', methods=['POST'])
+@login_required
+def get_ai_suggestions():
+    """Get AI suggestions for writing tasks"""
+    try:
+        data = request.get_json()
+        content = data.get('content')
+        task_type = data.get('task_type')
+        
+        if not content or not task_type:
+            return jsonify({'error': 'Missing content or task type'}), 400
+            
+        ai = AIAssistant()
+        suggestions = ai.get_writing_suggestions(content, task_type)
+        return jsonify(suggestions)
+        
+    except AIAssistantError as e:
+        current_app.logger.error(f"AI Assistant error: {str(e)}")
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        current_app.logger.error(f"Unexpected error: {str(e)}")
+        return jsonify({'error': 'An unexpected error occurred'}), 500
+
+@bp.route('/api/ai/chat', methods=['POST'])
+@login_required
+def chat_with_ai():
+    """Chat with AI assistant"""
+    try:
+        data = request.get_json()
+        message = data.get('message')
+        context = data.get('context')
+        
+        if not message:
+            return jsonify({'error': 'Missing message'}), 400
+            
+        ai = AIAssistant()
+        response = ai.get_chat_response(message, context)
+        return jsonify({'response': response})
+        
+    except AIAssistantError as e:
+        current_app.logger.error(f"AI Assistant error: {str(e)}")
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        current_app.logger.error(f"Unexpected error: {str(e)}")
+        return jsonify({'error': 'An unexpected error occurred'}), 500
 
 @bp.route('/follow/<int:user_id>', methods=['POST'])
 @login_required

@@ -2,9 +2,11 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate 
+from flask_migrate import Migrate 
 from config import Config
 import os
 from sqlalchemy import inspect
+
 from flask_socketio import SocketIO
 
 socketio = SocketIO()
@@ -17,6 +19,8 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     socketio.init_app(app)
+    app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
+    
     # Đảm bảo thư mục instance tồn tại
     try:
         os.makedirs(app.instance_path)
@@ -25,6 +29,7 @@ def create_app():
 
     # Khởi tạo các extension
     db.init_app(app)
+    migrate.init_app(app, db) 
     login_manager.init_app(app)
     
     # Khởi tạo Flask-Migrate
@@ -36,6 +41,7 @@ def create_app():
         from app.models.user import User
         return User.query.get(int(id))
 
+    # Import models
     # Import models
     from app.models.user import User
     from app.models.post import Post
@@ -55,6 +61,9 @@ def create_app():
         inspector = inspect(db.engine)
         if not inspector.has_table('users'):
             db.create_all()
+        inspector = inspect(db.engine)
+        if not inspector.has_table('user'):
+            db.create_all()
             from app.utils.admin import create_initial_admin
             create_initial_admin()
             print("Database initialized with initial admin")
@@ -62,3 +71,4 @@ def create_app():
             print("Database already exists, skipping initialization")
 
     return app
+

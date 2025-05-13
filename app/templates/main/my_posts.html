@@ -2,14 +2,14 @@
 {% from 'components/pagination.html' import render_pagination %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="flex items-center justify-between mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 flex items-center">
+<div class="container mx-auto px-4 py-8 fade-in">
+    <div class="flex items-center justify-between mb-8 slide-up">
+        <h1 class="text-3xl font-bold text-gray-900 flex items-center scale-in">
             <i class="fas fa-pencil-alt text-orange-500 mr-3"></i>
             Bài viết của tôi
         </h1>
         <a href="{{ url_for('main.create_post') }}"
-           class="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-2.5 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center">
+           class="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-2.5 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center hover:scale-105">
             <i class="fas fa-plus mr-2"></i>
             Tạo bài viết mới
         </a>
@@ -28,7 +28,7 @@
 
     <div class="grid grid-cols-1 gap-6">
         {% for post in posts.items %}
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300">
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 fade-in">
                 <div class="p-6">
                     <div class="flex justify-between items-start">
                         <div class="flex-1">

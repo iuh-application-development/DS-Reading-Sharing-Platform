@@ -5,20 +5,23 @@ services:
       - "5001:5000"
     volumes:
       - .:/app
-      - uploads_data:/app/app/static/uploads
+      - ./uploads:/app/app/static/uploads
       - ./firebase-auth.json:/app/firebase-auth.json
     environment:
       - FLASK_APP=run.py
       - FLASK_ENV=development
       - DATABASE_URL=postgresql://postgres:wsunicorn@db:5432/ds_reading_db
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
     depends_on:
       db:
         condition: service_healthy
 # db-docker
+    command: >
+      sh -c "sleep 10 && flask run --host=0.0.0.0"
   db:
     image: postgres:13
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./postgres_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=wsunicorn
@@ -30,7 +33,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-
 volumes:
   #dung docker
   postgres_data:
