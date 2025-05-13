@@ -5,9 +5,9 @@ from app.models.post import Post
 from app.models.user import User
 from app.models.comment import Comment
 from app.models.saved_post import SavedPost
-# from app.models.notification import Notification
 from werkzeug.utils import secure_filename
 import os
+# from app.models.notification import Notification
 from app import db
 from datetime import datetime
 from app.services.notification_service import NotificationService
@@ -19,6 +19,8 @@ from app.sockets import notification
 import logging
 
 logger = logging.getLogger(__name__)
+from app.services.notification_service import NotificationService
+from app.models.notification import Notification
 
 bp = Blueprint('main', __name__)
 
@@ -520,3 +522,13 @@ def following():
 def notifications():
     notifications = NotificationService.get_user_notifications(current_user.id, limit=100)
     return render_template('main/notifications.html', notifications=notifications)
+
+@bp.route('/notifications/mark_read/<int:notification_id>', methods=['POST'])
+@login_required
+def mark_notification_read(notification_id):
+    notification = Notification.query.get_or_404(notification_id)
+    if notification.user_id != current_user.id:
+        return jsonify({'success': False, 'message': 'Bạn không có quyền thực hiện thao tác này'})
+    notification.is_read = True
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Đã đánh dấu thông báo đã đọc'})
