@@ -20,41 +20,35 @@ def allowed_file(filename):
 
 @bp.route('/')
 def index():
-    """Trang chủ - hiển thị tất cả bài viết"""
     page = request.args.get('page', 1, type=int)
-    
     query = Post.query.order_by(Post.created_at.desc())
     likes = []
-    # Nếu không phải admin
     if current_user.is_authenticated and not current_user.is_initial_admin:
         query = query.filter(
             db.or_(
-                Post.visibility == 0,  # Công khai
-                db.and_(Post.visibility == 1, Post.user_id == current_user.id)  # Chỉ mình tôi
+                Post.visibility == 0,
+                db.and_(Post.visibility == 1, Post.user_id == current_user.id)
             )
         )
         likes = Like.query.filter_by(user_id=current_user.id).all()
-
     elif not current_user.is_authenticated:
         query = query.filter(Post.visibility == 0)
-    
-    # Phân trang
     posts = query.paginate(page=page, per_page=10, error_out=False)
     liked_post_ids = [like.post_id for like in likes] if likes else []
     total_likes_query = db.session.query(Like.post_id, db.func.count(Like.post_id).label('like_count'))\
         .group_by(Like.post_id).all()
     total_likes_dict = {post_id: like_count for post_id, like_count in total_likes_query}
-    
-    # Gắn tổng số lượt thích vào từng post
     for post in posts.items:
-        post.total_likes = total_likes_dict.get(post.id, 0)  # Mặc định 0 nếu không có lượt thích
+        post.total_likes = total_likes_dict.get(post.id, 0)
     return render_template('main/index.html', posts=posts, likes=liked_post_ids)
 
 @bp.route('/create_post', methods=['GET', 'POST'])
 @login_required
 def create_post():
-    """Tạo bài viết mới"""
     if current_user.is_admin():
+        is_xhr = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_xhr:
+            return jsonify({'success': False, 'error': 'Admin không được phép đăng bài.'})
         flash('Admin không được phép đăng bài.', 'error')
         return redirect(url_for('main.index'))
 
@@ -66,23 +60,41 @@ def create_post():
         tags = request.form.get('tags')
         visibility = request.form.get('visibility')
         
+        is_xhr = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
         if not title or not content:
+            if is_xhr:
+                return jsonify({'success': False, 'error': 'Tiêu đề và nội dung không được để trống.'})
             flash('Tiêu đề và nội dung không được để trống.', 'error')
             return redirect(url_for('main.create_post'))
 
-        # Xử lý upload ảnh
         image_url = None
         if 'image' in request.files:
             file = request.files['image']
-            if file and file.filename and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                # Tạo tên file duy nhất bằng cách thêm timestamp
-                filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
-                # Lưu file vào thư mục uploads
-                file_path = os.path.join('app/static/uploads', filename)
+            if file and file.filename:
+                if not allowed_file(file.filename):
+                    if is_xhr:
+                        return jsonify({'success': False, 'error': 'Định dạng file không được hỗ trợ.'})
+                    flash('Định dạng file không được hỗ trợ.', 'error')
+                    return redirect(url_for('main.create_post'))
+                file.seek(0, os.SEEK_END)
+                file_size = file.tell()
+                file.seek(0)
+                max_size = 10 * 1024 * 1024
+                if file_size > max_size:
+                    if is_xhr:
+                        return jsonify({'success': False, 'error': 'Ảnh quá lớn. Kích thước tối đa là 10MB.'})
+                    flash('Ảnh quá lớn. Kích thước tối đa là 10MB.', 'error')
+                    return redirect(url_for('main.create_post'))
+
+                ext = file.filename.rsplit('.', 1)[1].lower()
+                timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+                filename = secure_filename(f"{current_user.username}_{timestamp}.{ext}")
+                upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'posts')
+                os.makedirs(upload_folder, exist_ok=True)
+                file_path = os.path.join(upload_folder, filename)
                 file.save(file_path)
-                # Lưu đường dẫn tương đối
-                image_url = f'/static/uploads/{filename}'
+                image_url = f"/static/uploads/posts/{filename}"
 
         post = Post(
             title=title,
@@ -91,7 +103,7 @@ def create_post():
             source_content=source_content,
             tags=tags,
             user_id=current_user.id,
-            status='approved',  # Bài viết được đăng trực tiếp
+            status='approved',
             visibility=visibility,
             image_url=image_url
         )
@@ -99,11 +111,20 @@ def create_post():
         try:
             db.session.add(post)
             db.session.commit()
+            if is_xhr:
+                return jsonify({
+                    'success': True,
+                    'message': 'Bài viết đã được đăng thành công.',
+                    'redirect_url': url_for('main.view_post', post_id=post.id)
+                })
             flash('Bài viết đã được đăng thành công.', 'success')
             return redirect(url_for('main.view_post', post_id=post.id))
         except Exception as e:
             db.session.rollback()
+            if is_xhr:
+                return jsonify({'success': False, 'error': 'Có lỗi xảy ra khi tạo bài viết.'})
             flash('Có lỗi xảy ra khi tạo bài viết.', 'error')
+    
     visibility = request.args.get('visibility', 0)
     return render_template('main/create_post.html', visibility=visibility)
 
@@ -135,53 +156,129 @@ def view_post(post_id):
 @bp.route('/post/<int:post_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_post(post_id):
-    """Chỉnh sửa bài viết"""
     post = Post.query.get_or_404(post_id)
     
     if post.user_id != current_user.id:
+        is_xhr = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_xhr:
+            return jsonify({'success': False, 'error': 'Bạn không có quyền chỉnh sửa bài viết này.'})
         flash('Bạn không có quyền chỉnh sửa bài viết này.', 'error')
         return redirect(url_for('main.index'))
 
     if request.method == 'POST':
-        post.title = request.form.get('title')
-        post.content = request.form.get('content')
-        post.source_link = request.form.get('source_link')
-        post.source_content = request.form.get('source_content')
-        post.tags = request.form.get('tags')
-        post.visibility = request.form.get('visibility')
+        is_xhr = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
+        title = request.form.get('title')
+        content = request.form.get('content')
+        source_link = request.form.get('source_link')
+        source_content = request.form.get('source_content')
+        tags = request.form.get('tags')
+        visibility = request.form.get('visibility')
+        
+        if not title or not content:
+            if is_xhr:
+                return jsonify({'success': False, 'error': 'Tiêu đề và nội dung không được để trống.'})
+            flash('Tiêu đề và nội dung không được để trống.', 'error')
+            return redirect(url_for('main.edit_post', post_id=post_id))
+
+        post.title = title
+        post.content = content
+        post.source_link = source_link
+        post.source_content = source_content
+        post.tags = tags
+        post.visibility = visibility
         post.updated_at = datetime.utcnow()
 
-        # Xử lý upload ảnh mới
         if 'image' in request.files:
             file = request.files['image']
-            if file and file.filename and allowed_file(file.filename):
-                # Xóa ảnh cũ nếu có
+            if file and file.filename:
+                if not allowed_file(file.filename):
+                    if is_xhr:
+                        return jsonify({'success': False, 'error': 'Định dạng file không được hỗ trợ.'})
+                    flash('Định dạng file không được hỗ trợ.', 'error')
+                    return redirect(url_for('main.edit_post', post_id=post_id))
+                file.seek(0, os.SEEK_END)
+                file_size = file.tell()
+                file.seek(0)
+                max_size = 10 * 1024 * 1024
+                if file_size > max_size:
+                    if is_xhr:
+                        return jsonify({'success': False, 'error': 'Ảnh quá lớn. Kích thước tối đa là 10MB.'})
+                    flash('Ảnh quá lớn. Kích thước tối đa là 10MB.', 'error')
+                    return redirect(url_for('main.edit_post', post_id=post_id))
+
+                # Xóa ảnh cũ
                 if post.image_url:
-                    old_image_path = os.path.join('app', post.image_url.lstrip('/'))
-                    if os.path.exists(old_image_path):
-                        os.remove(old_image_path)
+                    old_image_path = os.path.join(current_app.root_path, 'static', 'uploads', 'posts', post.image_url.split('/')[-1])
+                    current_app.logger.info(f"Attempting to delete old image: {old_image_path}")
+                    if os.path.isfile(old_image_path):
+                        try:
+                            # Kiểm tra quyền trước khi xóa
+                            if not os.access(old_image_path, os.W_OK):
+                                current_app.logger.error(f"No write permission for {old_image_path}")
+                                if is_xhr:
+                                    return jsonify({'success': False, 'error': 'Không có quyền xóa ảnh cũ.'})
+                                flash('Không có quyền xóa ảnh cũ.', 'error')
+                                return redirect(url_for('main.edit_post', post_id=post_id))
+                            os.remove(old_image_path)
+                            current_app.logger.info(f"Successfully deleted old image: {old_image_path}")
+                        except OSError as e:
+                            current_app.logger.error(f"Failed to delete old image {old_image_path}: {str(e)}")
+                            if is_xhr:
+                                return jsonify({'success': False, 'error': f'Không thể xóa ảnh cũ: {str(e)}'})
+                            flash(f'Không thể xóa ảnh cũ: {str(e)}', 'error')
+                            return redirect(url_for('main.edit_post', post_id=post_id))
+                    else:
+                        current_app.logger.warning(f"Old image not found: {old_image_path}")
 
                 # Lưu ảnh mới
-                filename = secure_filename(file.filename)
-                filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
-                file_path = os.path.join('app/static/uploads', filename)
-                file.save(file_path)
-                post.image_url = f'/static/uploads/{filename}'
+                ext = file.filename.rsplit('.', 1)[1].lower()
+                timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+                filename = secure_filename(f"{current_user.username}_{timestamp}.{ext}")
+                upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'posts')
+                os.makedirs(upload_folder, exist_ok=True)
+                file_path = os.path.join(upload_folder, filename)
+                try:
+                    # Kiểm tra quyền ghi thư mục
+                    if not os.access(upload_folder, os.W_OK):
+                        current_app.logger.error(f"No write permission for {upload_folder}")
+                        if is_xhr:
+                            return jsonify({'success': False, 'error': 'Không có quyền ghi vào thư mục upload.'})
+                        flash('Không có quyền ghi vào thư mục upload.', 'error')
+                        return redirect(url_for('main.edit_post', post_id=post_id))
+                    file.save(file_path)
+                    post.image_url = f"/static/uploads/posts/{filename}"
+                    current_app.logger.info(f"New image saved: {file_path}, image_url set to {post.image_url}")
+                except Exception as e:
+                    current_app.logger.error(f"Failed to save new image {file_path}: {str(e)}")
+                    if is_xhr:
+                        return jsonify({'success': False, 'error': f'Không thể lưu ảnh: {str(e)}'})
+                    flash(f'Không thể lưu ảnh: {str(e)}', 'error')
+                    return redirect(url_for('main.edit_post', post_id=post_id))
         
         try:
             db.session.commit()
+            if is_xhr:
+                return jsonify({
+                    'success': True,
+                    'message': 'Bài viết đã được cập nhật thành công.',
+                    'redirect_url': url_for('main.view_post', post_id=post.id)
+                })
             flash('Bài viết đã được cập nhật thành công.', 'success')
             return redirect(url_for('main.view_post', post_id=post.id))
         except Exception as e:
             db.session.rollback()
+            current_app.logger.error(f"Failed to commit changes: {str(e)}")
+            if is_xhr:
+                return jsonify({'success': False, 'error': 'Có lỗi xảy ra khi cập nhật bài viết.'})
             flash('Có lỗi xảy ra khi cập nhật bài viết.', 'error')
+            return redirect(url_for('main.edit_post', post_id=post_id))
             
     return render_template('main/edit_post.html', post=post)
 
 @bp.route('/post/<int:post_id>/delete', methods=['POST'])
 @login_required
 def delete_post(post_id):
-    """Xóa bài viết"""
     post = Post.query.get_or_404(post_id)
     
     if post.user_id != current_user.id:
@@ -189,11 +286,30 @@ def delete_post(post_id):
         return redirect(url_for('main.index'))
 
     try:
+        # Xóa ảnh nếu có
+        if post.image_url:
+            image_path = os.path.join(current_app.root_path, 'static', 'uploads', 'posts', post.image_url.split('/')[-1])
+            current_app.logger.info(f"Attempting to delete image for post {post_id}: {image_path}")
+            if os.path.isfile(image_path):
+                try:
+                    if not os.access(image_path, os.W_OK):
+                        current_app.logger.error(f"No write permission for {image_path}")
+                        flash('Không có quyền xóa ảnh của bài viết.', 'error')
+                    else:
+                        os.remove(image_path)
+                        current_app.logger.info(f"Successfully deleted image for post {post_id}: {image_path}")
+                except OSError as e:
+                    current_app.logger.error(f"Failed to delete image {image_path}: {str(e)}")
+                    flash(f'Không thể xóa ảnh của bài viết: {str(e)}', 'error')
+            else:
+                current_app.logger.warning(f"Image not found for post {post_id}: {image_path}")
+        
         db.session.delete(post)
         db.session.commit()
         flash('Bài viết đã được xóa.', 'success')
     except Exception as e:
         db.session.rollback()
+        current_app.logger.error(f"Failed to delete post {post_id}: {str(e)}")
         flash('Có lỗi xảy ra khi xóa bài viết.', 'error')
         
     return redirect(url_for('main.my_posts'))
@@ -237,7 +353,6 @@ def saved_posts():
 def add_comment(post_id):
     post = Post.query.get_or_404(post_id)
     
-
     if not current_user.is_authenticated:
         flash('Bạn cần đăng nhập để bình luận.', 'warning')
     if request.method == 'POST':  
@@ -261,12 +376,11 @@ def add_comment(post_id):
     
     return redirect(url_for('main.view_post', post_id=post_id))
 
-# chua hoan thanh 
 @bp.route('/post/<int:post_id>/like', methods=['POST'])
 @login_required
 def toggle_like(post_id):
     post = Post.query.get_or_404(post_id)
-    like = Like.query.filter_by(user_id = current_user.id, post_id = post_id).first()
+    like = Like.query.filter_by(user_id=current_user.id, post_id=post_id).first()
     if like is None:
         like = Like(
             user_id=current_user.id,
@@ -283,6 +397,7 @@ def toggle_like(post_id):
         except Exception as e:
             db.session.rollback()
             flash('Có lỗi xảy ra khi thích bài viết.', 'error')
+            return jsonify({'success': False, 'error': 'Có lỗi xảy ra khi thích bài viết.'})
     else:
         try:
             db.session.delete(like)
@@ -295,6 +410,7 @@ def toggle_like(post_id):
         except Exception as e:
             db.session.rollback()
             flash('Có lỗi xảy ra', 'error')
+            return jsonify({'success': False, 'error': 'Có lỗi xảy ra.'})
 
 @bp.route('/api/ai/suggestions', methods=['POST'])
 @login_required
