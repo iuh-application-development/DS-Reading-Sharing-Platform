@@ -10,7 +10,7 @@ services:
     environment:
       - FLASK_APP=run.py
       - FLASK_ENV=development
-      - DATABASE_URL=postgresql://postgres:taiuong@db:35.238.163.196:5432/ds_reading_db
+      - DATABASE_URL=postgresql://postgres:taiuong@35.238.163.196:5432/ds_reading_db
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
     depends_on:
       db:
