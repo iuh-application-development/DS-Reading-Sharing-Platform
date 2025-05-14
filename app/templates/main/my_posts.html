@@ -30,7 +30,7 @@
                             <div class="flex items-center mt-2 text-sm text-gray-500">
                                 <!-- Author info -->
                                 <div class="flex items-center">
-                                    <img src="{{ url_for('static', filename=post.author.get_avatar_path()) if post.author.avatar_filename else post.author.avatar_url }}"
+                                    <img src="{{ url_for('static', filename=post.author.get_avatar_path()) if post.author.get_avatar_path().startswith('uploads/avatars/') else post.author.get_avatar_path() }}"
                                          alt="{{ post.author.username }}"
                                          class="h-10 w-10 rounded-full object-cover ring-2 ring-orange-100">
                                     <div class="ml-3">

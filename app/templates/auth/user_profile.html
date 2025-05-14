@@ -8,7 +8,7 @@
             <div class="p-8">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-6">
-                        <img src="{% if user.avatar_filename %}{{ url_for('static', filename=user.get_avatar_path()) }}{% elif user.avatar_url %}{{ user.avatar_url }}{% else %}{{ url_for('static', filename='img/default-avatar.png') }}{% endif %}" 
+                        <img src="{{ url_for('static', filename=current_user.get_avatar_path()) if current_user.get_avatar_path().startswith('uploads/avatars/') else current_user.get_avatar_path() }}" 
                              alt="{{ user.username }}" 
                              class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg">
                         <div>
@@ -133,7 +133,7 @@
                     <div class="p-6 hover:bg-gray-50 transition-colors">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center space-x-3">
-                                <img src="{% if post.author.avatar_filename %}{{ url_for('static', filename=post.author.get_avatar_path()) }}{% elif post.author.avatar_url %}{{ post.author.avatar_url }}{% else %}{{ url_for('static', filename='img/default-avatar.png') }}{% endif %}" 
+                                <img src="{{ url_for('static', filename=current_user.get_avatar_path()) if current_user.get_avatar_path().startswith('uploads/avatars/') else current_user.get_avatar_path() }}" 
                                      alt="{{ post.author.username }}" 
                                      class="w-10 h-10 rounded-full object-cover">
                                 <div>
