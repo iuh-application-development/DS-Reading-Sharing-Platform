@@ -1,344 +1,344 @@
-<!-- Floating Chat Bot Button -->
-<div id="chat-bot-container" class="fixed bottom-6 right-6 z-50">
-    <!-- Chat Window -->
-    <div id="chat-window" class="hidden bg-white rounded-xl shadow-2xl w-96 h-[500px] mb-4 overflow-hidden flex flex-col">
-        <!-- Chat Header -->
-        <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-white">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <i class="fas fa-robot text-2xl mr-3"></i>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trợ Lý AI Thông Minh</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Floating Chat Bot Button -->
+    <div id="chat-bot-container" class="fixed bottom-6 right-6 z-50">
+        <!-- Chat Window -->
+        <div id="chat-window" class="hidden bg-white rounded-xl shadow-2xl w-[90vw] max-w-[360px] h-[80vh] max-h-[500px] sm:max-h-[550px] mb-3 overflow-hidden flex flex-col transform transition-all duration-300 ease-out">
+            <!-- Chat Header -->
+            <div class="bg-gradient-to-r from-indigo-600 to-blue-600 p-3 text-white flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-robot text-lg"></i>
                     <div>
-                        <h3 class="font-semibold">AI Assistant</h3>
-                        <p class="text-sm text-blue-100">Luôn sẵn sàng hỗ trợ bạn</p>
+                        <h3 class="font-semibold text-base">Trợ Lý AI</h3>
+                        <p class="text-xs opacity-80">Hỗ trợ bạn mọi lúc</p>
                     </div>
                 </div>
-                <button onclick="toggleChat()" class="text-white hover:text-blue-100">
-                    <i class="fas fa-times text-xl"></i>
+                <button onclick="toggleChat()" class="hover:bg-indigo-700 p-1.5 rounded-full transition-colors duration-200">
+                    <i class="fas fa-times text-base"></i>
                 </button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-3 space-y-3 bg-gray-50">
+                <div class="bg-white rounded-lg p-2.5 shadow-sm border border-gray-100">
+                    <p class="text-xs text-gray-700">Chào bạn! Tôi là trợ lý AI, sẵn sàng trả lời câu hỏi hoặc hỗ trợ bạn. Gõ tin nhắn để bắt đầu!</p>
+                </div>
+            </div>
+
+            <!-- Suggested Questions -->
+            <div id="suggested-questions" class="hidden px-3 py-1.5 bg-gray-50 border-t border-gray-100">
+                <p class="text-xs text-gray-500 mb-1">Gợi ý:</p>
+                <div class="flex flex-wrap gap-1.5">
+                    <!-- Suggestions will be added dynamically -->
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="p-3 bg-white border-t border-gray-100">
+                <div class="flex space-x-2">
+                    <input type="text" id="chat-input" 
+                           class="flex-1 px-2.5 py-1.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-500 outline-none transition-all duration-200 text-xs placeholder-gray-400"
+                           placeholder="Gõ câu hỏi hoặc yêu cầu...">
+                    <button onclick="sendMessage()" 
+                            class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-all duration-200 flex items-center">
+                        <i class="fas fa-paper-plane text-xs"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- Chat Messages -->
-        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-            <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
-                <p class="text-sm text-gray-700">Xin chào! Tôi là trợ lý AI, có thể giúp bạn:</p>
-                <ul class="text-sm list-disc list-inside mt-2 text-gray-600">
-                    <li>Trả lời câu hỏi về nhiều chủ đề</li>
-                    <li>Giúp đỡ viết và chỉnh sửa nội dung</li>
-                    <li>Đưa ra gợi ý và tư vấn</li>
-                    <li>Thảo luận về các vấn đề xã hội, công nghệ, khoa học</li>
-                    <li>Hỗ trợ học tập và nghiên cứu</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Chat Input -->
-        <div class="p-4 border-t border-gray-200 bg-white">
-            <div class="flex space-x-2">
-                <input type="text" id="chat-input" 
-                       class="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-                       placeholder="Nhập câu hỏi hoặc yêu cầu của bạn...">
-                <button onclick="sendMessage()"
-                        class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2.5 rounded-lg hover:shadow-md transition-all duration-200 flex items-center">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
-        </div>
+        <!-- Chat Bot Button -->
+        <button onclick="toggleChat()" 
+                class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center transform hover:scale-105">
+            <i class="fas fa-robot text-lg"></i>
+        </button>
     </div>
 
-    <!-- Chat Bot Button -->
-    <button onclick="toggleChat()" 
-            class="bg-gradient-to-r from-blue-500 to-blue-600 text-white w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center">
-        <i class="fas fa-robot text-2xl"></i>
-    </button>
-</div>
-
-<!-- Chat Bot Styles -->
-<style>
-    @keyframes slideIn {
-        from { transform: translateY(20px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-    }
-    @keyframes typingDot {
-        0%, 60%, 100% { transform: translateY(0); }
-        30% { transform: translateY(-4px); }
-    }
-    .message-appear {
-        animation: slideIn 0.3s ease-out forwards;
-    }
-    .message-user {
-        animation: slideIn 0.3s ease-out forwards;
-        transform-origin: right;
-    }
-    .message-bot {
-        animation: slideIn 0.3s ease-out forwards;
-        transform-origin: left;
-    }
-    .typing-indicator {
-        display: inline-block;
-        padding: 8px 12px;
-        background: #f3f4f6;
-        border-radius: 12px;
-        margin-bottom: 8px;
-    }
-    .typing-dots {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-    .typing-dot {
-        width: 8px;
-        height: 8px;
-        background: #6b7280;
-        border-radius: 50%;
-        animation: typingDot 1.4s infinite ease-in-out;
-    }
-    .typing-dot:nth-child(1) { animation-delay: 0s; }
-    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-    .wave-text {
-        display: inline-block;
-        position: relative;
-        color: #4b5563;
-    }
-    .wave-text span {
-        display: inline-block;
-        animation: wave 1.5s infinite;
-        animation-delay: calc(0.1s * var(--i));
-    }
-    @keyframes wave {
-        0%, 40%, 100% {
-            transform: translateY(0);
+    <!-- Styles -->
+    <style>
+        /* Smooth animations */
+        @keyframes slideIn {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
-        20% {
-            transform: translateY(-4px);
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-    }
-    .markdown-content {
-        font-size: 0.95rem;
-        line-height: 1.6;
-    }
-    .markdown-content h1, 
-    .markdown-content h2, 
-    .markdown-content h3 {
-        margin-top: 1.5em;
-        margin-bottom: 0.5em;
-        font-weight: 600;
-    }
-    .markdown-content h1 { font-size: 1.5em; }
-    .markdown-content h2 { font-size: 1.3em; }
-    .markdown-content h3 { font-size: 1.1em; }
-    .markdown-content p {
-        margin-bottom: 1em;
-    }
-    .markdown-content ul, 
-    .markdown-content ol {
-        margin: 1em 0;
-        padding-left: 2em;
-    }
-    .markdown-content li {
-        margin: 0.5em 0;
-    }
-    .markdown-content code {
-        background-color: #f3f4f6;
-        padding: 0.2em 0.4em;
-        border-radius: 3px;
-        font-family: monospace;
-    }
-    .markdown-content pre {
-        background-color: #f3f4f6;
-        padding: 1em;
-        border-radius: 6px;
-        overflow-x: auto;
-        margin: 1em 0;
-    }
-    .markdown-content pre code {
-        background-color: transparent;
-        padding: 0;
-    }
-    .markdown-content blockquote {
-        border-left: 4px solid #e5e7eb;
-        padding-left: 1em;
-        margin: 1em 0;
-        color: #4b5563;
-    }
-    .markdown-content a {
-        color: #2563eb;
-        text-decoration: underline;
-    }
-    .markdown-content table {
-        border-collapse: collapse;
-        width: 100%;
-        margin: 1em 0;
-    }
-    .markdown-content th,
-    .markdown-content td {
-        border: 1px solid #e5e7eb;
-        padding: 0.5em;
-        text-align: left;
-    }
-    .markdown-content th {
-        background-color: #f9fafb;
-    }
-</style>
+        #chat-window {
+            transform: translateY(30px);
+            opacity: 0;
+        }
+        #chat-window:not(.hidden) {
+            animation: slideIn 0.4s ease-out forwards;
+        }
+        .message-user, .message-bot {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        .suggestion {
+            animation: fadeIn 0.2s ease-out forwards;
+        }
 
-<!-- Chat Bot Script -->
-<script>
-// Wait for DOM to be fully loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Configure marked options
-    marked.setOptions({
-        breaks: true,
-        gfm: true,
-        headerIds: false,
-        mangle: false
-    });
-    
-    // Add focus effects
-    const chatInput = document.getElementById('chat-input');
-    if (chatInput) {
-        chatInput.addEventListener('focus', () => {
-            chatInput.classList.add('ring-2', 'ring-blue-500/50', 'border-blue-500');
-        });
-        
-        chatInput.addEventListener('blur', () => {
-            chatInput.classList.remove('ring-2', 'ring-blue-500/50', 'border-blue-500');
-        });
-        
-        // Add Enter key handler
-        chatInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                sendMessage();
+        /* Typing indicator */
+        @keyframes wave {
+            0%, 40%, 100% { transform: translateY(0); }
+            20% { transform: translateY(-3px); }
+        }
+        .typing-indicator {
+            display: inline-block;
+            padding: 5px 8px;
+            background: #f1f5f9;
+            border-radius: 10px;
+            margin-bottom: 4px;
+        }
+        .wave-text span {
+            display: inline-block;
+            animation: wave 1.2s infinite;
+            animation-delay: calc(0.1s * var(--i));
+        }
+
+        /* Markdown content */
+        .markdown-content {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #1f2937;
+        }
+        .markdown-content h1, .markdown-content h2, .markdown-content h3 {
+            margin: 0.8em 0 0.4em;
+            font-weight: 600;
+        }
+        .markdown-content h1 { font-size: 1.3em; }
+        .markdown-content h2 { font-size: 1.1em; }
+        .markdown-content h3 { font-size: 0.95em; }
+        .markdown-content p { margin-bottom: 0.6em; }
+        .markdown-content ul, .markdown-content ol {
+            margin: 0.6em 0;
+            padding-left: 1.2em;
+        }
+        .markdown-content li { margin: 0.3em 0; }
+        .markdown-content code {
+            background: #f1f5f9;
+            padding: 0.15em 0.3em;
+            border-radius: 3px;
+            font-family: 'Fira Code', monospace;
+        }
+        .markdown-content pre {
+            background: #f1f5f9;
+            padding: 0.6em;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 0.6em 0;
+        }
+        .markdown-content pre code {
+            background: transparent;
+            padding: 0;
+        }
+        .markdown-content blockquote {
+            border-left: 2px solid #d1d5db;
+            padding-left: 0.6em;
+            margin: 0.6em 0;
+            color: #4b5563;
+        }
+        .markdown-content a {
+            color: #4f46e5;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+        .markdown-content a:hover { color: #6366f1; }
+    </style>
+
+    <!-- Script -->
+    <script>
+        // Initialize conversation history
+        let conversationHistory = [];
+
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            marked.setOptions({
+                breaks: true,
+                gfm: true,
+                headerIds: false,
+                mangle: false
+            });
+
+            const chatInput = document.getElementById('chat-input');
+            if (chatInput) {
+                chatInput.addEventListener('focus', () => {
+                    chatInput.classList.add('ring-2', 'ring-indigo-400', 'border-indigo-500');
+                });
+                chatInput.addEventListener('blur', () => {
+                    chatInput.classList.remove('ring-2', 'ring-indigo-400', 'border-indigo-500');
+                });
+                chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
             }
         });
-    }
-});
 
-// Toggle chat window
-function toggleChat() {
-    const chatWindow = document.getElementById('chat-window');
-    chatWindow.classList.toggle('hidden');
-}
+        // Toggle chat window
+        function toggleChat() {
+            const chatWindow = document.getElementById('chat-window');
+            chatWindow.classList.toggle('hidden');
+        }
 
-// Add message to chat
-function addMessage(message, isUser = false) {
-    const chatMessages = document.getElementById('chat-messages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `rounded-lg p-4 ${
-        isUser 
-            ? 'bg-blue-50 ml-12 border border-blue-100 message-user' 
-            : 'bg-white mr-12 border border-gray-100 message-bot'
-    } shadow-sm`;
-    
-    if (!isUser) {
-        if (message === 'Đang xử lý...') {
-            messageDiv.innerHTML = `
-                <div class="typing-indicator">
-                    <div class="wave-text">
-                        ${message.split('').map((char, i) => 
-                            `<span style="--i:${i}">${char}</span>`
-                        ).join('')}
-                    </div>
-                </div>
-            `;
-        } else {
-            messageDiv.innerHTML = `
-                <div class="typing-indicator">
-                    <div class="typing-dots">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                    </div>
-                </div>
-            `;
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            setTimeout(() => {
+        // Add message to chat
+        function addMessage(message, isUser = false) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `rounded-lg p-2.5 ${isUser ? 'bg-indigo-50 ml-8 border border-indigo-100 message-user' : 'bg-white mr-8 border border-gray-100 message-bot'} shadow-sm`;
+
+            if (!isUser && message === 'Đang xử lý...') {
                 messageDiv.innerHTML = `
-                    <div class="markdown-content">
-                        ${marked.parse(message)}
+                    <div class="typing-indicator">
+                        <div class="wave-text text-gray-600 text-xs">
+                            ${message.split('').map((char, i) => `<span style="--i:${i}">${char}</span>`).join('')}
+                        </div>
                     </div>
                 `;
-            }, 1000);
+            } else {
+                messageDiv.innerHTML = isUser 
+                    ? `<p class="text-xs text-gray-800">${message}</p>`
+                    : `<div class="markdown-content">${marked.parse(message)}</div>`;
+            }
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return messageDiv;
         }
-    } else {
-        messageDiv.innerHTML = `<p class="text-sm text-gray-700">${message}</p>`;
-    }
 
-    chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    return messageDiv;
-}
+        // Show suggested questions
+        function showSuggestedQuestions(suggestions) {
+            const suggestionContainer = document.getElementById('suggested-questions');
+            const suggestionList = suggestionContainer.querySelector('div');
+            suggestionList.innerHTML = '';
 
-// Send message to AI
-async function sendMessage() {
-    const input = document.getElementById('chat-input');
-    const message = input.value.trim();
-    
-    if (!message) return;
-    
-    // Disable input and button
-    input.disabled = true;
-    const sendButton = input.nextElementSibling;
-    sendButton.disabled = true;
-    
-    // Add user message
-    const userMessageDiv = addMessage(message, true);
-    input.value = '';
-
-    // Add loading state
-    const loadingMessage = addMessage('Đang xử lý...', false);
-    
-    try {
-        // Set timeout for the fetch request
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
-
-        const response = await fetch('/api/ai/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                message: message,
-                context: ''
-            }),
-            signal: controller.signal,
-            credentials: 'same-origin'
-        });
-        
-        clearTimeout(timeoutId);
-
-        if (response.status === 429) {
-            addMessage('Hệ thống đang bận, vui lòng thử lại sau ít phút.', false);
-            return;
+            if (suggestions.length > 0) {
+                suggestions.forEach(suggestion => {
+                    const button = document.createElement('button');
+                    button.className = 'suggestion bg-gray-200 text-gray-700 text-xs px-2 py-0.5 rounded-full hover:bg-gray-300 transition-colors duration-200';
+                    button.textContent = suggestion;
+                    button.onclick = () => {
+                        document.getElementById('chat-input').value = suggestion;
+                        sendMessage();
+                    };
+                    suggestionList.appendChild(button);
+                });
+                suggestionContainer.classList.remove('hidden');
+            } else {
+                suggestionContainer.classList.add('hidden');
+            }
         }
-        
-        const data = await response.json();
-        
-        if (data.error) {
-            addMessage(`Lỗi: ${data.error}`, false);
-        } else {
-            loadingMessage.remove();
-            addMessage(data.response, false);
+
+        // Send message to AI
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Disable input and button
+            input.disabled = true;
+            const sendButton = input.nextElementSibling;
+            sendButton.disabled = true;
+
+            // Add user message and update history
+            addMessage(message, true);
+            conversationHistory.push({ role: 'user', content: message });
+            input.value = '';
+
+            // Add loading state
+            const loadingMessage = addMessage('Đang xử lý...');
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+                const response = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message,
+                        context: JSON.stringify(conversationHistory.slice(-5))
+                    }),
+                    signal: controller.signal,
+                    credentials: 'same-origin'
+                });
+
+                clearTimeout(timeoutId);
+
+                if (response.status === 429) {
+                    loadingMessage.remove();
+                    addMessage('Hệ thống đang bận. Thử lại sau nhé!', false);
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.error) {
+                    loadingMessage.remove();
+                    addMessage(`Lỗi: ${data.error}`, false);
+                } else {
+                    loadingMessage.remove();
+                    addMessage(data.response, false);
+                    conversationHistory.push({ role: 'assistant', content: data.response });
+
+                    // Generate suggested questions
+                    const suggestions = generateSuggestedQuestions(message, data.response);
+                    showSuggestedQuestions(suggestions);
+                }
+            } catch (error) {
+                console.error('Lỗi:', error);
+                loadingMessage.remove();
+                if (error.name === 'AbortError') {
+                    addMessage('Yêu cầu hết thời gian. Thử lại nhé!', false);
+                } else if (error.message.includes('Failed to fetch')) {
+                    addMessage('Không kết nối được với máy chủ. Kiểm tra mạng nhé!', false);
+                } else {
+                    addMessage('Có lỗi xảy ra. Thử lại sau nhé!', false);
+                }
+            } finally {
+                input.disabled = false;
+                sendButton.disabled = false;
+                input.focus();
+            }
         }
-        
-    } catch (error) {
-        console.error('Error:', error);
-        
-        if (error.name === 'AbortError') {
-            addMessage('Yêu cầu của bạn đã hết thời gian chờ. Vui lòng thử lại.', false);
-        } else if (error.message.includes('Failed to fetch')) {
-            addMessage('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng của bạn.', false);
-        } else {
-            addMessage('Xin lỗi, có lỗi xảy ra. Vui lòng thử lại sau.', false);
+
+        // Generate suggested questions based on conversation
+        function generateSuggestedQuestions(userMessage, aiResponse) {
+            const suggestions = [];
+            const lowerMessage = userMessage.toLowerCase();
+
+            if (lowerMessage.includes('là gì') || lowerMessage.includes('giải thích')) {
+                suggestions.push('Cho ví dụ cụ thể về chủ đề này?');
+                suggestions.push('Nói thêm về lịch sử của nó?');
+            } else if (lowerMessage.includes('cách') || lowerMessage.includes('hướng dẫn')) {
+                suggestions.push('Có mẹo nào để làm tốt hơn không?');
+                suggestions.push('Những sai lầm cần tránh là gì?');
+            } else if (lowerMessage.includes('tại sao') || lowerMessage.includes('vì sao')) {
+                suggestions.push('Có nguyên nhân nào khác không?');
+                suggestions.push('Điều này ảnh hưởng thế nào?');
+            } else {
+                suggestions.push('Nói thêm chi tiết về chủ đề này?');
+                suggestions.push('Có thông tin liên quan nào thú vị không?');
+            }
+
+            return suggestions;
         }
-    } finally {
-        input.disabled = false;
-        sendButton.disabled = false;
-        input.focus();
-    }
-}
-</script> 
+    </script>
+</body>
+</html>
