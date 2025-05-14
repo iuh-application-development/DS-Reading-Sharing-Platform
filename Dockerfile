@@ -20,15 +20,15 @@ RUN mkdir -p /tmp/uploads
 ENV FLASK_APP=run.py
 
 # Expose portL 5000 local - cloud 8080
-# EXPOSE 5000
+EXPOSE 5000
 
-EXPOSE 8080
+# EXPOSE 8080
 
 # Chạy ứng dụng
 # docker
-# CMD ["flask", "run", "--host=0.0.0.0"]  
+CMD ["flask", "run", "--host=0.0.0.0"]  
 
 
 # cloud
-CMD ["flask", "run", "--host=0.0.0.0", "--port=8080"]
+# CMD ["flask", "run", "--host=0.0.0.0", "--port=8080"]
 

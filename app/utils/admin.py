@@ -22,7 +22,7 @@ def create_initial_admin():
             password=admin_password,
             display_name="Admin"
         )
-        print("🆕 Admin account created on Firebase.")
+        print("Admin account created on Firebase.")
         firebase_uid = user_record.uid
 
     # Kiểm tra trong DB Flask xem đã có chưa
