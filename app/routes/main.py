@@ -282,11 +282,13 @@ def delete_post(post_id):
     post = Post.query.get_or_404(post_id)
     
     if post.user_id != current_user.id:
-        flash('Bạn không có quyền xóa bài viết này.', 'error')
-        return redirect(url_for('main.index'))
+        return jsonify({'success': False, 'message': 'Bạn không có quyền xóa bài viết này.'}), 403
 
     try:
-        # Xóa ảnh nếu có
+        # Delete all saved_posts records associated with this post
+        SavedPost.query.filter_by(post_id=post_id).delete()
+        
+        # Delete associated image if it exists
         if post.image_url:
             image_path = os.path.join(current_app.root_path, 'static', 'uploads', 'posts', post.image_url.split('/')[-1])
             current_app.logger.info(f"Attempting to delete image for post {post_id}: {image_path}")
@@ -294,25 +296,23 @@ def delete_post(post_id):
                 try:
                     if not os.access(image_path, os.W_OK):
                         current_app.logger.error(f"No write permission for {image_path}")
-                        flash('Không có quyền xóa ảnh của bài viết.', 'error')
-                    else:
-                        os.remove(image_path)
-                        current_app.logger.info(f"Successfully deleted image for post {post_id}: {image_path}")
+                        return jsonify({'success': False, 'message': 'Không có quyền xóa ảnh của bài viết.'}), 500
+                    os.remove(image_path)
+                    current_app.logger.info(f"Successfully deleted image for post {post_id}: {image_path}")
                 except OSError as e:
                     current_app.logger.error(f"Failed to delete image {image_path}: {str(e)}")
-                    flash(f'Không thể xóa ảnh của bài viết: {str(e)}', 'error')
+                    return jsonify({'success': False, 'message': f'Không thể xóa ảnh của bài viết: {str(e)}'}), 500
             else:
                 current_app.logger.warning(f"Image not found for post {post_id}: {image_path}")
         
+        # Delete the post
         db.session.delete(post)
         db.session.commit()
-        flash('Bài viết đã được xóa.', 'success')
+        return jsonify({'success': True, 'message': 'Bài viết đã được xóa.'})
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Failed to delete post {post_id}: {str(e)}")
-        flash('Có lỗi xảy ra khi xóa bài viết.', 'error')
-        
-    return redirect(url_for('main.my_posts'))
+        return jsonify({'success': False, 'message': 'Có lỗi xảy ra khi xóa bài viết.'}), 500
 
 @bp.route('/post/<int:post_id>/toggle_save', methods=['POST'])
 @login_required
