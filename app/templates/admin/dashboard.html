@@ -55,7 +55,7 @@
                 <div
                     class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                     <div class="flex items-center">
-                        <img class="h-10 w-10 rounded-full ring-2 ring-indigo-100" src="{% if user.avatar_filename %}{{ url_for('static', filename=user.get_avatar_path()) }}{% elif user.avatar_url %}{{ user.avatar_url }}{% else %}{{ url_for('static', filename='img/default-avatar.png') }}{% endif %}"
+                        <img class="h-10 w-10 rounded-full ring-2 ring-indigo-100" src="{{ url_for('static', filename=user.get_avatar_path()) if user.get_avatar_path().startswith('uploads/avatars/') else user.get_avatar_path() }}"
                             alt="{{ user.username }}">
                         <div class="ml-4">
                             <p class="text-lg font-semibold text-gray-900">{{ user.full_name }}</p>
