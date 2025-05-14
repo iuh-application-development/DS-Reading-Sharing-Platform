@@ -39,3 +39,7 @@ firebase_admin
 google-genai>=0.1.0
 Flask-Testing==0.8.1
 pytest-mock==3.14.0
+google.generativeai
+tenacity>=8.2.3
+google-generativeai>=0.8.2
+flask>=2.0.0
