@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from datetime import timedelta
 
-load_dotenv(override=False)  # Không ghi đè biến môi trường từ docker-compose.yml
+load_dotenv(override=True)  # Không ghi đè biến môi trường từ docker-compose.yml
 
 class Config:
     # Cấu hình bảo mật
@@ -10,6 +10,7 @@ class Config:
     
     # Google API Key
     GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
+    print(f"Loaded GOOGLE_API_KEY: {os.environ.get('GOOGLE_API_KEY')}")
     if not GOOGLE_API_KEY:
         print("Warning: GOOGLE_API_KEY not set in .env file")
     
