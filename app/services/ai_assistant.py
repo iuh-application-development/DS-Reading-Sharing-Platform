@@ -18,7 +18,7 @@ class AIAssistant:
             # Khởi tạo client với API key
             self.client = genai.Client(api_key=api_key)
             # Sử dụng model experimental version
-            self.model = "gemini-2.5-pro-preview-03-25"
+            self.model = "gemini-2.0-flash"
             
         except Exception as e:
             current_app.logger.error(f"Failed to initialize Gemini API: {str(e)}")
