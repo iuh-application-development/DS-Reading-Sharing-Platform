@@ -73,8 +73,19 @@ class User(UserMixin, db.Model):
 
     def get_avatar_path(self):
         if self.avatar_filename:
-            # Giả định bạn luôn lưu ảnh vào folder avatars/ trên Firebase Storage
-            return f"https://firebasestorage.googleapis.com/v0/b/prjtest-53174.appspot.com/o/avatars%2F{self.avatar_filename}?alt=media"
+            # Tạo đường dẫn tương đối cho tệp avatar
+            avatar_rel_path = f"uploads/avatars/{self.avatar_filename}"
+            # Tạo URL tĩnh với url_for, thêm tham số phá bộ nhớ đệm
+            avatar_url = url_for('static', filename=avatar_rel_path, _t=self.updated_at.timestamp() if self.updated_at else random.randint(1, 100000))
+            
+            if has_app_context():
+                # Tạo đường dẫn đầy đủ để kiểm tra tồn tại
+                avatar_path = os.path.join(current_app.config.get('UPLOAD_FOLDER', os.path.join(current_app.root_path, 'static', 'uploads')), 'avatars', self.avatar_filename)
+                if os.path.exists(avatar_path):
+                    current_app.logger.info(f"Đã tìm thấy avatar: {avatar_path}")
+                else:
+                    current_app.logger.warning(f"Không tìm thấy tệp avatar: {avatar_path}")
+            return avatar_url
 
         if self.avatar_url:
             return self.avatar_url
@@ -82,7 +93,6 @@ class User(UserMixin, db.Model):
         self.avatar_url = self.generate_random_avatar()
         db.session.commit()
         return self.avatar_url
-
 
 
     @staticmethod

@@ -33,7 +33,7 @@
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-10 w-10">
                                 <img class="h-10 w-10 rounded-full" 
-                                     src="{{ user.avatar_url }}" 
+                                     src="{{ url_for('static', filename=user.get_avatar_path()) if user.get_avatar_path().startswith('uploads/avatars/') else user.get_avatar_path() }}" 
                                      alt="{{ user.username }}'s avatar">
                             </div>
                             <div class="ml-4">

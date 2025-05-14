@@ -414,9 +414,7 @@ def edit_profile():
                     filename = f"{current_user.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
                     
                     # Lưu file
-                    # upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'avatars')
-                    upload_folder = os.path.join('/tmp', 'uploads', 'avatars')
-
+                    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'avatars')
                     os.makedirs(upload_folder, exist_ok=True)
                     file_path = os.path.join(upload_folder, filename)
                     
@@ -427,10 +425,11 @@ def edit_profile():
                             os.remove(old_file_path)
                     
                     # Lưu avatar mới
-                    public_url = upload_to_firebase(file, filename)
-                    current_user.avatar_url = public_url
-                    current_user.avatar_filename = None  # Nếu chỉ dùng URL Firebase
-
+                    file.save(file_path)
+                    
+                    # Cập nhật thông tin avatar trong database
+                    current_user.avatar_filename = filename
+                    current_user.avatar_url = None  # Reset avatar_url khi có avatar_filename
                     
                 except Exception as e:
                     print(f"Error uploading avatar: {str(e)}")
