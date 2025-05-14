@@ -10,8 +10,8 @@
         </a>
 
         <!-- Bài viết -->
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <!-- Ảnh đính kèm (nếu có) -->
+        <div id="post-container" class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <!-- Ảnh đính kèm26 (nếu có) -->
             {% if post.image_url %}
             <div class="w-full h-96 relative">
                 <img src="{{ post.image_url }}" alt="{{ post.title }}" class="w-full h-full object-cover">
@@ -239,18 +239,19 @@
                         button.classList.add('text-gray-400');
                     }
 
-                    // Show notification
-                    showMessage(data.message, 'success');
-                }
-            })
-            .catch(error => {
-                showMessage('Đã xảy ra lỗi khi lưu bài viết', 'error');
-            });
-    }
-
+                // Show notification
+                showMessage(data.message, 'success');
+            }
+        })
+        .catch(error => {
+            showMessage('Đã xảy ra lỗi khi lưu bài viết', 'error');
+        });
+}
 
     function deletePost(postId) {
     if (confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
+        const postContainer = document.getElementById('post-container');
+        postContainer.classList.add('animate-fade-out');
         fetch(`/post/${postId}/delete`, {
             method: 'POST',
             headers: {
@@ -261,14 +262,18 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                showMessage(data.message, 'success');
-                window.location.href = data.redirect_url;
+                // Wait for the animation to complete before redirecting
+                setTimeout(() => {
+                    window.location.href = '/my-posts';
+                }, 300); // Match the animation duration
             } else {
-                showMessage(data.message || 'Xóa thất bại.', 'error');
+                postContainer.classList.remove('animate-fade-out');
+                showMessage('Có lỗi xảy ra khi xóa bài viết', 'error');
             }
         })
-        .catch(err => {
-            showMessage('Lỗi khi gửi yêu cầu xóa bài viết', 'error');
+        .catch(error => {
+            postContainer.classList.remove('animate-fade-out');
+            showMessage('Có lỗi xảy ra khi xóa bài viết', 'error');
         });
     }
 }
@@ -401,20 +406,22 @@
 </script>
 
 <style>
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
 
-    .animate-fade-in {
-        animation: fadeIn 0.3s ease-out;
-    }
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.animate-fade-out {
+    animation: fadeOut 0.3s ease-out forwards;
+}
 </style>
 {% endblock %}
