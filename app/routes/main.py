@@ -99,7 +99,7 @@ def create_post():
                     return redirect(url_for('main.create_post'))
 
                 ext = file.filename.rsplit('.', 1)[1].lower()
-                timestamp = vn_now.strftime('%Y%m%d_%H%M%S')
+                timestamp = vn_now().strftime('%Y%m%d_%H%M%S')
                 filename = secure_filename(f"{current_user.username}_{timestamp}.{ext}")
                 upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'posts')
                 os.makedirs(upload_folder, exist_ok=True)

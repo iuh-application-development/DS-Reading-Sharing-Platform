@@ -12,9 +12,10 @@ from werkzeug.utils import secure_filename
 import os
 from app.utils.pexels import get_random_avatar
 # from firebase_admin import credentials, firestore, auth
-from app.firebase_service import auth
+from app.firebase_service import auth, firebase_bucket
 from flask import jsonify
 from app.utils.time_vn import vn_now
+from flask import send_file
 
 
 bp = Blueprint('auth', __name__)
@@ -333,13 +334,14 @@ def authorize():
                     gender=None,
                     bio=None,
                     avatar_url=User.generate_random_avatar(),  
-                    created_at=vn_now,
+                    created_at= vn_now(),
+                    updated_at = vn_now(),
                     firebase_uid = firebase_uid
                 )
             db.session.add(user)
             db.session.commit()
 
-        user.last_login = vn_now
+        user.last_login = vn_now()
 
         login_user(user, remember=True)
         db.session.commit()
@@ -350,57 +352,46 @@ def authorize():
         print("Lỗi xác thực:", e)
         return jsonify({'message': str(e)}), 401 
 
+def upload_to_firebase(file, filename):
+    bucket = firebase_bucket
+    blob = bucket.blob(f"avatars/{filename}")
+    blob.upload_from_file(file, content_type=file.content_type)
+    blob.make_public()
+    return blob.public_url
 @bp.route('/upload-avatar', methods=['POST'])
 @login_required
 def upload_avatar():
     if 'avatar' not in request.files:
         flash('Không có file được chọn.', 'error')
         return redirect(url_for('auth.profile', username=current_user.username))
-        
+
     file = request.files['avatar']
     if file.filename == '':
         flash('Không có file được chọn.', 'error')
         return redirect(url_for('auth.profile', username=current_user.username))
-        
+
     if file and allowed_file(file.filename):
         try:
-            # Tạo tên file an toàn
             filename = secure_filename(file.filename)
             filename = f"{current_user.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
-            
-            # Đường dẫn lưu trữ
-            upload_folder = os.path.join(current_app.config.get('UPLOAD_FOLDER', 'static/uploads'), 'avatars')
-            os.makedirs(upload_folder, exist_ok=True)
-            file_path = os.path.join(upload_folder, filename)
-            
-            # Lưu file
-            file.save(file_path)
-            
-            # Kiểm tra xem tệp đã lưu thành công
-            if not os.path.exists(file_path):
-                flash('Lỗi khi lưu tệp avatar.', 'error')
-                return redirect(url_for('auth.profile', username=current_user.username))
-            
-            # Xóa avatar cũ nếu có
-            if current_user.avatar_filename:
-                old_file_path = os.path.join(upload_folder, current_user.avatar_filename)
-                if os.path.exists(old_file_path):
-                    os.remove(old_file_path)
-            
-            # Cập nhật thông tin avatar
-            current_user.avatar_filename = filename
-            current_user.avatar_url = None  # Reset avatar_url
-            
+
+            # Upload lên Firebase Storage
+            public_url = upload_to_firebase(file, filename)
+
+            current_user.avatar_url = public_url
+            current_user.avatar_filename = None  # Không dùng nữa
             db.session.commit()
+
             flash('Cập nhật ảnh đại diện thành công!', 'success')
         except Exception as e:
-            current_app.logger.error(f"Error uploading avatar: {str(e)}")
+            current_app.logger.error(f"Lỗi khi upload avatar lên Firebase: {str(e)}")
             db.session.rollback()
-            flash('Có lỗi xảy ra khi cập nhật avatar.', 'error')
+            flash('Có lỗi xảy ra khi cập nhật avatar.' + str(e), 'error')
     else:
-        flash('File không hợp lệ. Chỉ chấp nhận file ảnh (PNG, JPG, JPEG, GIF).', 'error')
-        
+        flash('File không hợp lệ. Chỉ chấp nhận ảnh PNG, JPG, JPEG, GIF.', 'error')
+
     return redirect(url_for('auth.profile', username=current_user.username))
+
 
 @bp.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
@@ -423,7 +414,9 @@ def edit_profile():
                     filename = f"{current_user.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
                     
                     # Lưu file
-                    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'avatars')
+                    # upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'avatars')
+                    upload_folder = os.path.join('/tmp', 'uploads', 'avatars')
+
                     os.makedirs(upload_folder, exist_ok=True)
                     file_path = os.path.join(upload_folder, filename)
                     
@@ -434,11 +427,10 @@ def edit_profile():
                             os.remove(old_file_path)
                     
                     # Lưu avatar mới
-                    file.save(file_path)
-                    
-                    # Cập nhật thông tin avatar trong database
-                    current_user.avatar_filename = filename
-                    current_user.avatar_url = None  # Reset avatar_url khi có avatar_filename
+                    public_url = upload_to_firebase(file, filename)
+                    current_user.avatar_url = public_url
+                    current_user.avatar_filename = None  # Nếu chỉ dùng URL Firebase
+
                     
                 except Exception as e:
                     print(f"Error uploading avatar: {str(e)}")
