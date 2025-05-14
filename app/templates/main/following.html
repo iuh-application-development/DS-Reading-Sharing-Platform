@@ -14,7 +14,7 @@
                     {% for follow in following %}
                     <div class="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
                         <div class="flex items-center space-x-4">
-                            <img src="{% if follow.followed.avatar_filename %}{{ url_for('static', filename=follow.followed.get_avatar_path()) }}{% elif follow.followed.avatar_url %}{{ follow.followed.avatar_url }}{% else %}{{ url_for('static', filename='img/default-avatar.png') }}{% endif %}" 
+                            <img src="{{ url_for('static', filename=follow.followed.get_avatar_path()) if follow.followed.get_avatar_path().startswith('uploads/avatars/') else follow.followed.get_avatar_path() }}" 
                                  alt="{{ follow.followed.username }}" 
                                  class="w-12 h-12 rounded-full object-cover">
                             <div>
