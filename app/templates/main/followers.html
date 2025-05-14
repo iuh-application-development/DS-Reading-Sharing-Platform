@@ -14,7 +14,7 @@
                     {% for follow in followers %}
                     <div class="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
                         <div class="flex items-center space-x-4">
-                            <img src="{% if follow.follower.avatar_filename %}{{ url_for('static', filename=follow.follower.get_avatar_path()) }}{% elif follow.follower.avatar_url %}{{ follow.follower.avatar_url }}{% else %}{{ url_for('static', filename='img/default-avatar.png') }}{% endif %}" 
+                            <img src="{{ url_for('static', filename=follow.follower.get_avatar_path()) if current_user.get_avatar_path().startswith('uploads/avatars/') else current_user.get_avatar_path() }}" 
                                  alt="{{ follow.follower.username }}" 
                                  class="w-12 h-12 rounded-full object-cover">
                             <div>

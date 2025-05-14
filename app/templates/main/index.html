@@ -16,7 +16,7 @@
                 <!-- Header -->
                 <div class="flex items-start justify-between">
                     <div class="flex items-center space-x-3">
-                        <img src="{% if post.author.avatar_filename %}{{ url_for('static', filename=post.author.get_avatar_path()) }}{% elif post.author.avatar_url %}{{ post.author.avatar_url }}{% else %}{{ url_for('static', filename='img/default-avatar.png') }}{% endif %}" 
+                        <img src="{{ url_for('static', filename=post.author.get_avatar_path()) if post.author.get_avatar_path().startswith('uploads/avatars/') else post.author.get_avatar_path() }}" 
                              alt="{{ post.author.username }}" 
                              class="w-10 h-10 rounded-full object-cover">
                         <div>
