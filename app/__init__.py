@@ -19,7 +19,9 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     socketio.init_app(app)
-    app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
+    UPLOAD_FOLDER = '/tmp/uploads'  # Cloud Run only allows writing to /tmp
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+    # app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
     
     # Đảm bảo thư mục instance tồn tại
     try:

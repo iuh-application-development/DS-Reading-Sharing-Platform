@@ -1,6 +1,6 @@
 from datetime import datetime
 from app import db
-from app.utils.time_vn import vn_now
+from app.utils.time_vn import  vn_now
 
 class Notification(db.Model):
     __tablename__ = 'notifications'
@@ -11,7 +11,7 @@ class Notification(db.Model):
     message = db.Column(db.String(255), nullable=False)
     type = db.Column(db.String(30),nullable = False)
     is_read = db.Column(db.Boolean, default=False)  # False = chưa đọc, True = đã đọc
-    created_at = db.Column(db.DateTime, default=vn_now)
+    created_at = db.Column(db.DateTime, default= vn_now())
     type = db.Column(db.String(20))  # 'follow', 'post', ...
     actor_id = db.Column(db.Integer, db.ForeignKey('users.id') )  # id người thực hiện hành động
     

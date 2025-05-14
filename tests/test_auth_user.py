@@ -52,7 +52,7 @@ def init_user(app):
             avatar_url=None,  # Đặt avatar_url là None để kiểm tra avatar_filename
             is_active=True,
             role='user',
-            created_at=vn_now
+            created_at=vn_now()
         )
         db.session.add(user)
         db.session.commit()

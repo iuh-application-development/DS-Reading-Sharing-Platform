@@ -7,7 +7,8 @@ import random
 import hashlib
 from app.models.saved_post import SavedPost
 from app.models.follow import Follow
-from app.utils.time_vn import vn_now
+from app.utils.time_vn import  vn_now
+from flask import url_for
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -25,8 +26,8 @@ class User(UserMixin, db.Model):
     gender = db.Column(db.String(10))
     role = db.Column(db.String(20), default='user')
     is_initial_admin = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=vn_now)
-    updated_at = db.Column(db.DateTime, default=vn_now, onupdate=vn_now)
+    created_at = db.Column(db.DateTime, default= vn_now())
+    updated_at = db.Column(db.DateTime, default= vn_now(), onupdate= vn_now())
     last_login = db.Column(db.DateTime)
 
     # Quan hệ followers/following
@@ -72,22 +73,17 @@ class User(UserMixin, db.Model):
 
     def get_avatar_path(self):
         if self.avatar_filename:
-            if has_app_context():
-                avatar_path = os.path.join(current_app.config.get('UPLOAD_FOLDER', 'static/uploads'), 'avatars', self.avatar_filename)
-                if os.path.exists(avatar_path):
-                    current_app.logger.info(f"Avatar found: {avatar_path}")
-                    return f"uploads/avatars/{self.avatar_filename}"
-                else:
-                    current_app.logger.warning(f"Avatar file not found: {avatar_path}")
-            else:
-                return f"uploads/avatars/{self.avatar_filename}"
-        
+            # Giả định bạn luôn lưu ảnh vào folder avatars/ trên Firebase Storage
+            return f"https://firebasestorage.googleapis.com/v0/b/prjtest-53174.appspot.com/o/avatars%2F{self.avatar_filename}?alt=media"
+
         if self.avatar_url:
             return self.avatar_url
-        
+
         self.avatar_url = self.generate_random_avatar()
         db.session.commit()
         return self.avatar_url
+
+
 
     @staticmethod
     def generate_random_avatar():

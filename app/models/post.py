@@ -1,6 +1,6 @@
 from app import db
 from datetime import datetime
-from app.utils.time_vn import vn_now
+from app.utils.time_vn import  vn_now
 
 class Post(db.Model):
     __tablename__ = 'posts'
@@ -15,8 +15,8 @@ class Post(db.Model):
     
     # Metadata
     status = db.Column(db.String(20), default='pending')  # pending, approved, rejected
-    created_at = db.Column(db.DateTime, default=vn_now)
-    updated_at = db.Column(db.DateTime, default=vn_now, onupdate=vn_now)
+    created_at = db.Column(db.DateTime, default= vn_now())
+    updated_at = db.Column(db.DateTime, default= vn_now(), onupdate= vn_now())
     
     # Tags (stored as comma-separated string)
     tags = db.Column(db.String(200))

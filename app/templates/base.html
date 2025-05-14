@@ -1,614 +1,613 @@
-    <!DOCTYPE html>
-    <html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>DS Reading Platform</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-        <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
-        <script src="{{ url_for('static', filename='socket.js') }}"></script>
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-        <!-- Thêm font Google -->
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-        <style>
-            body {
-                font-family: 'Inter', sans-serif;
-                background-color: #f3f4f6;
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DS Reading Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='socket.js') }}"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Thêm font Google -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #06cdff 0%, #0a60c3 100%);
+        }
+
+        .sidebar-gradient {
+            background: linear-gradient(180deg, #312e81 0%, #4659e9 100%);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #6366f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4f46e5;
+        }
+
+        /* Card hover effect */
+        .hover-card {
+            transition: all 0.3s ease;
+        }
+
+        .hover-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Sidebar styles */
+        #sidebar {
+            width: 280px;
+            overflow-x: hidden;
+            transition: all 0.3s ease;
+        }
+
+        #sidebar.collapsed {
+            width: 80px;
+        }
+
+        #sidebar.collapsed .nav-text {
+            display: none;
+        }
+
+        #sidebar.collapsed .sidebar-header-text {
+            display: none;
+        }
+
+        #sidebar.collapsed .section-title {
+            display: none;
+        }
+
+        #sidebar.collapsed .nav-item {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+
+        #sidebar.collapsed .nav-item i {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+
+        #sidebar.collapsed .user-info {
+            display: none;
+        }
+
+        #sidebar.collapsed .user-avatar {
+            margin: 0 auto;
+        }
+
+        /* Icon alignment styles */
+        .nav-item i {
+            width: 1.5rem;
+            text-align: center;
+            font-size: 1.25rem;
+            margin-left: 1rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 0;
+            color: #fff;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item .nav-text {
+            margin-left: 0.75rem;
+        }
+
+        /* Header styles */
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            padding: 0;
+        }
+
+        .toggle-btn {
+            position: relative;
+            z-index: 50;
+            transition: all 0.3s ease;
+            background: transparent;
+            color: white;
+            width: 3.5rem;
+            height: 3.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+        }
+
+        .toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .toggle-btn i {
+            font-size: 1.25rem;
+            width: 1.5rem;
+            text-align: center;
+            margin-left: 1rem;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .section-title {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 1rem 0.5rem;
+        }
+
+        .user-info {
+            padding: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-avatar {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Main content styles */
+        #main-content {
+            margin-left: 280px;
+            transition: all 0.3s ease;
+            width: calc(100% - 280px);
+        }
+
+        #main-content.expanded {
+            margin-left: 80px;
+            width: calc(100% - 80px);
+        }
+
+        /* Container styles */
+        .content-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        /* Navigation container */
+        .nav-container {
+            padding: 0 0.5rem;
+        }
+
+        /* Flash message styles */
+        .flash-message {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            min-width: 300px;
+            max-width: 500px;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .flash-message.success {
+            background-color: #10B981;
+            color: white;
+        }
+
+        .flash-message.error {
+            background-color: #EF4444;
+            color: white;
+        }
+
+        .flash-message.info {
+            background-color: #3B82F6;
+            color: white;
+        }
+
+        .flash-message.warning {
+            background-color: #F59E0B;
+            color: white;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
             }
 
-            .gradient-bg {
-                background: linear-gradient(135deg, #06cdff 0%, #0a60c3 100%);
+            to {
+                transform: translateX(0);
+                opacity: 1;
             }
+        }
 
-            .sidebar-gradient {
-                background: linear-gradient(180deg, #312e81 0%, #4659e9 100%);
-            }
-
-            /* Custom scrollbar */
-            ::-webkit-scrollbar {
-                width: 8px;
-            }
-
-            ::-webkit-scrollbar-track {
-                background: #f1f1f1;
-            }
-
-            ::-webkit-scrollbar-thumb {
-                background: #6366f1;
-                border-radius: 4px;
-            }
-
-            ::-webkit-scrollbar-thumb:hover {
-                background: #4f46e5;
-            }
-
-            /* Card hover effect */
-            .hover-card {
-                transition: all 0.3s ease;
-            }
-
-            .hover-card:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            }
-
-            /* Sidebar styles */
-            #sidebar {
-                width: 280px;
-                overflow-x: hidden;
-                transition: all 0.3s ease;
-            }
-
-            #sidebar.collapsed {
-                width: 80px;
-            }
-
-            #sidebar.collapsed .nav-text {
-                display: none;
-            }
-
-            #sidebar.collapsed .sidebar-header-text {
-                display: none;
-            }
-
-            #sidebar.collapsed .section-title {
-                display: none;
-            }
-
-            #sidebar.collapsed .nav-item {
-                justify-content: center;
-                padding: 0.75rem;
-            }
-
-            #sidebar.collapsed .nav-item i {
-                margin: 0;
-                font-size: 1.25rem;
-            }
-
-            #sidebar.collapsed .user-info {
-                display: none;
-            }
-
-            #sidebar.collapsed .user-avatar {
-                margin: 0 auto;
-            }
-
-            /* Icon alignment styles */
-            .nav-item i {
-                width: 1.5rem;
-                text-align: center;
-                font-size: 1.25rem;
-                margin-left: 1rem;
-            }
-
-            .nav-item {
-                display: flex;
-                align-items: center;
-                padding: 0.75rem 0;
-                color: #fff;
-                border-radius: 0.5rem;
-                transition: all 0.2s ease;
-            }
-
-            .nav-item .nav-text {
-                margin-left: 0.75rem;
-            }
-
-            /* Header styles */
-            .sidebar-header {
-                display: flex;
-                align-items: center;
-                padding: 0;
-            }
-
-            .toggle-btn {
-                position: relative;
-                z-index: 50;
-                transition: all 0.3s ease;
-                background: transparent;
-                color: white;
-                width: 3.5rem;
-                height: 3.5rem;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 0.5rem;
-            }
-
-            .toggle-btn:hover {
-                background: rgba(255, 255, 255, 0.1);
-            }
-
-            .toggle-btn i {
-                font-size: 1.25rem;
-                width: 1.5rem;
-                text-align: center;
-                margin-left: 1rem;
-            }
-
-            .nav-item:hover {
-                background: rgba(255, 255, 255, 0.1);
-            }
-
-            .nav-item.active {
-                background: rgba(255, 255, 255, 0.2);
-            }
-
-            .section-title {
-                color: rgba(255, 255, 255, 0.7);
-                font-size: 0.75rem;
-                font-weight: 600;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-                padding: 1rem 1rem 0.5rem;
-            }
-
-            .user-info {
-                padding: 1rem;
-                border-top: 1px solid rgba(255, 255, 255, 0.1);
-            }
-
-            .user-avatar {
-                width: 2.5rem;
-                height: 2.5rem;
-                border-radius: 50%;
-                object-fit: cover;
-                border: 2px solid rgba(255, 255, 255, 0.3);
-            }
-
-            /* Main content styles */
-            #main-content {
-                margin-left: 280px;
-                transition: all 0.3s ease;
-                width: calc(100% - 280px);
-            }
-
-            #main-content.expanded {
-                margin-left: 80px;
-                width: calc(100% - 80px);
-            }
-
-            /* Container styles */
-            .content-container {
-                max-width: 100%;
-                margin: 0 auto;
-                padding: 1rem;
-                transition: all 0.3s ease;
-            }
-
-            /* Navigation container */
-            .nav-container {
-                padding: 0 0.5rem;
-            }
-
-            /* Flash message styles */
-            .flash-message {
-                position: fixed;
-                top: 1rem;
-                right: 1rem;
-                z-index: 1000;
-                min-width: 300px;
-                max-width: 500px;
-                padding: 1rem;
-                border-radius: 0.5rem;
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                animation: slideIn 0.3s ease-out;
-            }
-
-            .flash-message.success {
-                background-color: #10B981;
-                color: white;
-            }
-
-            .flash-message.error {
-                background-color: #EF4444;
-                color: white;
-            }
-
-            .flash-message.info {
-                background-color: #3B82F6;
-                color: white;
-            }
-
-            .flash-message.warning {
-                background-color: #F59E0B;
-                color: white;
-            }
-
-            @keyframes slideIn {
-                from {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-
-            @keyframes slideOut {
-                from {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-
-                to {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-            }
-
-            .flash-message.closing {
-                animation: slideOut 0.3s ease-in forwards;
-            }
-
-            .flash-close {
-                background: none;
-                border: none;
-                color: white;
-                cursor: pointer;
-                padding: 0.25rem;
-                margin-left: 1rem;
-                opacity: 0.7;
-                transition: opacity 0.2s;
-            }
-
-            .flash-close:hover {
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
                 opacity: 1;
             }
 
-            .fade-in {
-                animation: fadeIn 0.5s ease;
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .flash-message.closing {
+            animation: slideOut 0.3s ease-in forwards;
+        }
+
+        .flash-close {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0.25rem;
+            margin-left: 1rem;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .flash-close:hover {
+            opacity: 1;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
             }
 
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                }
+            to {
+                opacity: 1;
+            }
+        }
 
-                to {
-                    opacity: 1;
-                }
+        .slide-up {
+            animation: slideUp 0.5s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
             }
 
-            .slide-up {
-                animation: slideUp 0.5s cubic-bezier(.4, 0, .2, 1);
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .scale-in {
+            animation: scaleIn 0.4s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
             }
 
-            @keyframes slideUp {
-                from {
-                    transform: translateY(30px);
-                    opacity: 0;
-                }
-
-                to {
-                    transform: translateY(0);
-                    opacity: 1;
-                }
+            to {
+                transform: scale(1);
+                opacity: 1;
             }
+        }
+    </style>
+</head>
 
-            .scale-in {
-                animation: scaleIn 0.4s cubic-bezier(.4, 0, .2, 1);
-            }
-
-            @keyframes scaleIn {
-                from {
-                    transform: scale(0.95);
-                    opacity: 0;
-                }
-
-                to {
-                    transform: scale(1);
-                    opacity: 1;
-                }
-            }
-        </style>
-    </head>
-
-    <body class="bg-gray-50">
-        {% if current_user.is_authenticated %}
-        <div id="user-info" data-user-id="{{ current_user.id }}"></div>
-        {% endif %}
-        <div class="flex">
-            <!-- Sidebar -->
-            <div id="sidebar" class="h-screen fixed sidebar-gradient shadow-lg">
-                <!-- Sidebar Header -->
-                <div class="flex items-center justify-between h-16 gradient-bg">
-                    <div class="sidebar-header">
-                        <button id="sidebarToggle" class="toggle-btn">
-                            <i class="fas fa-bars"></i>
-                        </button>
-                        <h1 class="text-white text-xl font-bold tracking-wider sidebar-header-text">
-                            <a href="{{ url_for('main.index') }}"
-                                class="flex items-center py-2.5 px-4 text-white-400 hover:bg-indigo-600/30 hover:text-white rounded-lg transition-all duration-200">
-                                <span class="ml-3">DS Reading</span>
-                            </a>
-                        </h1>
-                    </div>
+<body class="bg-gray-50">
+    {% if current_user.is_authenticated %}
+    <div id="user-info" data-user-id="{{ current_user.id }}"></div>
+    {% endif %}
+    <div class="flex">
+        <!-- Sidebar -->
+        <div id="sidebar" class="h-screen fixed sidebar-gradient shadow-lg">
+            <!-- Sidebar Header -->
+            <div class="flex items-center justify-between h-16 gradient-bg">
+                <div class="sidebar-header">
+                    <button id="sidebarToggle" class="toggle-btn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="text-white text-xl font-bold tracking-wider sidebar-header-text">
+                        <a href="{{ url_for('main.index') }}"
+                            class="flex items-center py-2.5 px-4 text-white-400 hover:bg-indigo-600/30 hover:text-white rounded-lg transition-all duration-200">
+                            <span class="ml-3">DS Reading</span>
+                        </a>
+                    </h1>
                 </div>
+            </div>
 
-                <!-- Sidebar Navigation -->
-                <nav class="mt-6">
-                    <div class="nav-container space-y-1">
-                        <!-- Home Link -->
-                        <a href="{{ url_for('main.index') }}" class="nav-item">
-                            <i class="fas fa-home"></i>
-                            <span class="nav-text">Trang chủ</span>
+            <!-- Sidebar Navigation -->
+            <nav class="mt-6">
+                <div class="nav-container space-y-1">
+                    <!-- Home Link -->
+                    <a href="{{ url_for('main.index') }}" class="nav-item">
+                        <i class="fas fa-home"></i>
+                        <span class="nav-text">Trang chủ</span>
+                    </a>
+
+                    {% if current_user.is_authenticated %}
+                    {% if current_user.is_admin() %}
+                    <!-- Admin Section -->
+                    <div class="pt-4">
+                        <h2 class="section-title">
+                            Quản trị viên
+                        </h2>
+
+                        <a href="{{ url_for('admin.dashboard') }}" class="nav-item">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span class="nav-text">Dashboard</span>
                         </a>
 
-                        {% if current_user.is_authenticated %}
-                        {% if current_user.is_admin() %}
-                        <!-- Admin Section -->
-                        <div class="pt-4">
-                            <h2 class="section-title">
-                                Quản trị viên
-                            </h2>
+                        <a href="{{ url_for('admin.manage_users') }}" class="nav-item">
+                            <i class="fas fa-users"></i>
+                            <span class="nav-text">Quản lý người dùng</span>
+                        </a>
 
-                            <a href="{{ url_for('admin.dashboard') }}" class="nav-item">
-                                <i class="fas fa-tachometer-alt"></i>
-                                <span class="nav-text">Dashboard</span>
-                            </a>
+                        <a href="{{ url_for('admin.manage_posts') }}" class="nav-item">
+                            <i class="fas fa-file-alt"></i>
+                            <span class="nav-text">Quản lý bài viết</span>
+                        </a>
 
-                            <a href="{{ url_for('admin.manage_users') }}" class="nav-item">
-                                <i class="fas fa-users"></i>
-                                <span class="nav-text">Quản lý người dùng</span>
-                            </a>
-
-                            <a href="{{ url_for('admin.manage_posts') }}" class="nav-item">
-                                <i class="fas fa-file-alt"></i>
-                                <span class="nav-text">Quản lý bài viết</span>
-                            </a>
-
-                            {% if current_user.is_initial_admin %}
-                            <a href="{{ url_for('admin.admin_settings') }}" class="nav-item">
-                                <i class="fas fa-user-shield"></i>
-                                <span class="nav-text">Quản lý Admin</span>
-                            </a>
-                            {% endif %}
-                        </div>
-                        {% else %}
-                        <!-- User Section -->
-                        <div class="pt-4">
-                            <h2 class="section-title">
-                                Bài viết
-                            </h2>
-
-                            <a href="{{ url_for('main.create_post') }}" class="nav-item">
-                                <i class="fas fa-plus-circle"></i>
-                                <span class="nav-text">Đăng bài</span>
-                            </a>
-
-                            <a href="{{ url_for('main.my_posts') }}" class="nav-item">
-                                <i class="fas fa-book"></i>
-                                <span class="nav-text">Bài viết của tôi</span>
-                            </a>
-
-                            <a href="{{ url_for('main.saved_posts') }}" class="nav-item">
-                                <i class="fas fa-bookmark"></i>
-                                <span class="nav-text">Bài viết đã lưu</span>
-                            </a>
-                            <a href="/notifications"
-                                class="flex items-center mt-2 py-2.5 px-4 text-white hover:bg-white/10 rounded-lg transition-all duration-200">
-                                <i class="fas fa-bell w-6 text-center"></i>
-                                <span class="ml-3">Thông báo</span>
-                            </a>
-                        </div>
+                        {% if current_user.is_initial_admin %}
+                        <a href="{{ url_for('admin.admin_settings') }}" class="nav-item">
+                            <i class="fas fa-user-shield"></i>
+                            <span class="nav-text">Quản lý Admin</span>
+                        </a>
                         {% endif %}
+                    </div>
+                    {% else %}
+                    <!-- User Section -->
+                    <div class="pt-4">
+                        <h2 class="section-title">
+                            Bài viết
+                        </h2>
 
-                        <!-- Account Section -->
-                        <div class="pt-4">
-                            <!-- User Info -->
-                            <div class="user-info">
-                                <div class="flex items-center space-x-3">
-                                    <img src="{{ url_for('static', filename=current_user.get_avatar_path()) if current_user.get_avatar_path().startswith('uploads/avatars/') else current_user.get_avatar_path() }}"
-                                        alt="{{ current_user.username }}" class="user-avatar">
-                                    <div class="nav-text">
-                                        <div class="text-white font-medium truncate">{{ current_user.full_name }}</div>
-                                        <div class="text-xs text-blue-200">
-                                            {% if current_user.is_admin() %}
-                                            {% if current_user.is_initial_admin %}
-                                            <span class="flex items-center">
-                                                <i class="fas fa-shield-alt text-yellow-400 mr-1"></i>
-                                                Initial Admin
-                                            </span>
-                                            {% else %}
-                                            <span class="flex items-center">
-                                                <i class="fas fa-user-shield text-blue-300 mr-1"></i>
-                                                Admin
-                                            </span>
-                                            {% endif %}
-                                            {% else %}
-                                            <span class="flex items-center">
-                                                <i class="fas fa-user text-green-300 mr-1"></i>
-                                                User
-                                            </span>
-                                            {% endif %}
-                                        </div>
+                        <a href="{{ url_for('main.create_post') }}" class="nav-item">
+                            <i class="fas fa-plus-circle"></i>
+                            <span class="nav-text">Đăng bài</span>
+                        </a>
+
+                        <a href="{{ url_for('main.my_posts') }}" class="nav-item">
+                            <i class="fas fa-book"></i>
+                            <span class="nav-text">Bài viết của tôi</span>
+                        </a>
+
+                        <a href="{{ url_for('main.saved_posts') }}" class="nav-item">
+                            <i class="fas fa-bookmark"></i>
+                            <span class="nav-text">Bài viết đã lưu</span>
+                        </a>
+                        <a href="{{ url_for('main.notifications') }}" class="nav-item">
+                            <i class="fas fa-bell"></i>
+                            <span class="nav-text">Thông báo</span>
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- Account Section -->
+                    <div class="pt-4">
+                        <!-- User Info -->
+                        <div class="user-info">
+                            <div class="flex items-center space-x-3">
+                                <img src="{{ url_for('static', filename=current_user.get_avatar_path()) if current_user.get_avatar_path().startswith('uploads/avatars/') else current_user.get_avatar_path() }}"
+                                    alt="{{ current_user.username }}" class="user-avatar">
+                                <div class="nav-text">
+                                    <div class="text-white font-medium truncate">{{ current_user.full_name }}</div>
+                                    <div class="text-xs text-blue-200">
+                                        {% if current_user.is_admin() %}
+                                        {% if current_user.is_initial_admin %}
+                                        <span class="flex items-center">
+                                            <i class="fas fa-shield-alt text-yellow-400 mr-1"></i>
+                                            Initial Admin
+                                        </span>
+                                        {% else %}
+                                        <span class="flex items-center">
+                                            <i class="fas fa-user-shield text-blue-300 mr-1"></i>
+                                            Admin
+                                        </span>
+                                        {% endif %}
+                                        {% else %}
+                                        <span class="flex items-center">
+                                            <i class="fas fa-user text-green-300 mr-1"></i>
+                                            User
+                                        </span>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
-                            <h2 class="section-title">
-                                Tài khoản
-                            </h2>
-
-                            <a href="{{ url_for('auth.profile', username=current_user.username) }}" class="nav-item">
-                                <i class="fas fa-user"></i>
-                                <span class="nav-text">Hồ sơ cá nhân</span>
-                            </a>
-                            <a href="{{ url_for('main.follow') }}" class="nav-item">
-                                <i class="fas fa-user-friends"></i>
-                                <span class="nav-text">Follow</span>
-                            </a>
-
-                            <a href="{{ url_for('auth.logout') }}" class="nav-item">
-                                <i class="fas fa-sign-out-alt"></i>
-                                <span class="nav-text">Đăng xuất</span>
-                            </a>
                         </div>
-                        {% else %}
-                        <!-- Auth Section -->
-                        <div class="pt-4">
-                            <h2 class="section-title">
-                                Tài khoản
-                            </h2>
-                            <a href="{{ url_for('auth.login') }}" class="nav-item">
-                                <i class="fas fa-sign-in-alt"></i>
-                                <span class="nav-text">Đăng nhập</span>
-                            </a>
+                        <h2 class="section-title">
+                            Tài khoản
+                        </h2>
 
-                            <a href="{{ url_for('auth.register') }}" class="nav-item">
-                                <i class="fas fa-user-plus"></i>
-                                <span class="nav-text">Đăng ký</span>
-                            </a>
-                        </div>
-                        {% endif %}
+                        <a href="{{ url_for('auth.profile', username=current_user.username) }}" class="nav-item">
+                            <i class="fas fa-user"></i>
+                            <span class="nav-text">Hồ sơ cá nhân</span>
+                        </a>
+                        <a href="{{ url_for('main.follow') }}" class="nav-item">
+                            <i class="fas fa-user-friends"></i>
+                            <span class="nav-text">Follow</span>
+                        </a>
+
+                        <a href="{{ url_for('auth.logout') }}" class="nav-item">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="nav-text">Đăng xuất</span>
+                        </a>
                     </div>
-                </nav>
-            </div>
+                    {% else %}
+                    <!-- Auth Section -->
+                    <div class="pt-4">
+                        <h2 class="section-title">
+                            Tài khoản
+                        </h2>
+                        <a href="{{ url_for('auth.login') }}" class="nav-item">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span class="nav-text">Đăng nhập</span>
+                        </a>
 
-            <!-- Main Content -->
-            <div id="main-content" class="flex-1 bg-gray-50">
-                <!-- Flash Messages -->
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                {% for category, message in messages %}
-                <div class="flash-message {{ category }}" id="flash-{{ loop.index }}">
-                    <div class="flex-1">{{ message }}</div>
-                    <button class="flash-close" onclick="closeFlash('flash-{{ loop.index }}')">
-                        <i class="fas fa-times"></i>
-                    </button>
+                        <a href="{{ url_for('auth.register') }}" class="nav-item">
+                            <i class="fas fa-user-plus"></i>
+                            <span class="nav-text">Đăng ký</span>
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endfor %}
-                {% endif %}
-                {% endwith %}
-
-                <!-- Thanh tìm kiếm ở trên cùng -->
-                {% if current_user.is_authenticated %}
-                {% if request.endpoint != 'main.notifications' %}
-                <div class="content-container mb-6">
-                    <form action="{{ url_for('auth.search_posts') }}" method="GET"
-                        class="flex items-center max-w-lg mx-auto relative">
-                        <div class="relative w-full">
-                            <input type="text" name="query" id="search-input"
-                                class="w-full p-3 pl-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                placeholder="Tìm kiếm bài đăng, tác giả hoặc #hashtag..." autocomplete="off">
-                            <div class="absolute inset-y-0 left-0 flex items-center pl-3">
-                                <i class="fas fa-search text-gray-400"></i>
-                            </div>
-                        </div>
-                        <select name="search_type"
-                            class="ml-2 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="all">Tất cả</option>
-                            <option value="title">Tiêu đề</option>
-                            <option value="author">Tác giả</option>
-                            <option value="hashtag">Hashtag</option>
-                        </select>
-                        <button type="submit"
-                            class="ml-2 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200">
-                            Tìm
-                        </button>
-                    </form>
-                </div>
-                {% endif %}
-                {% endif %}
-                <div class="content-container">
-                    {% block content %}{% endblock %}
-                </div>
-
-                <!-- Include Chat Bot -->
-                {% include 'components/chat_bot.html' %}
-
-                {% block scripts %}{% endblock %}
-                
-            </div>
+            </nav>
         </div>
 
-        <!-- Add JavaScript for sidebar toggle -->
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const sidebar = document.getElementById('sidebar');
-                const mainContent = document.getElementById('main-content');
-                const toggleBtn = document.getElementById('sidebarToggle');
-                const toggleIcon = toggleBtn.querySelector('i');
+        <!-- Main Content -->
+        <div id="main-content" class="flex-1 bg-gray-50">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="flash-message {{ category }}" id="flash-{{ loop.index }}">
+                <div class="flex-1">{{ message }}</div>
+                <button class="flash-close" onclick="closeFlash('flash-{{ loop.index }}')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
 
-                // Check if sidebar state is saved in localStorage
-                const isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-                if (isSidebarCollapsed) {
-                    sidebar.classList.add('collapsed');
-                    mainContent.classList.add('expanded');
-                    toggleBtn.classList.add('collapsed');
-                }
+            <!-- Thanh tìm kiếm ở trên cùng -->
+            {% if current_user.is_authenticated %}
+            {% if request.endpoint != 'main.notifications' %}
+            <div class="content-container mb-6">
+                <form action="{{ url_for('auth.search_posts') }}" method="GET"
+                    class="flex items-center max-w-lg mx-auto relative">
+                    <div class="relative w-full">
+                        <input type="text" name="query" id="search-input"
+                            class="w-full p-3 pl-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="Tìm kiếm bài đăng, tác giả hoặc #hashtag..." autocomplete="off">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                    </div>
+                    <select name="search_type"
+                        class="ml-2 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="all">Tất cả</option>
+                        <option value="title">Tiêu đề</option>
+                        <option value="author">Tác giả</option>
+                        <option value="hashtag">Hashtag</option>
+                    </select>
+                    <button type="submit"
+                        class="ml-2 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200">
+                        Tìm
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+            {% endif %}
+            <div class="content-container">
+                {% block content %}{% endblock %}
+            </div>
 
-                toggleBtn.addEventListener('click', function () {
-                    sidebar.classList.toggle('collapsed');
-                    mainContent.classList.toggle('expanded');
-                    toggleBtn.classList.toggle('collapsed');
+            <!-- Include Chat Bot -->
+            {% include 'components/chat_bot.html' %}
 
-                    // Save state
-                    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-                });
-            });
-        </script>
+            {% block scripts %}{% endblock %}
 
-        <!-- Add JavaScript for flash messages -->
-        <script>
-            function closeFlash(id) {
-                const flash = document.getElementById(id);
-                if (flash) {
-                    flash.classList.add('closing');
-                    setTimeout(() => {
-                        flash.remove();
-                    }, 300);
-                }
+        </div>
+    </div>
+
+    <!-- Add JavaScript for sidebar toggle -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const toggleIcon = toggleBtn.querySelector('i');
+
+            // Check if sidebar state is saved in localStorage
+            const isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isSidebarCollapsed) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('expanded');
+                toggleBtn.classList.add('collapsed');
             }
 
-            // Auto close flash messages after 5 seconds
-            document.addEventListener('DOMContentLoaded', function () {
-                const flashMessages = document.querySelectorAll('.flash-message');
-                flashMessages.forEach((flash, index) => {
-                    setTimeout(() => {
-                        closeFlash(`flash-${index + 1}`);
-                    }, 5000);
-                });
-            });
+            toggleBtn.addEventListener('click', function () {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+                toggleBtn.classList.toggle('collapsed');
 
-            // Close flash message when clicking outside
-            document.addEventListener('click', function (event) {
-                const flashMessages = document.querySelectorAll('.flash-message');
-                flashMessages.forEach(flash => {
-                    if (!flash.contains(event.target)) {
-                        const id = flash.id;
-                        closeFlash(id);
-                    }
-                });
+                // Save state
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
             });
-        </script>
-    </body>
+        });
+    </script>
 
-    </html>
+    <!-- Add JavaScript for flash messages -->
+    <script>
+        function closeFlash(id) {
+            const flash = document.getElementById(id);
+            if (flash) {
+                flash.classList.add('closing');
+                setTimeout(() => {
+                    flash.remove();
+                }, 300);
+            }
+        }
+
+        // Auto close flash messages after 5 seconds
+        document.addEventListener('DOMContentLoaded', function () {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach((flash, index) => {
+                setTimeout(() => {
+                    closeFlash(`flash-${index + 1}`);
+                }, 5000);
+            });
+        });
+
+        // Close flash message when clicking outside
+        document.addEventListener('click', function (event) {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(flash => {
+                if (!flash.contains(event.target)) {
+                    const id = flash.id;
+                    closeFlash(id);
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
