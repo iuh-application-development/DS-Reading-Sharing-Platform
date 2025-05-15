@@ -41,6 +41,7 @@ Trang web còn hỗ trợ lưu trữ dữ liệu với PostgreSQL và Firebase, 
 ### **3.1. Phân tích yêu cầu**
 
 * **Chức năng**:
+
   * **Quản trị viên**:
     * Xem thống kê hệ thống (bài viết, người dùng, bài chờ duyệt)
     * **Quản lý người dùng**:
@@ -88,19 +89,20 @@ Trang web còn hỗ trợ lưu trữ dữ liệu với PostgreSQL và Firebase, 
     * Nâng cao nội dung
     * Tóm tắt nội dung
     * Trò chuyện tương tác với AI
-  
 * **Phi chức năng**:
+
   * Hệ thống phải xử lý nhanh, tối ưu trải nghiệm người dùng.
   * Bảo mật xác thực người dùng
   * Khả dụng luôn hoạt động 24/7
   * Khả năng mở rộng tốt (scalable) thông qua container hóa và Cloud Run.
 
 ### **3.2. Đặc tả yêu cầu**
+
 * **1. Mục đích hệ thống**:
 
-      Cung cấp nền tảng cho người dùng đăng tải, chia sẻ, tương tác và quản lý bài viết một cách dễ dàng. Hệ thống hỗ trợ xác thực bảo mật bằng Firebase, hỗ trợ gợi ý AI, quản trị người dùng và thông báo thời gian thực.
-
+  Cung cấp nền tảng cho người dùng đăng tải, chia sẻ, tương tác và quản lý bài viết một cách dễ dàng. Hệ thống hỗ trợ xác thực bảo mật bằng Firebase, hỗ trợ gợi ý AI, quản trị người dùng và thông báo thời gian thực.
 * **1.2. Phạm vi**:
+
   * Người dùng đăng ký, đăng nhập bằng Firebase
   * Viết bài, bình luận, like, lưu bài viết
   * Follow/Unfollow và tương tác cộng đồng
@@ -108,36 +110,39 @@ Trang web còn hỗ trợ lưu trữ dữ liệu với PostgreSQL và Firebase, 
   * Thông báo thời gian thực
   * Gợi ý AI (tiêu đề, nội dung, tag...)
 * **3. Chức năng**
-  | Mã   | Chức năng                | Mô tả                                                   |
-  | ---- | ------------------------ | ------------------------------------------------------- |
-  | FR1  | Đăng ký / Đăng nhập      | Firebase Auth, kiểm tra UID                             |
-  | FR2  | Cập nhật hồ sơ           | Cập nhật tên, ảnh đại diện, số điện thoại, ngày sinh... |
-  | FR3  | Tạo bài viết             | Viết bài, chèn ảnh, đặt quyền riêng tư                  |
-  | FR4  | Chỉnh sửa / Xóa bài viết | Tác giả được sửa hoặc xóa bài của mình                  |
-  | FR5  | Like / Bình luận         | Tương tác với bài viết                                  |
-  | FR6  | Lưu bài viết             | Lưu / bỏ lưu các bài viết yêu thích                     |
-  | FR7  | Follow người dùng        | Theo dõi / hủy theo dõi                                 |
-  | FR8  | Tìm kiếm bài viết        | Theo tiêu đề, nội dung, hashtag, tác giả                |
-  | FR9  | Trợ lý AI                | Sinh tiêu đề, tag, tóm tắt, cải thiện nội dung          |
-  | FR10 | Gửi thông báo            | Gửi thông báo khi có like/comment/bài viết mới          |
-  | FR11 | Đánh dấu đã đọc          | Đánh dấu thông báo đã đọc                               |
-  | FR12 | Quản trị người dùng      | Admin duyệt bài viết, cấp quyền, khóa tài khoản         |
-  | FR13 | Quản trị bài viết        | Admin phê duyệt / từ chối / xóa bài                     |
-  | FR14 | Giao tiếp socket         | Socket.IO gửi thông báo real-time                       |
+
+  | Mã  | Chức năng                   | Mô tả                                                             |
+  | ---- | ----------------------------- | ------------------------------------------------------------------- |
+  | FR1  | Đăng ký / Đăng nhập     | Firebase Auth, kiểm tra UID                                        |
+  | FR2  | Cập nhật hồ sơ            | Cập nhật tên, ảnh đại diện, số điện thoại, ngày sinh... |
+  | FR3  | Tạo bài viết               | Viết bài, chèn ảnh, đặt quyền riêng tư                     |
+  | FR4  | Chỉnh sửa / Xóa bài viết | Tác giả được sửa hoặc xóa bài của mình                   |
+  | FR5  | Like / Bình luận            | Tương tác với bài viết                                        |
+  | FR6  | Lưu bài viết               | Lưu / bỏ lưu các bài viết yêu thích                         |
+  | FR7  | Follow người dùng          | Theo dõi / hủy theo dõi                                          |
+  | FR8  | Tìm kiếm bài viết         | Theo tiêu đề, nội dung, hashtag, tác giả                      |
+  | FR9  | Trợ lý AI                   | Sinh tiêu đề, tag, tóm tắt, cải thiện nội dung              |
+  | FR10 | Gửi thông báo              | Gửi thông báo khi có like/comment/bài viết mới               |
+  | FR11 | Đánh dấu đã đọc        | Đánh dấu thông báo đã đọc                                  |
+  | FR12 | Quản trị người dùng      | Admin duyệt bài viết, cấp quyền, khóa tài khoản             |
+  | FR13 | Quản trị bài viết         | Admin phê duyệt / từ chối / xóa bài                           |
+  | FR14 | Giao tiếp socket             | Socket.IO gửi thông báo real-time                                |
 * **4. Người dùng**
-  | Vai trò           | Quyền                                                       |
-  | ----------------- | ----------------------------------------------------------- |
-  | Anonymous         | Xem bài viết công khai, đăng ký, đăng nhập                  |
+
+  | Vai trò               | Quyền                                                            |
+  | ---------------------- | ----------------------------------------------------------------- |
+  | Anonymous              | Xem bài viết công khai, đăng ký, đăng nhập               |
   | Người dùng thường | CRUD bài viết cá nhân, like/comment/save/follow, sử dụng AI |
-  | Admin             | Duyệt bài, quản lý người dùng                               |
-  | Initial Admin     | Toàn quyền admin: cấp quyền, khóa user khác                 |
+  | Admin                  | Duyệt bài, quản lý người dùng                              |
+  | Initial Admin          | Toàn quyền admin: cấp quyền, khóa user khác                 |
 * **5. Phi chức năng**:
-  | Loại             | Mô tả                                                       |
-  | ---------------- | ----------------------------------------------------------- |
-  | Hiệu năng        | Hệ thống phản hồi trong vòng <1s với các thao tác cơ bản    |
-  | Bảo mật          | Xác thực Firebase, phân quyền rõ ràng                       |
-  | Khả dụng         | Hệ thống online 24/7, backup định kỳ                        |
-  | Khả năng mở rộng | Có thể tích hợp thêm AI khác, cloud storage, load balancing |
+
+  | Loại                | Mô tả                                                            |
+  | -------------------- | ------------------------------------------------------------------ |
+  | Hiệu năng          | Hệ thống phản hồi trong vòng <1s với các thao tác cơ bản |
+  | Bảo mật            | Xác thực Firebase, phân quyền rõ ràng                        |
+  | Khả dụng           | Hệ thống online 24/7, backup định kỳ                          |
+  | Khả năng mở rộng | Có thể tích hợp thêm AI khác, cloud storage, load balancing  |
 
 ### **3.3. Thiết kế hệ thống**
 
@@ -147,11 +152,6 @@ Trang web còn hỗ trợ lưu trữ dữ liệu với PostgreSQL và Firebase, 
 
   ![1747249752457](image/README/1747249752457.png)
 * **Thiết kế giao diện**:
-
-  * Trang chủ: ô nhập link + kết quả tóm tắt.
-  * Trang chat: tích hợp chatbot.
-  * Trang đăng ký/đăng nhập.
-  * Lịch sử các bài viết đã chia sẻ.
 
 ---
 
