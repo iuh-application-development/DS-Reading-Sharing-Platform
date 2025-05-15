@@ -7,9 +7,9 @@
 ## **1. THÔNG TIN NHÓM**
 
 * Nguyễn Ngọc Lân – nguyenngoclan120904@gmail.com
-* Ngô Trường Định -
-* Nguyễn Tấn Minh
-* Phan Thành Đạt
+* Ngô Trường Định - ngodinh2339@gmail.com
+* Nguyễn Tấn Minh - minhnguyen10072004@gmail.com
+* Phan Thành Đạt - thanhdat2022cltv@gmail.com
 
 ---
 
@@ -98,10 +98,10 @@ Trang web còn hỗ trợ lưu trữ dữ liệu với PostgreSQL và Firebase, 
 
 ### **3.2. Đặc tả yêu cầu**
 
-* **1. Mục đích hệ thống**:
+* **3.2.1. Mục đích hệ thống**:
 
   Cung cấp nền tảng cho người dùng đăng tải, chia sẻ, tương tác và quản lý bài viết một cách dễ dàng. Hệ thống hỗ trợ xác thực bảo mật bằng Firebase, hỗ trợ gợi ý AI, quản trị người dùng và thông báo thời gian thực.
-* **1.2. Phạm vi**:
+* **3.2.2. Phạm vi**:
 
   * Người dùng đăng ký, đăng nhập bằng Firebase
   * Viết bài, bình luận, like, lưu bài viết
@@ -109,7 +109,7 @@ Trang web còn hỗ trợ lưu trữ dữ liệu với PostgreSQL và Firebase, 
   * Quản lý người dùng và bài viết (Admin)
   * Thông báo thời gian thực
   * Gợi ý AI (tiêu đề, nội dung, tag...)
-* **3. Chức năng**
+* **3.2.3. Chức năng**
 
   | Mã  | Chức năng                   | Mô tả                                                             |
   | ---- | ----------------------------- | ------------------------------------------------------------------- |
@@ -127,7 +127,7 @@ Trang web còn hỗ trợ lưu trữ dữ liệu với PostgreSQL và Firebase, 
   | FR12 | Quản trị người dùng      | Admin duyệt bài viết, cấp quyền, khóa tài khoản             |
   | FR13 | Quản trị bài viết         | Admin phê duyệt / từ chối / xóa bài                           |
   | FR14 | Giao tiếp socket             | Socket.IO gửi thông báo real-time                                |
-* **4. Người dùng**
+* **3.2.4. Người dùng**
 
   | Vai trò               | Quyền                                                            |
   | ---------------------- | ----------------------------------------------------------------- |
@@ -135,7 +135,7 @@ Trang web còn hỗ trợ lưu trữ dữ liệu với PostgreSQL và Firebase, 
   | Người dùng thường | CRUD bài viết cá nhân, like/comment/save/follow, sử dụng AI |
   | Admin                  | Duyệt bài, quản lý người dùng                              |
   | Initial Admin          | Toàn quyền admin: cấp quyền, khóa user khác                 |
-* **5. Phi chức năng**:
+* **3.2.5. Phi chức năng**:
 
   | Loại                | Mô tả                                                            |
   | -------------------- | ------------------------------------------------------------------ |
@@ -152,7 +152,26 @@ Trang web còn hỗ trợ lưu trữ dữ liệu với PostgreSQL và Firebase, 
 
   ![1747249752457](image/README/1747249752457.png)
 * **Thiết kế giao diện**:
-
+  * **Giao diện trang chủ**:
+    ![image](image/README/image.png)
+  * **Giao diện đăng nhập**:
+    ![image-1](image/README/image-1.png)
+  * **Giao diện đang ký**:
+    ![image-2](image/README/image-2.png)
+  * **Giao diện đăng bài viết**:
+    ![image-4](image/README/image-4.png)
+  * **Giao diện bài viết của bản thân**:
+    ![image-6](image/README/image-6.png)
+  * **Giao diện bài viết đã lưu**:
+    ![image-7](image/README/image-7.png)
+  * **Giao diện thông báo**:
+    ![image-8](image/README/image-8.png)
+  * **Giao diện hồ sơ cá nhân**:
+    ![image-9](image/README/image-9.png)
+  * **Giao diện follow**:
+    ![image-10](image/README/image-10.png)
+  * **Giao diện tìm kiếm**:
+    ![image-11](image/README/image-11.png) 
 ---
 
 ## **4. CÔNG CỤ VÀ CÔNG NGHỆ SỬ DỤNG**
