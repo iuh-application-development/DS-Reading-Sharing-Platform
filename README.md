@@ -162,7 +162,7 @@ Trang web còn hỗ trợ lưu trữ dữ liệu với PostgreSQL và Firebase, 
     ![image-4](image/README/image-4.png)
   * **Giao diện bài viết của bản thân**:
     ![image-6](image/README/image-6.png)
-  * **Giao diện đăng bài viết đã lưu**:
+  * **Giao diện bài viết đã lưu**:
     ![image-7](image/README/image-7.png)
   * **Giao diện thông báo**:
     ![image-8](image/README/image-8.png)
@@ -173,7 +173,7 @@ Trang web còn hỗ trợ lưu trữ dữ liệu với PostgreSQL và Firebase, 
   * **Giao diện tìm kiếm**:
     ![image-11](image/README/image-11.png) 
 ---
- 
+
 ## **4. CÔNG CỤ VÀ CÔNG NGHỆ SỬ DỤNG**
 
 * **Ngôn ngữ lập trình**: Python, JavaScript
