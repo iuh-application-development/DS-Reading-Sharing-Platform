@@ -16,7 +16,7 @@ from app.firebase_service import auth, firebase_bucket
 from flask import jsonify
 from app.utils.time_vn import vn_now
 from flask import send_file
-
+import mimetypes
 
 bp = Blueprint('auth', __name__)
 
@@ -353,11 +353,17 @@ def authorize():
         return jsonify({'message': str(e)}), 401 
 
 def upload_to_firebase(file, filename):
-    bucket = firebase_bucket
-    blob = bucket.blob(f"avatars/{filename}")
-    blob.upload_from_file(file, content_type=file.content_type)
-    blob.make_public()
-    return blob.public_url
+    try:
+        blob = firebase_bucket.blob(f"avatars/{filename}")
+        file.stream.seek(0)
+        blob.upload_from_file(file.stream, content_type=file.content_type)
+        blob.make_public()
+        current_app.logger.error(f"Thanh cong")
+        return blob.public_url
+    except Exception as e:
+        current_app.logger.error(f"Firebase Upload Error: {str(e)}")
+        return None
+
 @bp.route('/upload-avatar', methods=['POST'])
 @login_required
 def upload_avatar():
@@ -392,7 +398,6 @@ def upload_avatar():
 
     return redirect(url_for('auth.profile', username=current_user.username))
 
-
 @bp.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
@@ -426,7 +431,7 @@ def edit_profile():
                     
                     # Lưu avatar mới
                     file.save(file_path)
-                    
+                    upload_to_firebase(file, filename)
                     # Cập nhật thông tin avatar trong database
                     current_user.avatar_filename = filename
                     current_user.avatar_url = None  # Reset avatar_url khi có avatar_filename
