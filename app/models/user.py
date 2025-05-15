@@ -71,28 +71,41 @@ class User(UserMixin, db.Model):
     def has_saved_post(self, post_id):
         return SavedPost.query.filter_by(user_id=self.id, post_id=post_id).first() is not None
 
+    # def get_avatar_path(self):
+    #     if self.avatar_filename:
+    #         # Tạo đường dẫn tương đối cho tệp avatar
+    #         avatar_rel_path = f"uploads/avatars/{self.avatar_filename}"
+    #         # Tạo URL tĩnh với url_for, thêm tham số phá bộ nhớ đệm
+    #         avatar_url = url_for('static', filename=avatar_rel_path, _t=self.updated_at.timestamp() if self.updated_at else random.randint(1, 100000))
+            
+    #         if has_app_context():
+    #             # Tạo đường dẫn đầy đủ để kiểm tra tồn tại
+    #             avatar_path = os.path.join(current_app.config.get('UPLOAD_FOLDER', os.path.join(current_app.root_path, 'static', 'uploads')), 'avatars', self.avatar_filename)
+    #             if os.path.exists(avatar_path):
+    #                 current_app.logger.info(f"Đã tìm thấy avatar: {avatar_path}")
+    #             else:
+    #                 current_app.logger.warning(f"Không tìm thấy tệp avatar: {avatar_path}")
+    #         return avatar_url
+
+    #     if self.avatar_url:
+    #         return self.avatar_url
+
+    #     self.avatar_url = self.generate_random_avatar()
+    #     db.session.commit()
+    #     return self.avatar_url
     def get_avatar_path(self):
         if self.avatar_filename:
-            # Tạo đường dẫn tương đối cho tệp avatar
-            avatar_rel_path = f"uploads/avatars/{self.avatar_filename}"
-            # Tạo URL tĩnh với url_for, thêm tham số phá bộ nhớ đệm
-            avatar_url = url_for('static', filename=avatar_rel_path, _t=self.updated_at.timestamp() if self.updated_at else random.randint(1, 100000))
-            
-            if has_app_context():
-                # Tạo đường dẫn đầy đủ để kiểm tra tồn tại
-                avatar_path = os.path.join(current_app.config.get('UPLOAD_FOLDER', os.path.join(current_app.root_path, 'static', 'uploads')), 'avatars', self.avatar_filename)
-                if os.path.exists(avatar_path):
-                    current_app.logger.info(f"Đã tìm thấy avatar: {avatar_path}")
-                else:
-                    current_app.logger.warning(f"Không tìm thấy tệp avatar: {avatar_path}")
-            return avatar_url
+            # URL public của Firebase Storage dạng:
+            # https://storage.googleapis.com/<bucket-name>/avatars/<filename>
+            bucket_name = "prjtest-53174.firebasestorage.app"  
+            return f"https://storage.googleapis.com/{bucket_name}/avatars/{self.avatar_filename}"
 
-        if self.avatar_url:
-            return self.avatar_url
-
-        self.avatar_url = self.generate_random_avatar()
-        db.session.commit()
+        # Nếu không có file → tạo avatar ngẫu nhiên
+        if self.avatar_url is None:
+            self.avatar_url = self.generate_random_avatar()
+            db.session.commit()
         return self.avatar_url
+
 
 
     @staticmethod

@@ -154,8 +154,8 @@
                             </a>
                         </h2>
                         <p class="text-gray-600 mb-4">{{ post.content[:200] }}{% if post.content|length > 200 %}...{% endif %}</p>
-                        {% if post.image_url %}
-                        <img src="{{ post.image_url }}" alt="Post image" class="rounded-lg max-h-96 w-full object-cover mb-4">
+                        {% if post.generate_image_url() %}
+                        <img src="{{ post.generate_image_url() }}" alt="Post image" class="rounded-lg max-h-96 w-full object-cover mb-4">
                         {% endif %}
                         <div class="flex items-center space-x-4 text-sm text-gray-500">
                             <span>

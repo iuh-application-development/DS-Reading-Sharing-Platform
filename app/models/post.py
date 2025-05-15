@@ -42,7 +42,13 @@ class Post(db.Model):
         passive_deletes=True,
         lazy='dynamic'
     )
-
+    saved_posts = db.relationship(
+        'SavedPost',
+        back_populates='post',
+        cascade='all, delete-orphan',
+        passive_deletes=True,
+        lazy='dynamic'
+    )
 
 
 
@@ -56,3 +62,14 @@ class Post(db.Model):
     
     def set_tags_list(self, tags_list):
         self.tags = ','.join(tags_list) 
+    
+    import urllib.parse
+
+    def generate_image_url(self):
+        if self.image_url:
+            # URL public của Firebase Storage dạng:
+            bucket_name = "prjtest-53174.firebasestorage.app"  
+            return f"https://storage.googleapis.com/{bucket_name}/posts/{self.image_url}"
+
+        
+        return None
