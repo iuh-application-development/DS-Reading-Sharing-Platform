@@ -19,6 +19,11 @@
     - Quên mật khẩu
     - Quản lý cơ sở dữ liệu
     - Tương tác bài viết: Like, bình luận lưu bài viết 
+- **Nguyễn Tấn Minh**:
+    - Chức năng đăng hình ảnh, đổi avatar
+    - Chức năng follow
+    - Hiệu ứng trượt thanh sidebar
+    - Trang cá nhân
 ---
 
 ## **2. MÔ TẢ ĐỀ TÀI**
