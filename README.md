@@ -17,13 +17,18 @@
 - **Ngô Trường Định**:
     - Chức năng đăng nhập, đăng ký, đăng nhập bằng google
     - Quên mật khẩu
-    - Quản lý cơ sở dữ liệu
+    - Quản lý cơ sở dữ liệu với kết nối Cloud SQL
     - Tương tác bài viết: Like, bình luận lưu bài viết 
 - **Nguyễn Tấn Minh**:
     - Chức năng đăng hình ảnh, đổi avatar
     - Chức năng follow
     - Hiệu ứng trượt thanh sidebar
     - Trang cá nhân
+- **Nguyễn Ngọc Lân**:
+    - Xây dựng cây thưc mục dự án ban đầu
+    - Tạo trang chủ ban đầu và xem phân trang bài viết
+    - Kết nối cơ sở dữ liệu postgres ban đầu, nền tảng cho kết nốt Cloud Run Postgres SQL sau này
+    - Tạo Chat Bot cho ứng dụng từ API của Gemini 2.0
 ---
 
 ## **2. MÔ TẢ ĐỀ TÀI**
