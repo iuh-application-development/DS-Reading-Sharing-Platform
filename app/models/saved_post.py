@@ -12,4 +12,9 @@ class SavedPost(db.Model):
     
     # Relationships
     user = db.relationship('User', backref=db.backref('saved_posts', lazy=True))
-    post = db.relationship('Post', backref=db.backref('saved_by', lazy=True)) 
+    post = db.relationship(
+        'Post',
+        back_populates='saved_posts',
+        passive_deletes=True
+    )
+ 

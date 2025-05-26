@@ -37,8 +37,8 @@
                                     <div id="drop-area" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg relative">
                                         <div class="space-y-1 text-center">
                                             <img id="image-preview" 
-                                                 src="{% if post.image_url %}{{ post.image_url }}{% endif %}"
-                                                 class="mt-2 max-h-48 rounded-lg mx-auto {% if not post.image_url %}hidden{% endif %}">
+                                                 src="{% if post.generate_image_url() %}{{ post.generate_image_url() }}{% endif %}"
+                                                 class="mt-2 max-h-48 rounded-lg mx-auto {% if not post.generate_image_url() %}hidden{% endif %}">
                                             <div class="flex text-sm text-gray-600 justify-center">
                                                 <label for="image" class="relative cursor-pointer bg-white rounded-md font-medium text-orange-600 hover:text-orange-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-orange-500 z-10">
                                                     <span>Tải ảnh lên</span>
@@ -142,7 +142,7 @@ Original post content: {{ post.content }}
 Original tags: {{ post.tags }}`;
 
 let newImageFile = null;
-const originalImageSrc = {% if post.image_url %}'{{ post.image_url }}'{% else %}''{% endif %};
+const originalImageSrc = {% if post.generate_image_url() %}'{{ post.generate_image_url() }}'{% else %}''{% endif %};
 
 function previewImage(input) {
     if (input.files && input.files[0]) {

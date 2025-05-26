@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 from app.services.notification_service import NotificationService
 from app.models.notification import Notification
 from app.utils.time_vn import vn_now
+from app.firebase_service import firebase_bucket
 
 bp = Blueprint('main', __name__)
 
@@ -52,7 +53,17 @@ def index():
     for post in posts.items:
         post.total_likes = total_likes_dict.get(post.id, 0)
     return render_template('main/index.html', posts=posts, likes=liked_post_ids)
-
+def upload_to_firebase(file, filename):
+    try:
+        blob = firebase_bucket.blob(f"posts/{filename}")
+        file.stream.seek(0)
+        blob.upload_from_file(file.stream, content_type=file.content_type)
+        blob.make_public()
+        current_app.logger.error(f"Thanh cong")
+        return blob.public_url
+    except Exception as e:
+        current_app.logger.error(f"Firebase Upload Error: {str(e)}")
+        return None
 @bp.route('/create_post', methods=['GET', 'POST'])
 @login_required
 def create_post():
@@ -105,6 +116,7 @@ def create_post():
                 os.makedirs(upload_folder, exist_ok=True)
                 file_path = os.path.join(upload_folder, filename)
                 file.save(file_path)
+                upload_to_firebase(file, filename)
                 image_url = f"/static/uploads/posts/{filename}"
 
         post = Post(
@@ -116,7 +128,7 @@ def create_post():
             user_id=current_user.id,
             status='approved',
             visibility=visibility,
-            image_url=image_url
+            image_url=filename
         )
 
         try:
