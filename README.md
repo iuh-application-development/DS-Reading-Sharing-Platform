@@ -20,7 +20,7 @@
     - Quản lý cơ sở dữ liệu
     - Tương tác bài viết: Like, bình luận lưu bài viết 
 - **Nguyễn Tấn Minh**:
-    - Chức năng đăng hình ảnh, đổi avatar
+    - Chức năng upload hình ảnh cho bài đăng, upload avatar
     - Chức năng follow
     - Hiệu ứng trượt thanh sidebar
     - Trang cá nhân
