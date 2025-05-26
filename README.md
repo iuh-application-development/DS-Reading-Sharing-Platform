@@ -13,7 +13,12 @@
 * Ngô Trường Định - ngodinh2339@gmail.com
 * Nguyễn Tấn Minh - minhnguyen10072004@gmail.com
 * Phan Thành Đạt - thanhdat2022cltv@gmail.com
-
+### Phân công:
+- **Ngô Trường Định**:
+    - Chức năng đăng nhập, đăng ký, đăng nhập bằng google
+    - Quên mật khẩu
+    - Quản lý cơ sở dữ liệu
+    - Tương tác bài viết: Like, bình luận lưu bài viết 
 ---
 
 ## **2. MÔ TẢ ĐỀ TÀI**
