@@ -2,6 +2,9 @@
 
 **Xây dựng nền tảng chia sẻ nội dung thông minh hỗ trợ người dùng trao đổi và lan tỏa tri thức (DS Reading Sharing Platform)**
 
+**Link demo:** https://drive.google.com/file/d/1JyBKbQh5cItfPiB3WI8PhfP5r9dji231/view?usp=sharing
+
+**Link web:** https://sharingpaper-1065002064755.us-central1.run.app/
 ---
 
 ## **1. THÔNG TIN NHÓM**
@@ -10,7 +13,27 @@
 * Ngô Trường Định - ngodinh2339@gmail.com
 * Nguyễn Tấn Minh - minhnguyen10072004@gmail.com
 * Phan Thành Đạt - thanhdat2022cltv@gmail.com
-
+### Phân công:
+- **Ngô Trường Định**:
+    - Chức năng đăng nhập, đăng ký, đăng nhập bằng google
+    - Quên mật khẩu
+    - Quản lý cơ sở dữ liệu với kết nối Cloud SQL
+    - Tương tác bài viết: Like, bình luận lưu bài viết 
+- **Nguyễn Tấn Minh**:
+    - Chức năng upload hình ảnh cho bài đăng, upload avatar
+    - Chức năng follow
+    - Hiệu ứng trượt thanh sidebar
+    - Trang cá nhân
+- **Nguyễn Ngọc Lân**:
+    - Xây dựng cây thưc mục dự án ban đầu
+    - Tạo trang chủ ban đầu và xem phân trang bài viết
+    - Kết nối cơ sở dữ liệu postgres ban đầu, nền tảng cho kết nốt Cloud Run Postgres SQL sau này
+    - Tạo Chat Bot cho ứng dụng từ API của Gemini 2.0
+- **Phan Thành Đạt**:
+    - Xây dụng giao diện đăng nhập đăng ký ban đầu
+    - Thêm chức năng tìm kiếm
+    - Phân loại các danh mục như hashtag, tên tác giả, bài viết
+    - Thêm chức năng thông báo thời gian thực bằng flask-socket
 ---
 
 ## **2. MÔ TẢ ĐỀ TÀI**
