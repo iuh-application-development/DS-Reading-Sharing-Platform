@@ -367,7 +367,7 @@ docker-compose down -v
 ### **7.3. Hướng phát triển**
 
 * Bổ sung hệ thống gợi ý nội dung theo profile người dùng (machine learning).
-* Thêm tính năng like, comment, share nội dung.
+* Thêm tính năng share nội dung.
 * Tối ưu chatbot để hiểu ngữ cảnh sâu hơn.
 * Tạo mobile app (sử dụng Flutter hoặc React Native).
 
@@ -383,7 +383,3 @@ docker-compose down -v
 * \[[https://firebase.google.com](https://firebase.google.com)]
 * \[[https://ai.google.dev/gemini-api/docs](https://ai.google.dev/gemini-api/docs)]
 * [TailwindCSS Documentation](https://tailwindcss.com/docs)
-
----
-
-Nếu bạn cần mình vẽ sơ đồ **Use case diagram** hoặc hỗ trợ thiết kế database / frontend wireframe, chỉ cần hú là mình làm ngay!
