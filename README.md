@@ -1,6 +1,6 @@
 # **Data Sience Reading Sharing Platform**
 
-**Xây dựng nền tảng chia sẻ nội dung thông minh hỗ trợ người dùng trao đổi và lan tỏa tri thức (DS Reading Sharing Platform)
+**Xây dựng nền tảng chia sẻ nội dung thông minh hỗ trợ người dùng trao đổi và lan tỏa tri thức (DS Reading Sharing Platform)**
 
 ---
 
