@@ -1,7 +1,9 @@
 # **Data Sience Reading Sharing Platform**
 
 **Xây dựng nền tảng chia sẻ nội dung thông minh hỗ trợ người dùng trao đổi và lan tỏa tri thức (DS Reading Sharing Platform)
+
 **Link demo:** https://drive.google.com/file/d/1JyBKbQh5cItfPiB3WI8PhfP5r9dji231/view?usp=sharing
+
 **Link web:** https://sharingpaper-1065002064755.us-central1.run.app/
 ---
 
