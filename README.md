@@ -258,7 +258,7 @@ docker-compose up --build
 
 * Web: http://localhost:5001
 * Tài khoản admin mặc định:
-  * Email: admin@admin.com
+  * Email: admin@example.com
   * Password: admin123
 
 ### **5.2.3. Kết nối với pgAdmin**
