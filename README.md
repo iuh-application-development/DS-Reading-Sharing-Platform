@@ -15,6 +15,7 @@
 * Phan Thành Đạt - thanhdat2022cltv@gmail.com
 ### Phân công:
 - **Ngô Trường Định**:
+    - Vẽ usecase, architecure diagram
     - Chức năng đăng nhập, đăng ký, đăng nhập bằng google
     - Quên mật khẩu
     - Quản lý cơ sở dữ liệu, kết nối Cloud SQL
