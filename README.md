@@ -17,13 +17,14 @@
 - **Ngô Trường Định**:
     - Chức năng đăng nhập, đăng ký, đăng nhập bằng google
     - Quên mật khẩu
-    - Quản lý cơ sở dữ liệu với kết nối Cloud SQL
+    - Quản lý cơ sở dữ liệu, kết nối Cloud SQL
+    - Triển khai hệ thống trên Cloud Run
     - Tương tác bài viết: Like, bình luận lưu bài viết 
 - **Nguyễn Tấn Minh**:
     - Chức năng upload hình ảnh cho bài đăng, upload avatar
     - Chức năng follow
     - Hiệu ứng trượt thanh sidebar
-    - Trang cá nhân
+    - Trang cá nhân, admin
 - **Nguyễn Ngọc Lân**:
     - Xây dựng cây thưc mục dự án ban đầu
     - Tạo trang chủ ban đầu và xem phân trang bài viết
