@@ -242,12 +242,12 @@ git clone https://github.com/iuh-application-development/DS-Reading-Sharing-Plat
 cd DS-Reading-Sharing-Platform
 ```
 
-<!-- 2️⃣ **Tạo file .env**
+2️⃣ **Tạo file .env và firebase-auth.json**
 ```bash
 cp .env.example .env
-``` -->
+```
 
-tôi đã cấu hình không loại bỏ .env nên không cần làm bước này
+Điền giá trị vào `.env` và đặt `firebase-auth.json` (tải từ Firebase Console) ở thư mục gốc.
 
 3️⃣ **Khởi động ứng dụng với Docker**
 
